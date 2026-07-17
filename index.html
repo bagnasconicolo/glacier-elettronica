@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rivelatore di raggi cosmici — CHARM @ Università di Torino</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111832; --card:#161f3d; --line:#2a3763;
+  --txt:#dfe6ff; --dim:#8a97c4; --acc:#5eb1ff; --ok:#41d98d; --warn:#ffb347;
+  --mu:#ff5d7e; --sig:#5eb1ff; --ttl:#41d98d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(1200px 600px at 70% -10%, #1b2a5e 0%, transparent 60%),
+  radial-gradient(900px 500px at 10% 110%, #14204a 0%, transparent 60%),
+  var(--bg);
+  color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.55;
+  min-height:100vh;display:flex;flex-direction:column}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 60px;width:100%;flex:1}
+header{padding:56px 0 10px;text-align:center}
+.badge{display:inline-block;background:#1d2a55;border:1px solid var(--line);
+  border-radius:20px;padding:3px 14px;font-size:.8em;color:var(--acc);margin-bottom:16px}
+h1{font-size:2.4em;margin:0 0 10px;letter-spacing:.5px}
+h1 .mu{color:var(--mu)}
+.sub{color:var(--dim);max-width:720px;margin:0 auto;font-size:1.05em}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:44px 0 10px}
+@media(max-width:860px){.cards{grid-template-columns:1fr}}
+a.card{display:flex;flex-direction:column;text-decoration:none;color:inherit;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 20px;
+  transition:transform .14s, box-shadow .14s, border-color .14s}
+a.card:hover{transform:translateY(-4px);border-color:var(--acc);
+  box-shadow:0 14px 34px rgba(0,0,0,.4), 0 0 22px rgba(94,177,255,.28)}
+.card .num{font-family:monospace;font-size:.8em;color:var(--dim);letter-spacing:1px}
+.card .ic{font-size:2.1em;margin:6px 0 12px}
+.card h2{font-size:1.22em;margin:0 0 8px;border:none;padding:0}
+.card h2 .hl{color:var(--acc)}
+.card p{color:var(--dim);font-size:.92em;margin:0;flex:1}
+.card .go{margin-top:16px;color:var(--acc);font-weight:600;font-size:.9em}
+.card .go::after{content:" →";transition:margin .14s}
+a.card:hover .go::after{margin-left:5px}
+.c1 .ic,.c1 h2 .hl{color:var(--mu)}
+.c1:hover{border-color:var(--mu);box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(255,93,126,.28)}
+.c1 .go{color:var(--mu)}
+.c2 .ic,.c2 h2 .hl{color:var(--sig)}
+.c3 .ic,.c3 h2 .hl{color:var(--ttl)}
+.c3:hover{border-color:var(--ttl);box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(65,217,141,.28)}
+.c3 .go{color:var(--ttl)}
+
+.about{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:22px 24px;margin-top:26px}
+.about h3{margin:0 0 8px;color:var(--acc);font-size:1.05em}
+.about p{color:var(--dim);font-size:.92em;margin:6px 0}
+.about a{color:var(--acc)}
+.links{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:14px;font-size:.9em}
+.links a{color:var(--dim);text-decoration:none;border-bottom:1px dotted var(--line)}
+.links a:hover{color:var(--acc);border-color:var(--acc)}
+
+footer{color:var(--dim);font-size:.85em;text-align:center;border-top:1px solid var(--line);
+  padding:18px 20px;max-width:1100px;margin:0 auto;width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="badge">Fisica delle particelle · elettronica di front-end · CHARM @ Università di Torino</div>
+    <h1>Il rivelatore di <span class="mu">raggi cosmici</span></h1>
+    <p class="sub">Ogni minuto, su ogni centimetro quadrato della Terra, arriva in media un <b>muone</b>.
+    Queste tre pagine simulano <b>in tempo reale, nel tuo browser</b>, l'elettronica che li rivela —
+    dalla particella al bit. Scegli da dove iniziare.</p>
+  </header>
+
+  <div class="cards">
+
+    <a class="card c1" href="web/rivelatore_cosmici.html">
+      <div class="num">01</div>
+      <div class="ic">✦</div>
+      <h2>Il <span class="hl">rivelatore</span></h2>
+      <p>La simulazione interattiva completa: muoni che attraversano lo scintillatore, il segnale
+      che nasce e i LED che si accendono. Regola energia, soglia e conteggi in tempo reale.</p>
+      <div class="go">Apri la simulazione</div>
+    </a>
+
+    <a class="card c2" href="web/viaggio_del_muone.html">
+      <div class="num">02</div>
+      <div class="ic">↯</div>
+      <h2>Il viaggio del <span class="hl">muone</span></h2>
+      <p>Tutta la catena del segnale in un colpo d'occhio, dall'alto verso il basso. Ogni grafico è
+      la tensione vera a quel punto del circuito. Lancia il muone e seguilo scendere lungo il filo.</p>
+      <div class="go">Segui il segnale</div>
+    </a>
+
+    <a class="card c3" href="web/schematico_interattivo.html">
+      <div class="num">03</div>
+      <div class="ic">⎓</div>
+      <h2>Lo schematico <span class="hl">vivo</span></h2>
+      <p>Lo schema elettrico vero della scheda INFN "Riv. Cosmici 2024". Lancia un muone al
+      rallentatore, tocca le sonde per le forme d'onda e trascina il trimmer per cambiare la soglia.</p>
+      <div class="go">Esplora il circuito</div>
+    </a>
+
+  </div>
+
+  <div class="about">
+    <h3>Di cosa si tratta</h3>
+    <p>Un progetto di <b>CHARM</b> all'<b>Università di Torino</b> attorno al rivelatore di raggi
+    cosmici: hardware KiCad, firmware, simulazioni SPICE e queste tre pagine interattive che ne
+    raccontano il funzionamento senza bisogno di installare nulla.</p>
+    <div class="links">
+      <a href="https://github.com/nicolobagnasco/glacier-elettronica">Codice sorgente su GitHub</a>
+      <a href="docs/RECAP_progetto.pdf">Recap del progetto (PDF)</a>
+      <a href="docs/schema_originale_INFN.pdf">Schema originale INFN (PDF)</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <b>CHARM</b> @ Università di Torino · elettronica di front-end per la rivelazione di muoni ·
+  powered by <a href="https://chicubo.it" style="color:var(--acc);text-decoration:none">chicubo.it</a>
+</footer>
+</body>
+</html>
