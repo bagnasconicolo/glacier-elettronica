@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rivelatore di Raggi Cosmici — simulazione interattiva</title>
+<style>
+:root{
+  --bg:#0b1020; --bg2:#111832; --card:#161f3d; --line:#2a3763;
+  --txt:#dfe6ff; --dim:#8a97c4; --acc:#5eb1ff; --ok:#41d98d; --warn:#ffb347;
+  --mu:#ff5d7e; --sig:#5eb1ff; --ttl:#41d98d; --thr:#ff5d5d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(1200px 600px at 70% -10%, #1b2a5e 0%, transparent 60%),
+  radial-gradient(900px 500px at 10% 110%, #14204a 0%, transparent 60%),
+  var(--bg);
+  color:var(--txt);font-family:"Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 80px}
+header{padding:48px 0 8px;text-align:center}
+h1{font-size:2.1em;margin:0 0 6px;letter-spacing:.5px}
+h1 .mu{color:var(--mu)}
+.sub{color:var(--dim);max-width:760px;margin:0 auto}
+.badge{display:inline-block;background:#1d2a55;border:1px solid var(--line);
+  border-radius:20px;padding:3px 14px;font-size:.8em;color:var(--acc);margin-bottom:14px}
+h2{margin:44px 0 10px;font-size:1.35em;border-bottom:1px solid var(--line);padding-bottom:8px}
+h2 .n{color:var(--acc);font-family:monospace;margin-right:8px}
+p.expl{color:var(--dim);max-width:860px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}
+canvas{display:block;width:100%;border-radius:8px;background:#0a0f22}
+.controls{display:flex;flex-wrap:wrap;gap:14px 26px;margin:12px 0 4px;align-items:center}
+.ctrl{display:flex;flex-direction:column;min-width:170px;flex:1}
+.ctrl label{font-size:.8em;color:var(--dim);margin-bottom:2px}
+.ctrl .val{font-family:monospace;color:var(--acc);font-size:.9em}
+input[type=range]{width:100%;accent-color:var(--acc)}
+button{background:#1d2a55;border:1px solid var(--line);color:var(--txt);
+  padding:9px 18px;border-radius:9px;font-size:.95em;cursor:pointer}
+button:hover{background:#26356b}
+button.primary{background:linear-gradient(135deg,#2b6cb0,#4c51bf);border:none;font-weight:600}
+.stats{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.stat{background:#0e1530;border:1px solid var(--line);border-radius:10px;
+  padding:8px 16px;text-align:center;flex:1;min-width:110px}
+.stat .v{font-size:1.5em;font-family:monospace;color:var(--acc)}
+.stat.mu .v{color:var(--mu)} .stat.ok .v{color:var(--ok)} .stat.dk .v{color:var(--dim)}
+.stat .l{font-size:.72em;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+.led{display:inline-block;width:22px;height:22px;border-radius:50%;
+  background:#3a1020;border:2px solid #5b1f33;vertical-align:middle;
+  transition:box-shadow .05s, background .05s}
+.led.on{background:#ff3355;box-shadow:0 0 18px 6px rgba(255,60,90,.65)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.blk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.blk h3{margin:2px 0 8px;color:var(--acc);font-size:1.05em}
+.blk p{color:var(--dim);font-size:.92em;margin:6px 0}
+.blk code{background:#0d1430;padding:1px 6px;border-radius:5px;color:#9fd0ff;font-size:.9em}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin:18px 0}
+.chip{background:#0e1530;border:1px solid var(--line);border-radius:10px;
+  padding:10px 14px;text-align:center;min-width:118px;transition:all .12s}
+.chip small{display:block;color:var(--dim);font-size:.72em}
+.chip.hot{border-color:var(--acc);box-shadow:0 0 14px rgba(94,177,255,.45);transform:translateY(-2px)}
+.chip.hot2{border-color:var(--ok);box-shadow:0 0 14px rgba(65,217,141,.45)}
+.arrow{color:var(--dim);font-size:1.3em}
+table.spec{border-collapse:collapse;font-size:.9em;width:100%}
+table.spec td{border-bottom:1px solid var(--line);padding:6px 10px}
+table.spec td:first-child{color:var(--dim)}
+footer{margin-top:60px;color:var(--dim);font-size:.85em;text-align:center;border-top:1px solid var(--line);padding-top:18px}
+.formula{font-family:Georgia,serif;font-style:italic;color:#bcd0ff;background:#0d1430;
+  padding:8px 14px;border-radius:8px;display:inline-block;margin:4px 0}
+.hint{font-size:.8em;color:var(--dim);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="badge">Fisica delle particelle · elettronica di front-end · INFN sez. Torino (progetto didattico)</div>
+  <h1>Il rivelatore di <span class="mu">raggi cosmici</span></h1>
+  <p class="sub">Ogni minuto, su ogni centimetro quadrato della Terra, arriva in media un <b>muone</b>:
+  una particella creata dai raggi cosmici a 15&nbsp;km di quota, che viaggia quasi alla velocità della luce.
+  Questa pagina simula <b>in tempo reale, nel tuo browser</b>, l'elettronica che li rivela:
+  le equazioni del circuito vero (scheda "Riv.&nbsp;Cosmici 2024") risolte nodo per nodo.</p>
+</header>
+
+<h2><span class="n">01</span>Il rivelatore dal vivo</h2>
+<p class="expl">Un muone (traccia <b style="color:var(--mu)">rosa</b>) attraversa lo scintillatore e genera
+un lampo di luce; il <b>SiPM</b> lo converte in un impulso di corrente. I puntini piccoli sono i
+<i>dark count</i>: falsi segnali termici del sensore, da scartare con la soglia.
+Guarda l'oscilloscopio: solo gli impulsi che superano la <b style="color:var(--thr)">soglia rossa</b> fanno scattare il trigger.</p>
+
+<div class="card">
+  <canvas id="det" height="230"></canvas>
+  <div class="chain" id="chain">
+    <div class="chip" id="ch0">Scintillatore + SiPM<small>luce → corrente</small></div>
+    <div class="arrow">→</div>
+    <div class="chip" id="ch1">Amplificatore<small>BFR93A + MMBTH81</small></div>
+    <div class="arrow">→</div>
+    <div class="chip" id="ch2">Discriminatore<small>MAX961 + soglia</small></div>
+    <div class="arrow">→</div>
+    <div class="chip" id="ch3">Uscita TTL<small>MCP1402 → J2</small></div>
+    <div class="arrow">→</div>
+    <div class="chip" id="ch4">LED (555, 11 ms)<small>&nbsp;</small>
+      <span class="led" id="led"></span></div>
+  </div>
+  <canvas id="scope" height="330"></canvas>
+  <div class="controls">
+    <div class="ctrl"><label>Soglia del discriminatore (trimmer V2) — <span class="val" id="vthv"></span></label>
+      <input type="range" id="vth" min="5" max="600" value="100" step="5"></div>
+    <div class="ctrl"><label>Rate muoni (accelerato per la demo) — <span class="val" id="ratev"></span></label>
+      <input type="range" id="rate" min="0" max="100" value="35"></div>
+    <div class="ctrl"><label>Dark count del SiPM — <span class="val" id="darkv"></span></label>
+      <input type="range" id="dark" min="0" max="100" value="40"></div>
+    <div class="ctrl"><label>Velocità della simulazione — <span class="val" id="spdv"></span></label>
+      <input type="range" id="spd" min="1" max="100" value="40"></div>
+  </div>
+  <div class="controls">
+    <button class="primary" id="fire">⚡ Spara un muone adesso</button>
+    <button id="pause">⏸ Pausa</button>
+    <button id="reset">↺ Azzera contatori</button>
+  </div>
+  <div class="stats">
+    <div class="stat mu"><div class="v" id="nmu">0</div><div class="l">muoni passati</div></div>
+    <div class="stat ok"><div class="v" id="ntrig">0</div><div class="l">trigger TTL</div></div>
+    <div class="stat dk"><div class="v" id="ndark">0</div><div class="l">dark count</div></div>
+    <div class="stat dk"><div class="v" id="ndarktrig">0</div><div class="l">falsi trigger</div></div>
+    <div class="stat"><div class="v" id="eff">—</div><div class="l">efficienza</div></div>
+  </div>
+  <p class="hint">Suggerimento didattico: abbassa la soglia sotto ~40 mV e guarda i <i>falsi trigger</i>
+  dei dark count; alzala sopra ~500 mV e il rivelatore inizia a perdere i muoni piccoli.
+  La soglia giusta sta nel mezzo: è il compromesso fondamentale di ogni esperimento di fisica.</p>
+</div>
+
+<h2><span class="n">02</span>Come funziona, blocco per blocco</h2>
+<div class="grid2">
+  <div class="blk"><h3>1 · Scintillatore + SiPM</h3>
+    <p>Il muone deposita ~2&nbsp;MeV/cm nella plastica scintillante, che emette qualche migliaio di fotoni.
+    Il <b>SiPM</b> (AFBR-S4N22P014M, polarizzato a <b>38,4&nbsp;V</b> generati a bordo scheda) li converte
+    in una valanga: ~0,5&nbsp;pC per fotoelettrone. Un muone tipico produce <b>100–500 fotoelettroni</b>,
+    il rumore termico solo 1–2.</p>
+    <p>La carica arriva su <code>R10</code> e passa il condensatore <code>C7</code>: conta solo l'impulso, non la continua.</p></div>
+  <div class="blk"><h3>2 · Amplificatore veloce</h3>
+    <p>Due transistor: <code>Q1</code> (BFR93A, emettitore comune con retroazione <code>R11</code>)
+    e <code>Q2</code> (MMBTH81, PNP). Insieme guadagnano ~28×:
+    <b>~35&nbsp;mV per fotoelettrone</b> all'uscita, con banda di decine di MHz per non
+    allargare l'impulso (che dura ~100&nbsp;ns).</p>
+    <p class="formula">G ≈ g<sub>m1</sub>·(R12∥R11+R9) × R14/(R13+r<sub>e2</sub>) ≈ 28</p></div>
+  <div class="blk"><h3>3 · Discriminatore</h3>
+    <p>Il comparatore <b>MAX961</b> (7&nbsp;ns!) confronta il segnale con la soglia impostata dal
+    trimmer <code>V2</code> (da 2&nbsp;mV a 1,3&nbsp;V). Sopra soglia → impulso digitale.
+    La rete <code>C9/R16</code> "congela" l'uscita per ~70&nbsp;ns (latch): niente doppi conteggi sul ringing.</p>
+    <p>È il cuore logico: trasforma una domanda analogica ("quanto?") in una risposta binaria ("sì/no").</p></div>
+  <div class="blk"><h3>4 · Uscite</h3>
+    <p>L'impulso va al driver <b>MCP1402</b> che pilota l'uscita <b>TTL</b> (verso il sistema di
+    acquisizione o le coincidenze con altre palette), e al timer <b>555</b> in monostabile:
+    ogni muone accende il LED per <b>11&nbsp;ms</b> — abbastanza da vederlo a occhio.</p>
+    <p class="formula">T<sub>LED</sub> = 1,1·R20·C21 = 1,1·100kΩ·100nF ≈ 11 ms</p></div>
+</div>
+
+<h2><span class="n">03</span>La vera fisica dei numeri</h2>
+<div class="card">
+<table class="spec">
+<tr><td>Flusso di muoni al suolo</td><td>~1 muone / cm² / minuto → <b>~1,7 Hz</b> su una paletta 10×10 cm</td></tr>
+<tr><td>Energia media dei muoni</td><td>~4 GeV (attraversano metri di roccia — e te, ~10 al secondo)</td></tr>
+<tr><td>Vita media del muone</td><td>2,2 µs — arrivano al suolo solo grazie alla <b>dilatazione relativistica del tempo</b></td></tr>
+<tr><td>Carica per muone nel SiPM</td><td>distribuzione di Landau, mediana ~250 fotoelettroni (~125 pC)</td></tr>
+<tr><td>Dark count del SiPM</td><td>~100–500 kHz, quasi tutti da 1–2 fotoelettroni → la soglia li elimina</td></tr>
+<tr><td>Larghezza impulso TTL</td><td>160–220 ns (time-over-threshold: cresce col segnale)</td></tr>
+<tr><td>Tempo morto della catena</td><td>~0,5 µs → due muoni a 1,5 µs di distanza sono già risolti</td></tr>
+</table>
+</div>
+
+<h2><span class="n">04</span>Cosa stai simulando davvero</h2>
+<p class="expl">Non è un video: a ogni passo (2&nbsp;ns di tempo circuitale) il browser risolve con il metodo di
+Newton le equazioni non lineari dei due transistor (modello di Ebers-Moll) e delle reti RC del circuito
+reale — le stesse equazioni di SPICE, sugli stessi valori dei componenti della scheda INFN
+(<code>R10=10k, C7=10n, R11=5,6k, R12=1k, R13=560, R14=1k, C11=10n, R15=1k…</code>).
+Il progetto completo (schema KiCad, PCB, Gerber, BOM) accompagna questa pagina.</p>
+
+<footer>
+Circuito: "Riv. Cosmici 2024 — Amplif, alim, soglie", INFN sez. Torino (S. Gallian, 2024) ·
+ricostruzione e simulazione a scopo didattico · la pagina funziona offline, senza librerie esterne
+</footer>
+</div>
+
+<script>
+"use strict";
+/* ===================== nucleo di simulazione circuitale =====================
+   Nodi: 0=SIG 1=B(Q1) 2=C(Q1)/B(Q2) 3=E(Q2) 4=D(Q2 coll) 5=E(comparatore)
+   MNA + backward Euler + Newton; BJT Ebers-Moll. Porting 1:1 del modello Python. */
+const VCC=3.3, VT=0.02585;
+const R10=1e4,C7=1e-8,R9=1.8e3,R11=5.6e3,R12=1e3,R13=560,R14=1e3,C11=1e-8,R15=1e3;
+const CPAR=0.5e-12, NN=6;
+
+function bjt(vbe,vbc,IS,BF,BR,pnp){
+  const s=pnp?-1:1; vbe*=s; vbc*=s;
+  vbe=Math.min(vbe,0.95); vbc=Math.min(vbc,0.95);
+  const e1=Math.exp(vbe/VT), e2=Math.exp(vbc/VT);
+  const ic=IS*(e1-e2)-IS/BR*(e2-1), ib=IS/BF*(e1-1)+IS/BR*(e2-1);
+  const g1=IS*e1/VT, g2=IS*e2/VT;
+  return [s*ic, s*ib, g1, -g2-g2/BR, g1/BF, g2/BR];
+}
+function residual(v,vp,dt,iin,f,J){
+  f.fill(0); J.fill(0);
+  const j=(r,c)=>r*NN+c;
+  function addR(a,b,R){const g=1/R,va=a<0?0:v[a],vb=b<0?0:v[b],i=g*(va-vb);
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}}
+  function addRV(a,R){const g=1/R;f[a]+=g*(v[a]-VCC);J[j(a,a)]+=g;}
+  function addC(a,b,C){const g=C/dt,va=a<0?0:v[a],vb=b<0?0:v[b],va0=a<0?0:vp[a],vb0=b<0?0:vp[b];
+    const i=g*((va-vb)-(va0-vb0));
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}}
+  f[0]-=iin;
+  addR(0,-1,R10); addC(0,1,C7); addR(1,-1,R9); addR(1,2,R11);
+  addRV(2,R12); addRV(3,R13); addR(4,-1,R14); addC(4,5,C11); addR(5,-1,R15);
+  for(let n=0;n<NN;n++) addC(n,-1,CPAR);
+  // Q1 NPN B=1 C=2 E=gnd
+  let [ic,ib,gbe,gbc,gibe,gibc]=bjt(v[1],v[1]-v[2],50e-15,90,4,false);
+  f[1]+=ib; f[2]+=ic;
+  J[j(1,1)]+=gibe+gibc; J[j(1,2)]-=gibc;
+  J[j(2,1)]+=gbe+gbc;   J[j(2,2)]-=gbc;
+  // Q2 PNP B=2 E=3 C=4
+  let [ic2,ib2,gbe2,gbc2,gibe2,gibc2]=bjt(v[2]-v[3],v[2]-v[4],50e-15,70,4,true);
+  f[2]+=ib2; f[3]-=(ib2+ic2); f[4]+=ic2;
+  J[j(2,2)]+=gibe2+gibc2; J[j(2,3)]-=gibe2; J[j(2,4)]-=gibc2;
+  J[j(3,2)]-=(gibe2+gibc2+gbe2+gbc2); J[j(3,3)]+=gibe2+gbe2; J[j(3,4)]+=gibc2+gbc2;
+  J[j(4,2)]+=gbe2+gbc2; J[j(4,3)]-=gbe2; J[j(4,4)]-=gbc2;
+}
+function solve6(A,b){ // gauss con pivot parziale, A 6x6 flat, b len 6 (modificati)
+  const n=NN;
+  for(let c=0;c<n;c++){
+    let p=c,m=Math.abs(A[c*n+c]);
+    for(let r=c+1;r<n;r++){const a=Math.abs(A[r*n+c]);if(a>m){m=a;p=r;}}
+    if(p!==c){for(let k=c;k<n;k++){const t=A[c*n+k];A[c*n+k]=A[p*n+k];A[p*n+k]=t;}
+      const t=b[c];b[c]=b[p];b[p]=t;}
+    const d=A[c*n+c];
+    for(let r=c+1;r<n;r++){const fpiv=A[r*n+c]/d;if(!fpiv)continue;
+      for(let k=c;k<n;k++)A[r*n+k]-=fpiv*A[c*n+k];
+      b[r]-=fpiv*b[c];}
+  }
+  for(let r=n-1;r>=0;r--){let s=b[r];
+    for(let k=r+1;k<n;k++)s-=A[r*n+k]*b[k];
+    b[r]=s/A[r*n+r];}
+  return b;
+}
+const fbuf=new Float64Array(NN), Jbuf=new Float64Array(NN*NN),
+      Jc=new Float64Array(NN*NN), fc=new Float64Array(NN);
+function newtonStep(v,vp,dt,iin){
+  for(let it=0;it<25;it++){
+    residual(v,vp,dt,iin,fbuf,Jbuf);
+    Jc.set(Jbuf); fc.set(fbuf);
+    const dv=solve6(Jc,fc);
+    let mx=0;
+    for(let n=0;n<NN;n++){const d=Math.max(-0.3,Math.min(0.3,-dv[n]));v[n]+=d;mx=Math.max(mx,Math.abs(d));}
+    if(mx<1e-8) break;
+  }
+}
+function dcOp(){
+  const v=new Float64Array([0,0.7,2.5,3.1,0.3,0]);
+  for(let i=0;i<300;i++) newtonStep(v,v,1.0,0);
+  return v;
+}
+
+/* ===================== stato della simulazione ===================== */
+const VDC=dcOp();
+const DT=2e-9;
+let simT=0;                      // tempo circuitale [s]
+let v=Float64Array.from(VDC), vprev=Float64Array.from(VDC);
+let events=[];                   // {t, q(C), mu:bool, x(px per animazione)}
+let qState=0, vLE=0;
+let counters={mu:0,trig:0,dark:0,darktrig:0};
+let lastTrigWasMu=false, muPending=0;
+let running=true;
+let ledUntil=0;                  // wall-clock ms
+// tracce per lo scope (ring buffer)
+const SCOPE_N=2400;              // campioni visibili
+const trI=new Float32Array(SCOPE_N), trV=new Float32Array(SCOPE_N), trQ=new Float32Array(SCOPE_N);
+let trHead=0;
+// animazione rivelatore
+let tracks=[];                   // muoni che cadono
+let flashes=[];                  // lampi scintillatore
+let chainGlow=0, chainGlow2=0;
+
+function landauNpe(){            // Moyal: 220+60*(-ln chi2(1))
+  const z=gauss(); return Math.max(80,Math.min(2000,220+60*(-Math.log(z*z+1e-12))));
+}
+let gspare=null;
+function gauss(){ if(gspare!==null){const g=gspare;gspare=null;return g;}
+  let u=0,w=0,s=0; do{u=Math.random()*2-1;w=Math.random()*2-1;s=u*u+w*w;}while(s>=1||s===0);
+  const m=Math.sqrt(-2*Math.log(s)/s); gspare=w*m; return u*m; }
+
+function scheduleMuon(now){
+  const npe=landauNpe();
+  events.push({t:now, q:npe*0.5e-12, mu:true, npe:npe});
+  counters.mu++; muPending++;
+  // animazione
+  const W=det.width/DPR;
+  tracks.push({x:40+Math.random()*(W-80), y:-20, vy:6+Math.random()*3, npe:npe});
+}
+function iIn(t){
+  let s=0;
+  for(let k=events.length-1;k>=0;k--){
+    const d=t-events[k].t;
+    if(d>8*45e-9){ if(events[k].t<t-1e-5) events.splice(k,1); continue; }
+    if(d>=0) s+=events[k].q/45e-9*Math.exp(-d/45e-9);
+  }
+  return s;
+}
+
+/* ===================== UI ===================== */
+const $=id=>document.getElementById(id);
+const det=$("det"), scope=$("scope");
+const DPR=Math.min(2,window.devicePixelRatio||1);
+function fitCanvas(c){const w=c.clientWidth;c.width=w*DPR;c.height=parseInt(c.getAttribute("height"))*DPR;}
+function fitAll(){[det,scope].forEach(fitCanvas);}
+window.addEventListener("resize",fitAll);
+
+const ui={vth:$("vth"),rate:$("rate"),dark:$("dark"),spd:$("spd")};
+function vthVal(){return ui.vth.value/1000;}
+function rateVal(){const x=+ui.rate.value; return x===0?0:2e3*Math.pow(10,x/40);}   // 2k..600kHz
+function darkVal(){const x=+ui.dark.value; return x===0?0:1e4*Math.pow(10,x/33);}  // 10k..~10MHz? cap sotto
+function spdVal(){return 0.05e-6+(+ui.spd.value/100)*1.2e-6;}                       // µs simulati per frame
+function labels(){
+  $("vthv").textContent=(+ui.vth.value)+" mV (≈ "+(ui.vth.value/35).toFixed(1)+" p.e.)";
+  $("ratev").textContent=(rateVal()/1e3).toFixed(0)+" k/s";
+  $("darkv").textContent=(Math.min(darkVal(),2e6)/1e3).toFixed(0)+" k/s";
+  $("spdv").textContent=(spdVal()*1e6).toFixed(2)+" µs/frame";
+}
+Object.values(ui).forEach(s=>s.addEventListener("input",labels)); labels();
+$("fire").onclick=()=>scheduleMuon(simT+2e-7);
+$("pause").onclick=e=>{running=!running;e.target.textContent=running?"⏸ Pausa":"▶ Riprendi";};
+$("reset").onclick=()=>{counters={mu:0,trig:0,dark:0,darktrig:0};updateStats();};
+function updateStats(){
+  $("nmu").textContent=counters.mu;
+  $("ntrig").textContent=counters.trig;
+  $("ndark").textContent=counters.dark;
+  $("ndarktrig").textContent=counters.darktrig;
+  const e=counters.mu?100*(counters.trig-counters.darktrig)/counters.mu:null;
+  $("eff").textContent=e===null?"—":Math.max(0,Math.min(100,e)).toFixed(0)+"%";
+}
+
+/* ===================== ciclo principale ===================== */
+function stepSim(){
+  const dtFrame=spdVal();
+  const steps=Math.round(dtFrame/DT);
+  const dec=Math.max(1,Math.floor(steps/300));   // ~300 campioni scope per frame
+  // eventi casuali nel frame
+  const rMu=rateVal(), rDark=Math.min(darkVal(),2e6);
+  let nMu=poisson(rMu*dtFrame), nDk=poisson(rDark*dtFrame);
+  for(let i=0;i<nMu;i++) scheduleMuon(simT+Math.random()*dtFrame);
+  for(let i=0;i<nDk;i++){
+    events.push({t:simT+Math.random()*dtFrame,q:(Math.random()<0.75?1:2)*0.5e-12,mu:false});
+    counters.dark++;
+  }
+  const vth=vthVal();
+  for(let k=0;k<steps;k++){
+    simT+=DT;
+    const cur=iIn(simT);
+    vprev.set(v);
+    newtonStep(v,vprev,DT,cur);
+    // comparatore + latch
+    const qPrev=qState;
+    if(vLE<=VCC/2){
+      if(v[5]>vth+0.002) qState=VCC;
+      else if(v[5]<vth-0.002) qState=0;
+    }
+    vLE+=(qState-qPrev)-vLE*DT/(1e3*100e-12);
+    vLE=Math.max(-VCC,Math.min(VCC,vLE));
+    if(qState>1&&qPrev<1){ // fronte di salita: trigger!
+      counters.trig++;
+      if(muPending>0){muPending--; chainGlow2=1;}
+      else counters.darktrig++;
+      ledUntil=performance.now()+280;
+      chainGlow=1;
+    }
+    if(k%dec===0){
+      trI[trHead]=cur; trV[trHead]=v[5]; trQ[trHead]=qState;
+      trHead=(trHead+1)%SCOPE_N;
+    }
+  }
+  // muPending decade se il muone era sotto soglia (dopo ~2us non conta piu')
+  if(muPending>0 && events.every(e=>!e.mu||simT-e.t>2e-6)) muPending=0;
+}
+function poisson(lam){
+  if(lam<=0)return 0;
+  if(lam>30) return Math.max(0,Math.round(lam+Math.sqrt(lam)*gauss()));
+  let L=Math.exp(-lam),k=0,p=1;
+  do{k++;p*=Math.random();}while(p>L);
+  return k-1;
+}
+
+/* ===================== rendering ===================== */
+function drawDetector(){
+  const ctx=det.getContext("2d");
+  const W=det.width/DPR,H=det.height/DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  // stelle
+  ctx.fillStyle="#26305c";
+  for(let i=0;i<60;i++){const x=(i*97.3)%W,y=(i*53.7)%(H*0.45);ctx.fillRect(x,y,1.4,1.4);}
+  // scintillatore
+  const sy=H*0.55, sh=44;
+  const grad=ctx.createLinearGradient(0,sy,0,sy+sh);
+  grad.addColorStop(0,"#20408a");grad.addColorStop(1,"#152a5e");
+  ctx.fillStyle=grad;
+  ctx.strokeStyle="#3d5cb0";
+  roundRect(ctx,30,sy,W-60,sh,8);ctx.fill();ctx.stroke();
+  ctx.fillStyle="#8a97c4";ctx.font="12px sans-serif";
+  ctx.fillText("scintillatore plastico",40,sy+sh/2+4);
+  // SiPM
+  ctx.fillStyle="#c2410c";ctx.fillRect(W-52,sy+sh/2-8,16,16);
+  ctx.fillStyle="#8a97c4";ctx.fillText("SiPM",W-58,sy+sh+16);
+  // cavo verso la scheda
+  ctx.strokeStyle="#3d5cb0";ctx.beginPath();
+  ctx.moveTo(W-36,sy+sh/2);ctx.bezierCurveTo(W-10,sy+sh/2,W-10,H-18,W-40,H-18);
+  ctx.lineTo(60,H-18);ctx.stroke();
+  ctx.fillStyle="#8a97c4";ctx.fillText("cavo coassiale → scheda (calza a +38,4 V)",64,H-24);
+  // tracce muoni
+  for(let i=tracks.length-1;i>=0;i--){
+    const t=tracks[i]; t.y+=t.vy;
+    ctx.strokeStyle="rgba(255,93,126,0.9)";
+    ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(t.x,t.y-26);ctx.lineTo(t.x,t.y);ctx.stroke();
+    ctx.lineWidth=1;
+    if(t.y>sy&&t.y<sy+sh+30&&!t.flashed){
+      t.flashed=true;
+      flashes.push({x:t.x,y:sy+sh/2,r:4,a:1,npe:t.npe});
+    }
+    if(t.y>H+30)tracks.splice(i,1);
+  }
+  // lampi
+  for(let i=flashes.length-1;i>=0;i--){
+    const f2=flashes[i]; f2.r+=3.2; f2.a*=0.86;
+    ctx.strokeStyle=`rgba(140,200,255,${f2.a})`;
+    ctx.beginPath();ctx.arc(f2.x,f2.y,f2.r,0,7);ctx.stroke();
+    if(f2.a<0.04)flashes.splice(i,1);
+  }
+  // etichetta flusso
+  ctx.fillStyle="#5a6796";ctx.font="11px sans-serif";
+  ctx.fillText("µ  (≈1/cm²/min al suolo — qui accelerati)",34,18);
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function drawScope(){
+  const ctx=scope.getContext("2d");
+  const W=scope.width/DPR,H=scope.height/DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  const rows=[{y0:8,h:H*0.30,label:"corrente SiPM",unit:"mA"},
+              {y0:H*0.34,h:H*0.34,label:"ingresso comparatore (nodo E)",unit:"mV"},
+              {y0:H*0.72,h:H*0.24,label:"uscita TTL (J2)",unit:"V"}];
+  ctx.font="11px sans-serif";
+  // griglia
+  ctx.strokeStyle="#182248";
+  for(let gx=0;gx<W;gx+=W/12){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
+  rows.forEach(r=>{ctx.strokeStyle="#182248";ctx.strokeRect(0,r.y0,W,r.h);});
+  const n=SCOPE_N;
+  function plot(tr,row,scale,color,fill){
+    ctx.strokeStyle=color;ctx.lineWidth=1.4;ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const idx=(trHead+i)%n;
+      const x=i/(n-1)*W;
+      const val=tr[idx]*scale;
+      const y=row.y0+row.h-4-Math.min(1,Math.max(0,val))*(row.h-12);
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();ctx.lineWidth=1;
+  }
+  plot(trI,rows[0],1/0.006,"#ffd166");        // fondo scala 6 mA
+  plot(trV,rows[1],1/1.4,"#5eb1ff");          // fondo scala 1,4 V
+  plot(trQ,rows[2],1/3.6,"#41d98d");
+  // soglia
+  const vth=vthVal();
+  const ty=rows[1].y0+rows[1].h-4-Math.min(1,vth/1.4)*(rows[1].h-12);
+  ctx.strokeStyle="#ff5d5d";ctx.setLineDash([6,5]);
+  ctx.beginPath();ctx.moveTo(0,ty);ctx.lineTo(W,ty);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle="#ff8080";
+  ctx.fillText("soglia "+(vth*1000).toFixed(0)+" mV",W-130,ty-5);
+  // etichette
+  ctx.fillStyle="#8a97c4";
+  rows.forEach(r=>ctx.fillText(r.label,8,r.y0+14));
+  ctx.fillStyle="#5a6796";
+  ctx.fillText("finestra ≈ "+(SCOPE_N*spdVal()/300*1e6*1).toFixed(0)+" µs (tempo circuitale)",W-230,H-8);
+}
+function frame(){
+  if(running){
+    try{stepSim();}catch(e){console.error(e);}
+    drawDetector();
+    drawScope();
+    updateStats();
+    // led + chain glow
+    $("led").classList.toggle("on",performance.now()<ledUntil);
+    chainGlow*=0.90; chainGlow2*=0.90;
+    ["ch1","ch2","ch3"].forEach(id=>$(id).classList.toggle("hot",chainGlow>0.3));
+    $("ch4").classList.toggle("hot2",performance.now()<ledUntil);
+    $("ch0").classList.toggle("hot",flashes.length>0);
+  }
+  requestAnimationFrame(frame);
+}
+fitAll();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

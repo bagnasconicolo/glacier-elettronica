@@ -1,0 +1,56 @@
+* Riv. Cosmici 2024 - front-end SiPM + discriminatore (foglio 1, INFN To)
+* Netlist per ngspice / LTspice. Esegui: ngspice riv_cosmici_frontend.cir
+* In LTspice: File > Open (seleziona "Netlist"), poi Run.
+
+.param NPE=50           ; fotoelettroni (0.5 pC per p.e.)
+.param QPE=0.5p
+.param TAU=45n
+.param VTH=0.05         ; soglia del discriminatore [V] (V2: ~2 mV ... 1.29 V)
+
+VCC vcc 0 3.3
+
+* ---- impulso SiPM: corrente esponenziale nel nodo di ingresso
+* picco = Q/tau; iniezione a t=100 ns
+BIN 0 sig I = (time > 100n) ? {NPE*QPE/TAU}*exp(-(time-100n)/{TAU}) : 0
+
+* ---- ingresso e primo stadio (BFR93A, CE con retroazione di polarizzazione)
+R10 sig 0 10k
+C7  sig b1 10n
+R9  b1  0 1.8k
+R11 b1  c1 5.6k
+R12 vcc c1 1k
+Q1  c1 b1 0 BFR93A
+
+* ---- secondo stadio (MMBTH81, PNP)
+R13 vcc e2 560
+Q2  d1 c1 e2 MMBTH81
+R14 d1 0 1k
+
+* ---- accoppiamento verso il comparatore
+C11 d1 cmp 10n
+R15 cmp 0 1k
+
+* ---- soglia (equivalente della catena 3,6V/R19/V2/R18)
+VTHS th 0 {VTH}
+
+* ---- MAX961 comportamentale (guadagno alto + limitazione; senza latch)
+* Q = 3.3 V quando V(cmp) > V(th)
+BCMP q 0 V = 3.3/2*(1+tanh(2000*(V(cmp)-V(th))))
+RQ q 0 100k
+* rete latch C9/R16 (solo per osservare l'impulso su LE)
+C9 q le 100p
+R16 le 0 1k
+
+* ---- modelli BJT (parametri tipici; per massima accuratezza sostituire
+*      con i modelli ufficiali NXP BFR93A e onsemi MMBTH81)
+.model BFR93A NPN(IS=50f BF=90 VAF=30 TF=32p CJC=0.9p CJE=1.2p RB=8 RE=0.6 RC=4)
+.model MMBTH81 PNP(IS=50f BF=70 VAF=25 TF=60p CJC=1.5p CJE=1.8p RB=10)
+
+.tran 0.2n 1.5u
+.control
+run
+plot v(sig) v(b1)
+plot v(c1)-2.476 v(cmp)
+plot v(q) v(le)
+.endc
+.end

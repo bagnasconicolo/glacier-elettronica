@@ -1,0 +1,10 @@
+# Dipendenze per simulazioni e strumenti di verifica (Python 3.10+)
+numpy
+matplotlib
+kiutils          # lettura del file .kicad_sch (estrattore di netlist)
+reportlab        # generazione del PDF di recap
+pillow           # composizione immagini nel PDF
+openpyxl         # scrittura/lettura BOM .xlsx
+# opzionali (per rigenerare i footprint / verifiche PCB)
+shapely
+gerbonara

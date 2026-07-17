@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schematico vivo — rivelatore di raggi cosmici</title>
+<style>
+:root{
+  --bg:#0a0e1c; --card:#10172e; --line:#26325c; --txt:#dfe6ff; --dim:#8a97c4;
+  --wire:#7f97d9; --acc:#5eb1ff; --ok:#41d98d; --mu:#ff5d7e; --gold:#ffd166;
+  --thr:#ff5d5d; --vio:#b58cff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+ radial-gradient(900px 460px at 85% -5%,#16255c 0%,transparent 55%),
+ radial-gradient(700px 400px at 0% 108%,#111d45 0%,transparent 55%),var(--bg);
+ color:var(--txt);font-family:"Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:12px 14px 50px}
+header{text-align:center;padding:14px 0 4px}
+h1{font-size:1.55em;margin:0}
+h1 .mu{color:var(--mu)}
+.sub{color:var(--dim);font-size:.86em;max-width:900px;margin:4px auto 0}
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0;
+ background:rgba(16,23,46,.94);border:1px solid var(--line);border-radius:12px;padding:9px 14px;
+ position:sticky;top:6px;z-index:40;backdrop-filter:blur(6px)}
+button{background:#1c2850;border:1px solid var(--line);color:var(--txt);
+ padding:8px 16px;border-radius:9px;font-size:.92em;cursor:pointer;white-space:nowrap}
+button:hover{background:#25336a}
+button.primary{background:linear-gradient(135deg,#c2410c,#e11d48);border:none;font-weight:700}
+.ctrl{display:flex;flex-direction:column;min-width:150px;flex:1}
+.ctrl label{font-size:.7em;color:var(--dim)}
+.ctrl label b{color:var(--gold);font-family:monospace}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.schemcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px 6px 2px;overflow-x:auto}
+#schem{display:block;min-width:980px;width:100%;height:auto}
+.scopecard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin-top:12px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.chip{border:1px solid var(--line);border-radius:16px;padding:3px 12px;font-size:.8em;
+ cursor:pointer;color:var(--dim);user-select:none}
+.chip.on{color:#0a0e1c;font-weight:700}
+canvas{display:block;width:100%;border-radius:8px}
+.hint{color:var(--dim);font-size:.78em;margin-top:6px;text-align:center}
+footer{margin-top:22px;color:var(--dim);font-size:.78em;text-align:center}
+/* schematic styles */
+.wire{stroke:var(--wire);stroke-width:2;fill:none;stroke-linecap:round}
+.wireglow{stroke:var(--gold);stroke-width:3.6;fill:none;stroke-linecap:round;opacity:0;filter:drop-shadow(0 0 4px rgba(255,209,102,.9))}
+.sym{stroke:#c9d4f6;stroke-width:2;fill:none;stroke-linecap:round}
+.symfill{fill:#0d1430;stroke:#c9d4f6;stroke-width:2}
+.lbl{fill:#9fb0dd;font-size:11px;font-family:monospace}
+.lblv{fill:#ffd166;font-size:10.5px;font-family:monospace}
+.gnd{stroke:#7688bb;stroke-width:2}
+.comp{cursor:pointer}
+.comp:hover .sym,.comp:hover .symfill{stroke:var(--gold)}
+.comp:hover .lbl{fill:var(--gold)}
+.probe{cursor:pointer}
+.probe circle.core{transition:r .1s}
+.probe text{font-family:monospace;font-size:11px;font-weight:700}
+.probe.sel circle.ring{stroke-width:2.5}
+#tip{position:fixed;display:none;max-width:290px;background:#0d1430;border:1px solid var(--gold);
+ border-radius:10px;padding:10px 13px;font-size:.82em;z-index:99;pointer-events:none;
+ box-shadow:0 8px 30px rgba(0,0,0,.6)}
+#tip b{color:var(--gold)}
+#tip .t{color:var(--acc);font-weight:700;margin-bottom:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Lo schematico <span class="mu">vivo</span> — il circuito che rivela i muoni</h1>
+  <div class="sub">Questo è lo schema elettrico vero della scheda INFN "Riv. Cosmici 2024" (catena del segnale).
+  <b>Lancia un muone</b> e guarda il segnale correre lungo i fili al rallentatore (1 µs → 8 s).
+  Tocca le <b>sonde colorate</b> per vedere le forme d'onda, clicca i <b>componenti</b> per capire cosa fanno,
+  <b>trascina il trimmer V2</b> per cambiare la soglia.</div>
+</header>
+
+<div class="bar">
+  <button class="primary" id="launch">☄️ Lancia un muone</button>
+  <button id="newmu">🎲 Landau</button>
+  <label style="font-size:.8em;color:var(--dim)"><input type="checkbox" id="loop"> loop</label>
+  <div class="ctrl"><label>Energia: <b id="npev"></b> p.e.</label>
+    <input type="range" id="npe" min="3" max="600" value="180"></div>
+  <div class="ctrl"><label>Soglia V2: <b id="vthv"></b> mV</label>
+    <input type="range" id="vth" min="5" max="700" value="100" step="5"></div>
+  <div class="ctrl"><label>Rallentatore: <b id="spdv"></b></label>
+    <input type="range" id="spd" min="2" max="20" value="8"></div>
+</div>
+
+<div class="schemcard"><svg id="schem" viewBox="0 0 1180 560" xmlns="http://www.w3.org/2000/svg"></svg></div>
+
+<div class="scopecard">
+  <div class="chips" id="chips"><span style="color:var(--dim);font-size:.8em">Sonde:</span></div>
+  <canvas id="scope" height="250"></canvas>
+  <div class="hint">clicca le sonde (nello schema o qui sopra) per aggiungerle/toglierle · trascina la linea rossa per la soglia ·
+  la barra verticale bianca è il «tempo presente» del replay</div>
+</div>
+
+<footer>Le forme d'onda sono calcolate risolvendo le equazioni del circuito (MNA + Newton, Ebers-Moll) a ogni modifica ·
+INFN sez. Torino, ricostruzione didattica · funziona offline</footer>
+</div>
+<div id="tip"></div>
+
+<script>
+"use strict";
+/* ================= solver circuitale (porting 1:1 del modello Python) ================= */
+const VCC=3.3,VT=0.02585,NN=6;
+const Rv={R10:1e4,C7:1e-8,R9:1.8e3,R11:5.6e3,R12:1e3,R13:560,R14:1e3,C11:1e-8,R15:1e3};
+const CPAR=0.5e-12;
+function bjt(vbe,vbc,IS,BF,BR,pnp){
+  const s=pnp?-1:1;vbe*=s;vbc*=s;
+  vbe=Math.min(vbe,0.95);vbc=Math.min(vbc,0.95);
+  const e1=Math.exp(vbe/VT),e2=Math.exp(vbc/VT);
+  return [s*(IS*(e1-e2)-IS/BR*(e2-1)),s*(IS/BF*(e1-1)+IS/BR*(e2-1)),
+          IS*e1/VT,-IS*e2/VT-IS*e2/VT/BR,IS*e1/VT/BF,IS*e2/VT/BR];
+}
+function residual(v,vp,dt,iin,f,J){
+  f.fill(0);J.fill(0);
+  const j=(r,c)=>r*NN+c;
+  const addR=(a,b,R)=>{const g=1/R,va=a<0?0:v[a],vb=b<0?0:v[b],i=g*(va-vb);
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}};
+  const addRV=(a,R)=>{const g=1/R;f[a]+=g*(v[a]-VCC);J[j(a,a)]+=g;};
+  const addC=(a,b,C)=>{const g=C/dt,va=a<0?0:v[a],vb=b<0?0:v[b],va0=a<0?0:vp[a],vb0=b<0?0:vp[b];
+    const i=g*((va-vb)-(va0-vb0));
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}};
+  f[0]-=iin;
+  addR(0,-1,Rv.R10);addC(0,1,Rv.C7);addR(1,-1,Rv.R9);addR(1,2,Rv.R11);
+  addRV(2,Rv.R12);addRV(3,Rv.R13);addR(4,-1,Rv.R14);addC(4,5,Rv.C11);addR(5,-1,Rv.R15);
+  for(let n=0;n<NN;n++)addC(n,-1,CPAR);
+  let[ic,ib,gbe,gbc,gibe,gibc]=bjt(v[1],v[1]-v[2],50e-15,90,4,false);
+  f[1]+=ib;f[2]+=ic;
+  J[j(1,1)]+=gibe+gibc;J[j(1,2)]-=gibc;J[j(2,1)]+=gbe+gbc;J[j(2,2)]-=gbc;
+  let[ic2,ib2,gbe2,gbc2,gibe2,gibc2]=bjt(v[2]-v[3],v[2]-v[4],50e-15,70,4,true);
+  f[2]+=ib2;f[3]-=(ib2+ic2);f[4]+=ic2;
+  J[j(2,2)]+=gibe2+gibc2;J[j(2,3)]-=gibe2;J[j(2,4)]-=gibc2;
+  J[j(3,2)]-=(gibe2+gibc2+gbe2+gbc2);J[j(3,3)]+=gibe2+gbe2;J[j(3,4)]+=gibc2+gbc2;
+  J[j(4,2)]+=gbe2+gbc2;J[j(4,3)]-=gbe2;J[j(4,4)]-=gbc2;
+}
+function solve6(A,b){
+  const n=NN;
+  for(let c=0;c<n;c++){
+    let p=c,m=Math.abs(A[c*n+c]);
+    for(let r=c+1;r<n;r++){const a=Math.abs(A[r*n+c]);if(a>m){m=a;p=r;}}
+    if(p!==c){for(let k=c;k<n;k++){const t=A[c*n+k];A[c*n+k]=A[p*n+k];A[p*n+k]=t;}
+      const t=b[c];b[c]=b[p];b[p]=t;}
+    const d=A[c*n+c];
+    for(let r=c+1;r<n;r++){const f2=A[r*n+c]/d;if(!f2)continue;
+      for(let k=c;k<n;k++)A[r*n+k]-=f2*A[c*n+k];b[r]-=f2*b[c];}
+  }
+  for(let r=n-1;r>=0;r--){let s=b[r];for(let k=r+1;k<n;k++)s-=A[r*n+k]*b[k];b[r]=s/A[r*n+r];}
+  return b;
+}
+const fb=new Float64Array(NN),Jb=new Float64Array(36),Jc=new Float64Array(36),fc=new Float64Array(NN);
+function newton(v,vp,dt,iin){
+  for(let it=0;it<25;it++){
+    residual(v,vp,dt,iin,fb,Jb);Jc.set(Jb);fc.set(fb);
+    const dv=solve6(Jc,fc);let mx=0;
+    for(let n=0;n<NN;n++){const d=Math.max(-0.3,Math.min(0.3,-dv[n]));v[n]+=d;mx=Math.max(mx,Math.abs(d));}
+    if(mx<1e-9)break;
+  }
+}
+function dcOp(){const v=new Float64Array([0,0.7,2.5,3.1,0.3,0]);for(let i=0;i<300;i++)newton(v,v,1,0);return v;}
+const VDC=dcOp();
+const TAU=45e-9,QPE=0.5e-12,T0=100e-9,TEND=1.1e-6,DTS=1e-9,NS=Math.round(TEND/DTS);
+let S=null;
+function runSim(npe,vth){
+  const Q=npe*QPE;
+  const v=Float64Array.from(VDC),vp=Float64Array.from(VDC);
+  const o={iin:new Float32Array(NS),sig:new Float32Array(NS),b:new Float32Array(NS),
+           c:new Float32Array(NS),d:new Float32Array(NS),e:new Float32Array(NS),
+           out:new Float32Array(NS),le:new Float32Array(NS),
+           npe,vth,trigT:null,trigEnd:null};
+  let q=0,vle=0;
+  for(let k=0;k<NS;k++){
+    const t=(k+1)*DTS;
+    const iin=t>=T0?Q/TAU*Math.exp(-(t-T0)/TAU):0;
+    vp.set(v);newton(v,vp,DTS,iin);
+    const qprev=q;
+    if(vle<=VCC/2){
+      if(v[5]>vth+0.002)q=VCC;else if(v[5]<vth-0.002)q=0;
+    }
+    vle+=(q-qprev)-vle*DTS/(1e3*100e-12);
+    vle=Math.max(-VCC,Math.min(VCC,vle));
+    if(q>1&&qprev<1&&o.trigT===null)o.trigT=t;
+    if(q<1&&qprev>1&&o.trigT&&!o.trigEnd)o.trigEnd=t;
+    o.iin[k]=iin;o.sig[k]=v[0]-VDC[0];o.b[k]=v[1]-VDC[1];o.c[k]=v[2]-VDC[2];
+    o.d[k]=v[4]-VDC[4];o.e[k]=v[5]-VDC[5];o.out[k]=q;o.le[k]=vle;
+  }
+  return o;
+}
+const pk=a=>{let m=0;for(let i=0;i<NS;i++)m=Math.max(m,Math.abs(a[i]));return m;};
+
+/* ================= sonde / segnali ================= */
+const PROBES=[
+ {id:"iin",n:1,name:"I SiPM",color:"#ffd166",unit:"mA",scale:1e3,x:168,row:"B"},
+ {id:"sig",n:2,name:"SIG",   color:"#ffa94d",unit:"mV",scale:1e3,x:245,row:"A"},
+ {id:"b",  n:3,name:"B(Q1)", color:"#5eb1ff",unit:"mV",scale:1e3,x:384,row:"B"},
+ {id:"c",  n:4,name:"C(Q1)", color:"#ff5d7e",unit:"mV",scale:1e3,x:490,y:180,flag:"below",fx:470},
+ {id:"d",  n:5,name:"D(Q2)", color:"#4dd4b0",unit:"mV",scale:1e3,x:610,row:"A"},
+ {id:"e",  n:6,name:"COMP",  color:"#8fb7ff",unit:"mV",scale:1e3,x:730,row:"B"},
+ {id:"out",n:7,name:"OUT",   color:"#41d98d",unit:"V", scale:1,  x:952,row:"A"},
+ {id:"le", n:8,name:"LE",    color:"#b58cff",unit:"V", scale:1,  x:890,y:455,flag:"below",fy:530},
+];
+let sel=new Set(["iin","e","out"]);
+
+/* ================= descrizioni dei componenti ================= */
+const INFO={
+ SIPM:["SiPM (AFBR-S4N22P014M)","Fotomoltiplicatore al silicio incollato allo scintillatore: ogni fotone accende una micro-cella a valanga (0,5 pC). Polarizzato a 38,4 V generati a bordo scheda. Arriva qui via cavo coassiale (la calza porta il bias!)."],
+ R10:["R10 — 10 kΩ","Converte la corrente del SiPM in tensione e scarica il nodo di ingresso. Insieme al cavo definisce l'impedenza vista dal sensore."],
+ C7:["C7 — 10 nF","Accoppiamento AC: lascia passare l'impulso (45 ns) e blocca la componente continua. Il circuito guarda solo le variazioni."],
+ R9:["R9 — 1,8 kΩ","Con R11 forma il partitore di polarizzazione della base di Q1: fissa il punto di lavoro a ~0,6 V."],
+ R11:["R11 — 5,6 kΩ","Retroazione collettore→base: stabilizza il punto di lavoro di Q1 contro temperatura e dispersione dei componenti, al prezzo di un po' di guadagno."],
+ Q1:["Q1 — BFR93A (NPN, 5 GHz)","Primo stadio in emettitore comune: amplifica ~17× e INVERTE il segnale. Corrente di riposo ~0,8 mA. È un transistor RF: serve banda larga per non allargare l'impulso."],
+ R12:["R12 — 1 kΩ","Carico di collettore di Q1: la corrente amplificata ci sviluppa sopra la tensione di uscita del primo stadio."],
+ Q2:["Q2 — MMBTH81 (PNP)","Secondo stadio: il PNP re-inverte il segnale (torna positivo) e abbassa l'impedenza. Guadagno ~1,6× limitato da R13."],
+ R13:["R13 — 560 Ω","Degenerazione di emettitore di Q2: limita e linearizza il guadagno del secondo stadio."],
+ R14:["R14 — 1 kΩ","Carico di collettore di Q2: qui il segnale raggiunge la sua ampiezza finale (~35 mV per fotoelettrone, satura a ~1,2 V)."],
+ C11:["C11 — 10 nF","Secondo accoppiamento AC: l'impulso arriva al comparatore partendo esattamente da 0 V, qualunque deriva ci sia a monte."],
+ R15:["R15 — 1 kΩ","Riferimento a massa dell'ingresso del comparatore: fissa la linea di base a 0 V."],
+ CMP:["U3 — MAX961","Comparatore ultra-veloce (7 ns): confronta il segnale (+) con la soglia (−). Sopra → 1, sotto → 0. Qui l'analogico diventa digitale. Isteresi interna ±2 mV."],
+ V2:["V2 — trimmer 10 kΩ (SOGLIA)","Regola la soglia da ~2 mV a ~1,3 V attingendo dal riferimento a 3,6 V (LP2985) tramite R19/R17. ⇕ TRASCINAMI in verticale per cambiare la soglia!"],
+ C9:["C9 — 100 pF (latch)","Sul fronte di salita dell'uscita inietta un impulso sul pin LE: il comparatore si «congela» per ~70 ns. Un muone = un conteggio."],
+ R16:["R16 — 1 kΩ","Scarica il pin LE con τ = R16·C9 = 100 ns, terminando la finestra di latch."],
+ DRV:["U4 — MCP1402","Driver di uscita: bufferizza l'impulso e pilota il connettore TTL J2 (verso coincidenze o acquisizione dati) con fronti netti."],
+ J2:["J2 — TTL OUT","L'uscita digitale della scheda: un impulso 0→3,3 V largo 100–200 ns per ogni muone sopra soglia."],
+ U555:["U2 — TLC555 (monostabile)","Stira l'impulso da ~200 ns a 11 ms (T = 1,1·R20·C21) per rendere visibile il muone a occhio nudo."],
+ LED:["D3 — LED rosso","Lampeggia 11 ms per ogni muone rivelato. Il rate reale su una paletta 10×10 cm è ~1,7 Hz."],
+ SCINT:["Scintillatore plastico","Il muone ci deposita ~2 MeV/cm; la plastica emette ~10⁴ fotoni/MeV in pochi ns. Un muone tipico → 100–500 fotoelettroni nel SiPM."],
+};
+
+/* ================= costruzione dello schematico SVG ================= */
+const svg=document.getElementById("schem");
+svg.setAttribute("viewBox","0 0 1180 600");
+const NSVG="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent){const e=document.createElementNS(NSVG,tag);
+  for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e;}
+function grp(cls,info){const g=el("g",{class:cls});if(info)g.dataset.info=info;return g;}
+function txt(x,y,s,cls="lbl",anchor="middle",parent){const t=el("text",{x,y,class:cls,"text-anchor":anchor},parent);t.textContent=s;return t;}
+function wire(pts,cls="wire",parent){return el("polyline",{points:pts.map(p=>p.join(",")).join(" "),class:cls},parent);}
+function dot(x,y,parent){el("circle",{cx:x,cy:y,r:3,fill:"#7f97d9"},parent);}
+function gndSym(x,y,parent){
+  wire([[x,y],[x,y+10]],"gnd",parent);
+  wire([[x-9,y+10],[x+9,y+10]],"gnd",parent);
+  wire([[x-5.5,y+15],[x+5.5,y+15]],"gnd",parent);
+  wire([[x-2,y+20],[x+2,y+20]],"gnd",parent);
+}
+function vccSym(x,y,label,parent){
+  wire([[x,y],[x,y-12]],"sym",parent);
+  el("polygon",{points:`${x-5},${y-12} ${x+5},${y-12} ${x},${y-21}`,fill:"#c9d4f6"},parent);
+  txt(x,y-26,label,"lbl","middle",parent);
+}
+function resV(x,y,label,info,side="right"){ // centro (x,y), pin y-22..y+22
+  const g=grp("comp",info);
+  wire([[x,y-22],[x,y-14]],"sym",g);
+  el("path",{d:`M${x},${y-14} l6,3 -12,6 12,6 -12,6 12,6 -6,3`,class:"sym"},g);
+  wire([[x,y+16],[x,y+22]],"sym",g);
+  txt(side==="right"?x+10:x-10,y+4,label,"lbl",side==="right"?"start":"end",g);
+  return g;
+}
+function resH(x,y,label,info,above=true){ // centro (x,y), pin x-22..x+22
+  const g=grp("comp",info);
+  wire([[x-22,y],[x-14,y]],"sym",g);
+  el("path",{d:`M${x-14},${y} l3,-6 6,12 6,-12 6,12 6,-12 6,12 3,-6`,class:"sym"},g);
+  wire([[x+16,y],[x+22,y]],"sym",g);
+  txt(x,above?y-12:y+20,label,"lbl","middle",g);
+  return g;
+}
+function capH(x,y,label,info){
+  const g=grp("comp",info);
+  wire([[x-20,y],[x-4,y]],"sym",g);
+  wire([[x-4,y-9],[x-4,y+9]],"sym",g);
+  wire([[x+4,y-9],[x+4,y+9]],"sym",g);
+  wire([[x+4,y],[x+20,y]],"sym",g);
+  txt(x,y-15,label,"lbl","middle",g);
+  return g;
+}
+function capV(x,y,label,info,side="right"){
+  const g=grp("comp",info);
+  wire([[x,y-20],[x,y-4]],"sym",g);
+  wire([[x-9,y-4],[x+9,y-4]],"sym",g);
+  wire([[x-9,y+4],[x+9,y+4]],"sym",g);
+  wire([[x,y+4],[x,y+20]],"sym",g);
+  txt(side==="right"?x+13:x-13,y+3,label,"lbl",side==="right"?"start":"end",g);
+  return g;
+}
+function bjtSym(x,y,label,info,pnp){
+  const g=grp("comp",info);
+  el("circle",{cx:x,cy:y,r:20,class:"sym"},g);
+  wire([[x-26,y],[x-8,y]],"sym",g);
+  wire([[x-8,y-13],[x-8,y+13]],"sym",g);
+  wire([[x-8,y-5],[x+13,y-17]],"sym",g);
+  wire([[x-8,y+5],[x+13,y+17]],"sym",g);
+  wire([[x+14,y-26],[x+14,y-17],[x+13,y-17]],"sym",g);
+  wire([[x+13,y+17],[x+14,y+17],[x+14,y+26]],"sym",g);
+  if(pnp) el("polygon",{points:`${x-6},${y-3} ${x+2},${y-11} ${x+3},${y-1}`,fill:"#c9d4f6"},g);
+  else    el("polygon",{points:`${x+6},${y+9} ${x+13},${y+17} ${x+3},${y+15}`,fill:"#c9d4f6"},g);
+  txt(x+26,y+4,label,"lbl","start",g);
+  return g;
+}
+
+/* ---- layout ---- */
+const MAIN=340;
+// scintillatore + muone
+(function(){
+  const g=grp("comp","SCINT");
+  el("rect",{x:24,y:180,width:120,height:26,rx:6,fill:"#1c3a7a",stroke:"#3d5cb0","stroke-width":2},g);
+  txt(84,197,"scintillatore","lbl","middle",g);
+  const mu=el("g",{id:"muTrack"},g);
+  el("line",{x1:84,y1:120,x2:84,y2:178,stroke:"#ff5d7e","stroke-width":3,id:"muLine"},mu);
+  const mt=txt(97,133,"µ","lbl","start",mu);mt.setAttribute("fill","#ff5d7e");
+  el("circle",{cx:84,cy:193,r:0,fill:"none",stroke:"#8cc8ff","stroke-width":2,id:"flash"},g);
+})();
+// SiPM + cavo fino al nodo SIG
+(function(){
+  const g=grp("comp","SIPM");
+  el("rect",{x:60,y:214,width:48,height:34,rx:4,class:"symfill"},g);
+  wire([[70,224],[70,238]],"sym",g);
+  el("polygon",{points:"70,231 84,224 84,238",fill:"none",stroke:"#c9d4f6","stroke-width":2},g);
+  wire([[84,224],[84,238]],"sym",g);
+  wire([[88,208],[80,218]],"sym",g); wire([[96,208],[88,218]],"sym",g);
+  txt(52,262,"SiPM","lbl","start",g);
+  wire([[108,231],[130,231],[130,MAIN],[205,MAIN]],"wire",g);
+  txt(96,306,"cavo","lbl","start",g);
+  txt(96,320,"coassiale","lbl","start",g);
+})();
+// fili principali + glow
+const SEGS=[
+ [[[130,MAIN],[205,MAIN]],"iin"],
+ [[[205,MAIN],[300,MAIN]],"sig"],
+ [[[340,MAIN],[404,MAIN]],"b"],
+ [[[444,MAIN-26],[444,180],[520,180]],"c"],
+ [[[560,206],[560,MAIN],[644,MAIN]],"d"],
+ [[[684,MAIN],[780,MAIN],[780,320],[800,320]],"e"],
+ [[[900,MAIN],[1020,MAIN]],"out"],
+];
+const glowEls=[];
+SEGS.forEach(([pts,pid])=>{
+  wire(pts,"wire");
+  glowEls.push({el:wire(pts,"wireglow"),pid});
+});
+dot(205,MAIN);dot(340,MAIN);dot(560,MAIN);dot(744,MAIN);
+// R10
+resV(205,MAIN+47,"R10 10k","R10"); wire([[205,MAIN],[205,MAIN+25]]); gndSym(205,MAIN+69);
+// C7
+capH(320,MAIN,"C7 10n","C7");
+// R9
+resV(340,MAIN+47,"R9 1,8k","R9"); wire([[340,MAIN],[340,MAIN+25]]); gndSym(340,MAIN+69);
+// Q1
+bjtSym(430,MAIN,"Q1 BFR93A","Q1",false);
+wire([[444,MAIN+26],[444,MAIN+40]]); gndSym(444,MAIN+40);
+// nodo C + R12 + R11
+dot(444,240);dot(455,180);
+resV(455,132,"R12 1k","R12"); wire([[455,154],[455,180]],"wire"); vccSym(455,110,"+3,3 V");
+resH(386,240,"R11 5,6k","R11");
+wire([[340,MAIN],[340,240],[368,240]],"wire");
+wire([[412,240],[444,240]],"wire");
+// Q2
+bjtSym(546,180,"Q2 MMBTH81","Q2",true);
+resV(560,120,"R13 560","R13"); wire([[560,154],[560,142]],"wire"); vccSym(560,98,"+3,3 V");
+// R14
+resV(560,MAIN+47,"R14 1k","R14"); wire([[560,MAIN],[560,MAIN+25]]); gndSym(560,MAIN+69);
+// C11 + R15
+capH(664,MAIN,"C11 10n","C11");
+resV(744,MAIN+47,"R15 1k","R15"); wire([[744,MAIN],[744,MAIN+25]]); gndSym(744,MAIN+69);
+// comparatore
+(function(){
+  const g=grp("comp","CMP");
+  el("polygon",{points:"800,300 800,380 900,340",class:"symfill",id:"cmpBody"},g);
+  txt(836,336,"MAX961","lbl","middle",g);
+  txt(809,324,"+","lbl","middle",g);
+  txt(809,364,"−","lbl","middle",g);
+})();
+// soglia: dal − in giu (colonna x=786)
+(function(){
+  wire([[800,360],[786,360],[786,415]],"wire");
+  resV(786,437,"R17 470","V2");
+  const t=grp("comp","V2");t.setAttribute("id","trimmer");
+  // potenziometro: zigzag verticale + freccia laterale
+  el("rect",{x:766,y:466,width:40,height:56,rx:6,fill:"rgba(255,209,102,.08)",stroke:"#ffd166","stroke-width":1.5},t);
+  wire([[786,459],[786,472]],"sym",t);
+  el("path",{d:"M786,472 l6,3 -12,6 12,6 -12,6 12,6 -6,3",class:"sym"},t);
+  wire([[786,502],[786,514]],"sym",t);
+  el("line",{x1:770,y1:500,x2:783,y2:487,stroke:"#ffd166","stroke-width":2},t);
+  el("polygon",{points:"780,485 787,491 777,494",fill:"#ffd166"},t);
+  txt(812,486,"V2 10k","lbl","start",t);
+  const st=txt(812,502,"SOGLIA ⇕","lblv","start",t);
+  wire([[786,514],[786,524]],"sym",t);gndSym(786,524,t);
+  // riferimento 3,6 V che entra nel trimmer
+  wire([[746,478],[766,478]],"sym",t);
+  txt(742,482,"3,6 V","lbl","end",t);
+})();
+// latch C9/R16 sotto l'uscita
+dot(930,MAIN);
+(function(){
+  wire([[930,MAIN],[930,390]],"wire");
+  capV(930,410,"C9 100p","C9","left");
+  dot(930,455);
+  wire([[930,430],[930,455]],"wire");
+  wire([[930,455],[858,455],[858,372]],"wire");
+  txt(864,447,"LE","lbl","start");
+  resV(930,479,"R16 1k","R16");
+  wire([[930,501],[930,505]],"wire");
+  gndSym(930,505);
+})();
+// driver + J2
+(function(){
+  const g=grp("comp","DRV");
+  el("rect",{x:1020,y:318,width:76,height:44,rx:7,class:"symfill"},g);
+  txt(1058,345,"MCP1402","lbl","middle",g);
+  wire([[1096,MAIN],[1118,MAIN]],"wire",g);
+  const j=grp("comp","J2");
+  el("rect",{x:1118,y:326,width:34,height:28,rx:4,class:"symfill"},j);
+  el("circle",{cx:1135,cy:MAIN,r:5,fill:"none",stroke:"#c9d4f6","stroke-width":2},j);
+  txt(1135,318,"J2 TTL","lbl","middle",j);
+})();
+// 555 + LED (derivazione dall'uscita)
+dot(1000,MAIN);
+(function(){
+  wire([[1000,MAIN],[1000,400]],"wire");
+  const g=grp("comp","U555");
+  el("rect",{x:964,y:400,width:72,height:40,rx:7,class:"symfill"},g);
+  txt(1000,418,"TLC555","lbl","middle",g);
+  txt(1000,432,"11 ms","lbl","middle",g);
+  const l=grp("comp","LED");
+  wire([[1000,440],[1000,462]],"wire",l);
+  el("polygon",{points:"993,462 1007,462 1000,476",fill:"none",stroke:"#c9d4f6","stroke-width":2},l);
+  wire([[993,476],[1007,476]],"sym",l);
+  el("circle",{cx:1000,cy:470,r:11,fill:"#ff3355",opacity:0,id:"ledGlow"},l);
+  wire([[1015,458],[1022,451]],"sym",l);wire([[1020,464],[1027,457]],"sym",l);
+  txt(1034,472,"LED","lbl","start",l);
+  wire([[1000,476],[1000,486]],"wire",l);gndSym(1000,486,l);
+})();
+
+/* ---- sonde: bandierine ordinate su due righe sopra il filo ---- */
+const probeEls={};
+const ROWY={A:250,B:292};   // y del BORDO INFERIORE della bandierina
+function makeProbe(p){
+  const g=grp("probe");g.dataset.pid=p.id;
+  const nx=p.x, ny=(p.y!=null?p.y:MAIN);
+  const w=104,h=30;
+  let rx,ry;               // angolo alto-sinistra bandierina
+  const fx=(p.fx!=null?p.fx:nx);
+  if(p.flag==="below"){ry=(p.fy!=null?p.fy:ny+16);rx=fx-w/2;}
+  else{ry=ROWY[p.row]-h;rx=fx-w/2;}
+  // gambo: dal nodo al bordo piu' vicino della bandierina
+  const sy=(ry>ny)?ry:(ry+h);
+  el("line",{x1:nx,y1:ny,x2:fx,y2:sy,stroke:p.color,"stroke-width":1,
+     "stroke-dasharray":"3 3",opacity:.65},g);
+  el("circle",{cx:nx,cy:ny,r:5,fill:p.color,class:"core"},g);
+  el("circle",{cx:nx,cy:ny,r:11,fill:"transparent",stroke:p.color,"stroke-width":1.2,class:"ring",opacity:.75},g);
+  el("rect",{x:rx,y:ry,width:w,height:h,rx:6,
+     fill:"rgba(10,14,28,.9)",stroke:p.color,"stroke-width":1.3},g);
+  el("circle",{cx:rx+12,cy:ry+15,r:8,fill:p.color},g);
+  const nt=txt(rx+12,ry+18.5,p.n,"lbl","middle",g);nt.setAttribute("fill","#0a0e1c");
+  const t1=txt(rx+25,ry+12.5,p.name,"lbl","start",g);t1.setAttribute("fill",p.color);
+  const t2=txt(rx+25,ry+25,"","lblv","start",g);
+  probeEls[p.id]={g,val:t2,core:g.querySelector(".core")};
+  g.addEventListener("click",()=>{toggleProbe(p.id);});
+  return g;
+}
+PROBES.forEach(makeProbe);
+
+/* tooltip componenti */
+const tip=document.getElementById("tip");
+svg.addEventListener("pointermove",e=>{
+  const g=e.target.closest?e.target.closest(".comp"):null;
+  if(g&&INFO[g.dataset.info]){
+    const[t,d]=INFO[g.dataset.info];
+    tip.innerHTML=`<div class="t">${t}</div>${d}`;
+    tip.style.display="block";
+    tip.style.left=Math.min(window.innerWidth-310,e.clientX+16)+"px";
+    tip.style.top=(e.clientY+14)+"px";
+  }else tip.style.display="none";
+});
+svg.addEventListener("pointerleave",()=>tip.style.display="none");
+
+/* trimmer V2: drag verticale */
+(function(){
+  const t=document.getElementById("trimmer");
+  let drag=false,y0=0,v0=0;
+  t.style.cursor="ns-resize";
+  t.addEventListener("pointerdown",e=>{drag=true;y0=e.clientY;v0=+ui.vth.value;t.setPointerCapture(e.pointerId);e.preventDefault();});
+  t.addEventListener("pointermove",e=>{
+    if(!drag)return;
+    const dv=(y0-e.clientY)*2.2;
+    ui.vth.value=Math.max(5,Math.min(700,Math.round((v0+dv)/5)*5));
+    onParam();
+  });
+  t.addEventListener("pointerup",()=>drag=false);
+})();
+
+/* ================= scope a corsie ================= */
+const scope=document.getElementById("scope");
+const DPR=Math.min(2,window.devicePixelRatio||1);
+function fitScope(){scope.width=scope.clientWidth*DPR;scope.height=parseInt(scope.getAttribute("height"))*DPR;}
+window.addEventListener("resize",()=>{fitScope();});
+const chipsEl=document.getElementById("chips");
+PROBES.forEach(p=>{
+  const c=document.createElement("span");c.className="chip";c.textContent=p.n+" · "+p.name;
+  c.style.borderColor=p.color;c.dataset.pid=p.id;
+  c.onclick=()=>toggleProbe(p.id);
+  chipsEl.appendChild(c);
+});
+function refreshChips(){
+  document.querySelectorAll(".chip").forEach(c=>{
+    const p=PROBES.find(q=>q.id===c.dataset.pid);
+    const on=sel.has(p.id);
+    c.classList.toggle("on",on);
+    c.style.background=on?p.color:"transparent";
+  });
+  PROBES.forEach(p=>probeEls[p.id].g.classList.toggle("sel",sel.has(p.id)));
+}
+function toggleProbe(id){
+  if(sel.has(id)){if(sel.size>1)sel.delete(id);}else sel.add(id);
+  refreshChips();
+}
+function fmtv(x,u){
+  if(u==="mV"&&Math.abs(x)>=1000)
+    return (x/1000).toLocaleString("it-IT",{maximumFractionDigits:2})+" V";
+  const d=Math.abs(x)<10?2:0;
+  return x.toLocaleString("it-IT",{maximumFractionDigits:d,minimumFractionDigits:d})+" "+u;
+}
+function drawScope(curK){
+  const ctx=scope.getContext("2d");
+  const W=scope.width/DPR,H=scope.height/DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  const ml=118,mr=10,mt=6,mb=20,pw=W-ml-mr,ph=H-mt-mb;
+  const list=PROBES.filter(p=>sel.has(p.id));
+  const n=Math.max(1,list.length);
+  const laneH=ph/n;
+  ctx.font="10px sans-serif";
+  // griglia tempo
+  ctx.strokeStyle="#1b2547";ctx.fillStyle="#8a97c4";
+  for(let g=0;g<=10;g++){
+    const x=ml+pw*g/10;
+    ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke();
+    if(g%2===0)ctx.fillText((TEND*1e9*g/10).toFixed(0)+" ns",x-14,H-6);
+  }
+  scope._laneE=null;
+  list.forEach((p,li)=>{
+    const y0=mt+li*laneH, y1=y0+laneH;
+    const arr=S[p.id];
+    let lo=0,hi=0;
+    for(let k=0;k<NS;k++){const v=arr[k];if(v<lo)lo=v;if(v>hi)hi=v;}
+    if(p.id==="e")hi=Math.max(hi,S.vth*1.2);
+    if(p.id==="out"||p.id==="le"){hi=Math.max(hi,VCC);lo=Math.min(lo,p.id==="le"?lo:0);}
+    if(hi-lo<1e-9)hi=lo+1;
+    const pad=(hi-lo)*0.14;lo-=pad;hi+=pad;
+    const Y=v=>y1-6-((v-lo)/(hi-lo))*(laneH-12);
+    // separatore + zero
+    ctx.strokeStyle="#1b2547";ctx.strokeRect(ml,y0,pw,laneH);
+    ctx.strokeStyle="#232f58";
+    ctx.beginPath();ctx.moveTo(ml,Y(0));ctx.lineTo(W-mr,Y(0));ctx.stroke();
+    // etichetta corsia
+    ctx.fillStyle=p.color;
+    ctx.beginPath();ctx.arc(ml-104+8,y0+laneH/2-6,8,0,7);ctx.fill();
+    ctx.fillStyle="#0a0e1c";ctx.font="bold 10px sans-serif";
+    ctx.fillText(p.n,ml-104+5,y0+laneH/2-2.5);
+    ctx.fillStyle=p.color;ctx.font="bold 10.5px sans-serif";
+    ctx.fillText(p.name,ml-104+22,y0+laneH/2-2);
+    ctx.font="10px monospace";ctx.fillStyle="#8a97c4";
+    ctx.fillText("picco "+fmtv(pk(arr)*p.scale,p.unit),ml-104,y0+laneH/2+12);
+    ctx.font="10px sans-serif";
+    // traccia
+    ctx.strokeStyle=p.color;ctx.lineWidth=1.6;ctx.beginPath();
+    for(let k=0;k<NS;k+=2){
+      const x=ml+k/(NS-1)*pw,y=Y(arr[k]);
+      if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();ctx.lineWidth=1;
+    // soglia nella corsia COMP
+    if(p.id==="e"){
+      const y=Y(S.vth);
+      ctx.strokeStyle="#ff5d5d";ctx.setLineDash([7,5]);ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(W-mr,y);ctx.stroke();
+      ctx.setLineDash([]);ctx.lineWidth=1;
+      ctx.fillStyle="#ff8080";ctx.font="10px monospace";
+      ctx.fillText("soglia "+(S.vth*1e3).toFixed(0)+" mV ⇕",W-mr-150,y-5);
+      ctx.font="10px sans-serif";
+      scope._laneE={y,lo,hi,y0,y1,laneH};
+    }
+  });
+  // cursore replay
+  if(curK!=null){
+    const x=ml+curK/(NS-1)*pw;
+    ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke();ctx.lineWidth=1;
+  }
+}
+/* drag soglia sullo scope */
+(function(){
+  let drag=false;
+  scope.addEventListener("pointerdown",e=>{
+    const L=scope._laneE;if(!L)return;
+    const r=scope.getBoundingClientRect();
+    if(Math.abs((e.clientY-r.top)-L.y)<14){drag=true;scope.setPointerCapture(e.pointerId);}
+  });
+  scope.addEventListener("pointermove",e=>{
+    if(!drag)return;
+    const L=scope._laneE;if(!L)return;
+    const r=scope.getBoundingClientRect();
+    const py=e.clientY-r.top;
+    const v=((L.y1-6-py)/(L.laneH-12))*(L.hi-L.lo)+L.lo;
+    ui.vth.value=Math.max(5,Math.min(700,Math.round(v*1000/5)*5));
+    onParam();
+  });
+  scope.addEventListener("pointerup",()=>drag=false);
+})();
+
+/* ================= replay / animazione ================= */
+const ui={npe:document.getElementById("npe"),vth:document.getElementById("vth"),
+          spd:document.getElementById("spd"),loop:document.getElementById("loop")};
+let replay={on:false,t0:0,dur:8000,phase:"idle"};
+let hasRun=false;
+function setProbeStatic(){
+  PROBES.forEach(p=>{
+    probeEls[p.id].val.textContent="picco "+fmtv(pk(S[p.id])*p.scale,p.unit);
+    probeEls[p.id].core.setAttribute("r",5);
+  });
+  glowEls.forEach(g=>g.el.style.opacity=0);
+  document.getElementById("ledGlow").setAttribute("opacity",hasRun&&S.trigT?0.9:0);
+  document.getElementById("cmpBody").setAttribute("fill",hasRun&&S.trigT?"rgba(65,217,141,.18)":"#0d1430");
+}
+function launch(){
+  hasRun=true;
+  recompute();
+  replay.on=true;replay.t0=performance.now();
+  replay.dur=(+ui.spd.value)*1000;
+  document.getElementById("ledGlow").setAttribute("opacity",0);
+}
+function animate(now){
+  requestAnimationFrame(animate);
+  if(!replay.on){drawScope(null);return;}
+  const el=now-replay.t0;
+  const MUDUR=700;                       // discesa del muone
+  if(el<MUDUR){                          // fase 1: il muone scende
+    const f=el/MUDUR;
+    const line=document.getElementById("muLine");
+    line.setAttribute("y1",30+f*90);line.setAttribute("y2",88+f*90);
+    line.setAttribute("opacity",1);
+    if(f>0.92){const fl=document.getElementById("flash");
+      fl.setAttribute("r",(f-0.92)*180);fl.setAttribute("opacity",1-(f-0.92)*10);}
+    drawScope(0);
+    return;
+  }
+  const f=(el-MUDUR)/replay.dur;         // fase 2: replay elettrico
+  if(f>=1){
+    replay.on=false;
+    document.getElementById("muLine").setAttribute("opacity",0.25);
+    setProbeStatic();
+    drawScope(null);
+    if(ui.loop.checked){setTimeout(()=>{ui.npe.value=landau();syncLabels();launch();},700);}
+    return;
+  }
+  const k=Math.min(NS-1,Math.floor(f*NS));
+  // sonde: valore istantaneo + raggio
+  PROBES.forEach(p=>{
+    const val=S[p.id][k]*p.scale;
+    probeEls[p.id].val.textContent=fmtv(val,p.unit);
+    const m=pk(S[p.id])||1e-9;
+    probeEls[p.id].core.setAttribute("r",5+9*Math.min(1,Math.abs(S[p.id][k])/m));
+  });
+  // glow dei fili
+  glowEls.forEach(g=>{
+    const m=pk(S[g.pid])||1e-9;
+    g.el.style.opacity=Math.min(1,Math.abs(S[g.pid][k])/m)*0.95;
+  });
+  // comparatore / LED
+  const on=S.out[k]>1;
+  document.getElementById("cmpBody").setAttribute("fill",on?"rgba(65,217,141,.35)":"#0d1430");
+  if(S.trigT&&(k*DTS)>=S.trigT)document.getElementById("ledGlow").setAttribute("opacity",0.9);
+  drawScope(k);
+}
+function landau(){
+  let u=0,w=0,s=0;do{u=Math.random()*2-1;w=Math.random()*2-1;s=u*u+w*w;}while(s>=1||s===0);
+  const z=u*Math.sqrt(-2*Math.log(s)/s);
+  return Math.max(20,Math.min(600,Math.round(220+60*(-Math.log(z*z+1e-12)))));
+}
+function recompute(){S=runSim(+ui.npe.value,ui.vth.value/1000);setProbeStatic();}
+function syncLabels(){
+  document.getElementById("npev").textContent=ui.npe.value;
+  document.getElementById("vthv").textContent=ui.vth.value;
+  document.getElementById("spdv").textContent="1 µs → "+ui.spd.value+" s";
+}
+function onParam(){syncLabels();recompute();}
+ui.npe.addEventListener("input",onParam);
+ui.vth.addEventListener("input",onParam);
+ui.spd.addEventListener("input",syncLabels);
+document.getElementById("newmu").onclick=()=>{ui.npe.value=landau();onParam();};
+document.getElementById("launch").onclick=launch;
+
+/* ================= avvio ================= */
+fitScope();syncLabels();recompute();refreshChips();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

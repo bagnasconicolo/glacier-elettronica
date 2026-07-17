@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Il viaggio del muone — la catena del segnale</title>
+<style>
+:root{
+  --bg:#0a0f1f; --card:#141b36; --card2:#0e1530; --line:#2a3763;
+  --txt:#e2e8ff; --dim:#8a97c4; --acc:#5eb1ff; --ok:#41d98d;
+  --mu:#ff5d7e; --gold:#ffd166; --thr:#ff5d5d; --vio:#b58cff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(1000px 500px at 80% -5%, #182a60 0%, transparent 55%),
+  radial-gradient(800px 400px at 5% 105%, #131f48 0%, transparent 55%), var(--bg);
+  color:var(--txt);font-family:"Segoe UI",system-ui,sans-serif;line-height:1.5}
+.wrap{max-width:1060px;margin:0 auto;padding:14px 16px 80px}
+header{text-align:center;padding:26px 0 10px}
+h1{font-size:1.9em;margin:0}
+h1 .mu{color:var(--mu)}
+.sub{color:var(--dim);font-size:.95em;margin-top:4px;max-width:820px;margin-left:auto;margin-right:auto}
+
+/* barra comandi sticky */
+.bar{position:sticky;top:8px;z-index:50;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  background:rgba(14,21,48,.92);backdrop-filter:blur(8px);border:1px solid var(--line);
+  border-radius:14px;padding:10px 16px;margin:10px 0 26px;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+button{background:#1d2a55;border:1px solid var(--line);color:var(--txt);
+  padding:9px 18px;border-radius:10px;font-size:.95em;cursor:pointer;white-space:nowrap}
+button:hover{background:#26356b}
+button.primary{background:linear-gradient(135deg,#c2410c,#e11d48);border:none;font-weight:700;font-size:1em}
+.ctrl{display:flex;flex-direction:column;min-width:170px;flex:1}
+.ctrl label{font-size:.72em;color:var(--dim)}
+.ctrl label b{color:var(--gold);font-family:monospace}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.ledmini{width:20px;height:20px;border-radius:50%;background:#3a1020;border:2px solid #5b1f33;transition:all .1s}
+.ledmini.on{background:#ff3355;box-shadow:0 0 16px 6px rgba(255,60,90,.6)}
+.bitbox{font-family:monospace;font-size:1.25em;color:var(--dim);background:var(--card2);
+  border:1px solid var(--line);border-radius:9px;padding:4px 12px}
+.bitbox.on{color:var(--ok);border-color:var(--ok)}
+
+/* catena verticale */
+.chain{position:relative;padding-left:56px}
+.rail{position:absolute;left:22px;top:0;bottom:0;width:4px;border-radius:2px;
+  background:linear-gradient(#2a3763,#2a3763)}
+.pulse{position:absolute;left:12px;width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle,#fff 0%,var(--gold) 40%,transparent 72%);
+  box-shadow:0 0 22px 8px rgba(255,209,102,.55);
+  top:-40px;opacity:0;pointer-events:none;transition:opacity .2s}
+.stagecard{position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;margin:0 0 34px;transition:border-color .25s, box-shadow .25s}
+.stagecard.hot{border-color:var(--gold);box-shadow:0 0 26px rgba(255,209,102,.28)}
+.stagecard .dot{position:absolute;left:-42px;top:26px;width:16px;height:16px;border-radius:50%;
+  background:var(--card2);border:3px solid var(--line);transition:all .25s}
+.stagecard.hot .dot,.stagecard.done .dot{border-color:var(--gold);background:var(--gold);
+  box-shadow:0 0 12px rgba(255,209,102,.6)}
+.stagecard h3{margin:0 0 2px;font-size:1.15em}
+.stagecard h3 .no{color:var(--gold);font-family:monospace;font-size:.8em;margin-right:8px}
+.stagecard .desc{color:var(--dim);font-size:.9em;margin:2px 0 10px}
+.stagecard .desc b{color:var(--txt)}
+.row{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:stretch}
+@media(max-width:780px){.row{grid-template-columns:1fr}}
+.schembox{background:var(--card2);border:1px solid var(--line);border-radius:10px;
+  padding:6px;display:flex;align-items:center;justify-content:center}
+.schembox svg{width:100%;height:auto;max-height:210px}
+.plotbox{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:6px}
+canvas{display:block;width:100%;border-radius:7px}
+.ros{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ro{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:4px 12px;text-align:center}
+.ro .v{font-family:monospace;font-size:1.05em;color:var(--gold)}
+.ro .l{font-size:.62em;color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
+footer{margin-top:30px;color:var(--dim);font-size:.8em;text-align:center;border-top:1px solid var(--line);padding-top:14px}
+.hintdrag{color:var(--thr);font-size:.78em;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Il viaggio del <span class="mu">muone</span> — dal cosmo al bit</h1>
+  <div class="sub">Tutta la catena del segnale in un colpo d'occhio, dall'alto verso il basso.
+  Ogni grafico è la tensione vera a quel punto del circuito, calcolata risolvendo le equazioni
+  della scheda INFN "Riv. Cosmici 2024" per <b>questo</b> muone. Cambia energia e soglia:
+  tutti i grafici si aggiornano insieme. Premi <b>Lancia il muone</b> e seguilo scendere lungo il filo.</div>
+</header>
+
+<div class="bar">
+  <button class="primary" id="launch">☄️ Lancia il muone</button>
+  <button id="newmu" title="estrae l'energia dalla distribuzione di Landau">🎲 Muone casuale</button>
+  <div class="ctrl"><label>Energia del muone: <b id="npev"></b> fotoelettroni</label>
+    <input type="range" id="npe" min="3" max="600" value="180"></div>
+  <div class="ctrl"><label>Soglia (trimmer V2): <b id="vthv"></b> mV <span class="hintdrag">⇕ trascinabile sui grafici</span></label>
+    <input type="range" id="vth" min="5" max="700" value="100" step="5"></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span class="ledmini" id="led"></span>
+    <span class="bitbox" id="bit">bit = 0</span>
+  </div>
+</div>
+
+<div class="chain" id="chain">
+  <div class="rail"></div>
+  <div class="pulse" id="pulseDot"></div>
+  <!-- le stage card vengono generate da JS -->
+</div>
+
+<footer>Simulazione circuitale reale nel browser (MNA + Newton, transistor Ebers-Moll, dt = 1 ns) ·
+scheda "Amplif, alim, soglie" INFN sez. Torino (S. Gallian, 2024) · pagina autonoma, funziona offline</footer>
+</div>
+
+<script>
+"use strict";
+/* ============ solver circuitale (identico alla simulazione Python) ============ */
+const VCC=3.3, VT=0.02585, NN=6;
+const R10=1e4,C7=1e-8,R9=1.8e3,R11=5.6e3,R12=1e3,R13=560,R14=1e3,C11=1e-8,R15=1e3,CPAR=0.5e-12;
+function bjt(vbe,vbc,IS,BF,BR,pnp){
+  const s=pnp?-1:1; vbe*=s; vbc*=s;
+  vbe=Math.min(vbe,0.95); vbc=Math.min(vbc,0.95);
+  const e1=Math.exp(vbe/VT), e2=Math.exp(vbc/VT);
+  return [s*(IS*(e1-e2)-IS/BR*(e2-1)), s*(IS/BF*(e1-1)+IS/BR*(e2-1)),
+          IS*e1/VT, -IS*e2/VT-IS*e2/VT/BR, IS*e1/VT/BF, IS*e2/VT/BR];
+}
+function residual(v,vp,dt,iin,f,J){
+  f.fill(0);J.fill(0);
+  const j=(r,c)=>r*NN+c;
+  const addR=(a,b,R)=>{const g=1/R,va=a<0?0:v[a],vb=b<0?0:v[b],i=g*(va-vb);
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}};
+  const addRV=(a,R)=>{const g=1/R;f[a]+=g*(v[a]-VCC);J[j(a,a)]+=g;};
+  const addC=(a,b,C)=>{const g=C/dt,va=a<0?0:v[a],vb=b<0?0:v[b],va0=a<0?0:vp[a],vb0=b<0?0:vp[b];
+    const i=g*((va-vb)-(va0-vb0));
+    if(a>=0){f[a]+=i;J[j(a,a)]+=g;if(b>=0)J[j(a,b)]-=g;}
+    if(b>=0){f[b]-=i;J[j(b,b)]+=g;if(a>=0)J[j(b,a)]-=g;}};
+  f[0]-=iin;
+  addR(0,-1,R10);addC(0,1,C7);addR(1,-1,R9);addR(1,2,R11);
+  addRV(2,R12);addRV(3,R13);addR(4,-1,R14);addC(4,5,C11);addR(5,-1,R15);
+  for(let n=0;n<NN;n++)addC(n,-1,CPAR);
+  let[ic,ib,gbe,gbc,gibe,gibc]=bjt(v[1],v[1]-v[2],50e-15,90,4,false);
+  f[1]+=ib;f[2]+=ic;
+  J[j(1,1)]+=gibe+gibc;J[j(1,2)]-=gibc;J[j(2,1)]+=gbe+gbc;J[j(2,2)]-=gbc;
+  let[ic2,ib2,gbe2,gbc2,gibe2,gibc2]=bjt(v[2]-v[3],v[2]-v[4],50e-15,70,4,true);
+  f[2]+=ib2;f[3]-=(ib2+ic2);f[4]+=ic2;
+  J[j(2,2)]+=gibe2+gibc2;J[j(2,3)]-=gibe2;J[j(2,4)]-=gibc2;
+  J[j(3,2)]-=(gibe2+gibc2+gbe2+gbc2);J[j(3,3)]+=gibe2+gbe2;J[j(3,4)]+=gibc2+gbc2;
+  J[j(4,2)]+=gbe2+gbc2;J[j(4,3)]-=gbe2;J[j(4,4)]-=gbc2;
+}
+function solve6(A,b){
+  const n=NN;
+  for(let c=0;c<n;c++){
+    let p=c,m=Math.abs(A[c*n+c]);
+    for(let r=c+1;r<n;r++){const a=Math.abs(A[r*n+c]);if(a>m){m=a;p=r;}}
+    if(p!==c){for(let k=c;k<n;k++){const t=A[c*n+k];A[c*n+k]=A[p*n+k];A[p*n+k]=t;}
+      const t=b[c];b[c]=b[p];b[p]=t;}
+    const d=A[c*n+c];
+    for(let r=c+1;r<n;r++){const f2=A[r*n+c]/d;if(!f2)continue;
+      for(let k=c;k<n;k++)A[r*n+k]-=f2*A[c*n+k];b[r]-=f2*b[c];}
+  }
+  for(let r=n-1;r>=0;r--){let s=b[r];for(let k=r+1;k<n;k++)s-=A[r*n+k]*b[k];b[r]=s/A[r*n+r];}
+  return b;
+}
+const fb=new Float64Array(NN),Jb=new Float64Array(36),Jc=new Float64Array(36),fc=new Float64Array(NN);
+function newton(v,vp,dt,iin){
+  for(let it=0;it<25;it++){
+    residual(v,vp,dt,iin,fb,Jb);Jc.set(Jb);fc.set(fb);
+    const dv=solve6(Jc,fc);let mx=0;
+    for(let n=0;n<NN;n++){const d=Math.max(-0.3,Math.min(0.3,-dv[n]));v[n]+=d;mx=Math.max(mx,Math.abs(d));}
+    if(mx<1e-9)break;
+  }
+}
+function dcOp(){const v=new Float64Array([0,0.7,2.5,3.1,0.3,0]);for(let i=0;i<300;i++)newton(v,v,1,0);return v;}
+const VDC=dcOp();
+
+/* ============ simulazione del singolo evento ============ */
+const TAU=45e-9, QPE=0.5e-12, T0=120e-9, TEND=1.3e-6, DTS=1e-9;
+const NS=Math.round(TEND/DTS);
+let S=null;
+function runSim(npe,vth){
+  const Q=npe*QPE;
+  const v=Float64Array.from(VDC), vp=Float64Array.from(VDC);
+  const o={t:new Float32Array(NS),iin:new Float32Array(NS),
+           sig:new Float32Array(NS),b:new Float32Array(NS),c:new Float32Array(NS),
+           d:new Float32Array(NS),e:new Float32Array(NS),
+           ttl:new Float32Array(NS),le:new Float32Array(NS),
+           npe:npe,vth:vth,trigT:null,trigEnd:null};
+  let q=0,vle=0;
+  for(let k=0;k<NS;k++){
+    const t=(k+1)*DTS;
+    const iin=t>=T0?Q/TAU*Math.exp(-(t-T0)/TAU):0;
+    vp.set(v);newton(v,vp,DTS,iin);
+    const qprev=q;
+    if(vle<=VCC/2){
+      if(v[5]>vth+0.002)q=VCC; else if(v[5]<vth-0.002)q=0;
+    }
+    vle+=(q-qprev)-vle*DTS/(1e3*100e-12);
+    vle=Math.max(-VCC,Math.min(VCC,vle));
+    if(q>1&&qprev<1&&o.trigT===null)o.trigT=t;
+    if(q<1&&qprev>1&&o.trigT&&!o.trigEnd)o.trigEnd=t;
+    o.t[k]=t;o.iin[k]=iin;o.sig[k]=v[0]-VDC[0];o.b[k]=v[1]-VDC[1];
+    o.c[k]=v[2]-VDC[2];o.d[k]=v[4]-VDC[4];o.e[k]=v[5]-VDC[5];
+    o.ttl[k]=q;o.le[k]=vle;
+  }
+  o.pk=a=>{let m=0;for(let i=0;i<NS;i++)m=Math.max(m,Math.abs(a[i]));return m;};
+  return o;
+}
+
+/* ============ grafica: colori, formattazione, SVG ============ */
+const C={mu:"#ff5d7e",gold:"#ffd166",acc:"#5eb1ff",ok:"#41d98d",vio:"#b58cff",thr:"#ff5d5d",dim:"#8a97c4"};
+const fmt=(x,d=1)=>x.toLocaleString("it-IT",{maximumFractionDigits:d,minimumFractionDigits:0});
+const SV={
+  head:'<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round">',
+  tail:'</svg>',
+  txt:(x,y,s,c=C.dim,sz=11,anchor="middle")=>`<text x="${x}" y="${y}" fill="${c}" font-size="${sz}" text-anchor="${anchor}" font-family="sans-serif">${s}</text>`,
+  res:(x,y,label)=>`<path d="M${x},${y-22} v6 l6,3 -12,6 12,6 -12,6 12,6 -6,3 v6" stroke="${C.dim}" stroke-width="2"/>`+SV.txt(x+16,y+4,label,C.dim,11,"start"),
+  gnd:(x,y)=>`<g stroke="${C.dim}" stroke-width="2"><line x1="${x}" y1="${y}" x2="${x}" y2="${y+8}"/><line x1="${x-10}" y1="${y+8}" x2="${x+10}" y2="${y+8}"/><line x1="${x-6}" y1="${y+13}" x2="${x+6}" y2="${y+13}"/><line x1="${x-2}" y1="${y+18}" x2="${x+2}" y2="${y+18}"/></g>`,
+};
+function svgScint(){
+  return SV.head+
+  `<rect x="30" y="95" width="240" height="42" rx="8" fill="#1c3a7a" stroke="#3d5cb0" stroke-width="2"/>`+
+  SV.txt(150,120,"scintillatore plastico","#9fb4e8",12)+
+  `<line x1="150" y1="8" x2="150" y2="93" stroke="${C.mu}" stroke-width="3"/>`+
+  `<polygon points="150,93 144,79 156,79" fill="${C.mu}"/>`+
+  SV.txt(163,26,"µ",C.mu,20,"start")+
+  [...Array(9)].map((_,i)=>{const a=i/9*6.28;
+    return `<line x1="150" y1="116" x2="${150+32*Math.cos(a)}" y2="${116+16*Math.sin(a)}" stroke="#8cc8ff" stroke-width="1.5" opacity="0.85"/>`;}).join("")+
+  SV.txt(150,162,"~10 000 fotoni per MeV depositato","#8cc8ff",11)+
+  SV.txt(150,180,"lampo di pochi nanosecondi",C.dim,10)+
+  SV.tail;
+}
+function svgSipm(){
+  return SV.head+
+  `<rect x="42" y="60" width="64" height="64" rx="6" fill="#7c2d12" stroke="#c2410c" stroke-width="2"/>`+
+  [...Array(16)].map((_,i)=>`<rect x="${48+(i%4)*14}" y="${66+((i/4)|0)*14}" width="10" height="10" fill="#9a3412"/>`).join("")+
+  SV.txt(74,145,"SiPM: micro-celle",C.dim,11)+SV.txt(74,160,"a valanga Geiger",C.dim,11)+
+  `<line x1="108" y1="92" x2="205" y2="92" stroke="${C.gold}" stroke-width="3"/>`+
+  `<polygon points="205,92 193,86 193,98" fill="${C.gold}"/>`+
+  SV.txt(158,80,"corrente",C.gold,11)+
+  SV.txt(238,88,"0,5 pC",C.gold,12)+SV.txt(240,103,"per fotone",C.dim,10)+
+  `<path d="M 42,34 q 18,-22 32,0 q 14,22 32,0" stroke="#8cc8ff" stroke-width="2"/>`+
+  SV.txt(74,16,"fotoni","#8cc8ff",11)+
+  SV.tail;
+}
+function svgAC(cap,r1,r2,src,dst){
+  return SV.head+
+  `<line x1="12" y1="70" x2="66" y2="70" stroke="${C.gold}" stroke-width="2.5"/>`+
+  SV.txt(12,56,src,C.gold,11,"start")+
+  (r1?SV.res(66,100,r1)+SV.gnd(66,130):"")+
+  `<line x1="66" y1="70" x2="126" y2="70" stroke="${C.gold}" stroke-width="2.5"/>`+
+  `<g stroke="${C.acc}" stroke-width="2.5"><line x1="134" y1="54" x2="134" y2="86"/><line x1="144" y1="54" x2="144" y2="86"/><line x1="126" y1="70" x2="134" y2="70"/><line x1="144" y1="70" x2="152" y2="70"/></g>`+
+  SV.txt(139,42,cap,C.acc,12)+
+  `<line x1="152" y1="70" x2="238" y2="70" stroke="${C.acc}" stroke-width="2.5"/>`+
+  `<polygon points="238,70 226,64 226,76" fill="${C.acc}"/>`+
+  SV.txt(246,74,dst,C.acc,11,"start")+
+  SV.res(188,100,r2)+SV.gnd(188,130)+
+  SV.txt(150,172,"passa l'impulso, non la continua",C.dim,11)+
+  SV.tail;
+}
+function svgQ(name,sub,inv){
+  return SV.head+
+  `<circle cx="150" cy="90" r="38" stroke="${C.dim}" stroke-width="2"/>`+
+  `<line x1="130" y1="70" x2="130" y2="110" stroke="#dfe6ff" stroke-width="3"/>`+
+  `<line x1="98" y1="90" x2="130" y2="90" stroke="${C.acc}" stroke-width="2.5"/>`+
+  `<line x1="130" y1="81" x2="160" y2="60" stroke="${C.dim}" stroke-width="2.5"/>`+
+  `<line x1="130" y1="99" x2="160" y2="120" stroke="${C.dim}" stroke-width="2.5"/>`+
+  `<line x1="160" y1="60" x2="160" y2="34" stroke="${C.dim}" stroke-width="2"/>`+
+  `<line x1="160" y1="120" x2="160" y2="146" stroke="${C.dim}" stroke-width="2"/>`+
+  SV.txt(150,20,name,C.gold,14)+
+  SV.txt(88,86,"in",C.acc,11,"end")+
+  SV.txt(150,172,sub,C.dim,11)+
+  (inv?SV.txt(236,90,"↓ inverte!",C.mu,13):SV.txt(236,90,"↑ re-inverte",C.ok,13))+
+  SV.tail;
+}
+function svgComp(){
+  return SV.head+
+  `<polygon points="90,50 90,130 190,90" fill="#0d1430" stroke="${C.acc}" stroke-width="2.5"/>`+
+  SV.txt(138,86,"MAX961",C.acc,12)+
+  `<line x1="40" y1="70" x2="90" y2="70" stroke="${C.acc}" stroke-width="2.5"/>`+SV.txt(34,74,"segnale",C.acc,11,"end")+
+  `<line x1="40" y1="110" x2="90" y2="110" stroke="${C.thr}" stroke-width="2.5"/>`+SV.txt(34,114,"soglia",C.thr,11,"end")+
+  `<line x1="190" y1="90" x2="252" y2="90" stroke="${C.ok}" stroke-width="3"/>`+
+  `<polygon points="252,90 240,84 240,96" fill="${C.ok}"/>`+
+  SV.txt(260,94,"0/1",C.ok,13,"start")+
+  SV.txt(150,168,"7 ns per decidere: «è vero?»",C.dim,11)+
+  SV.tail;
+}
+function svgLatch(){
+  return SV.head+
+  `<line x1="30" y1="46" x2="270" y2="46" stroke="${C.ok}" stroke-width="2.5"/>`+
+  SV.txt(150,32,"uscita Q del comparatore",C.ok,11)+
+  `<g stroke="${C.vio}" stroke-width="2.5"><line x1="140" y1="46" x2="140" y2="70"/><line x1="132" y1="70" x2="148" y2="70"/><line x1="132" y1="80" x2="148" y2="80"/><line x1="140" y1="80" x2="140" y2="100"/></g>`+
+  SV.txt(163,76,"C9 100 pF",C.vio,11,"start")+
+  SV.txt(116,102,"LE",C.vio,12,"end")+
+  SV.res(140,128,"R16 1k")+SV.gnd(140,158)+
+  SV.txt(150,190,"il fronte «congela» la decisione ~70 ns",C.dim,10.5)+
+  SV.tail;
+}
+function svgOut(){
+  return SV.head+
+  `<rect x="50" y="34" width="80" height="40" rx="7" fill="#0d1430" stroke="${C.ok}" stroke-width="2"/>`+
+  SV.txt(90,58,"MCP1402",C.ok,12)+
+  `<line x1="130" y1="54" x2="212" y2="54" stroke="${C.ok}" stroke-width="3"/>`+
+  `<polygon points="212,54 200,48 200,60" fill="${C.ok}"/>`+
+  SV.txt(238,58,"TTL J2",C.ok,12)+
+  SV.txt(90,92,"→ coincidenze / DAQ",C.dim,10.5)+
+  `<rect x="50" y="112" width="80" height="40" rx="7" fill="#0d1430" stroke="${C.gold}" stroke-width="2"/>`+
+  SV.txt(90,136,"555 · 11 ms",C.gold,12)+
+  `<line x1="130" y1="132" x2="192" y2="132" stroke="${C.gold}" stroke-width="3"/>`+
+  `<circle cx="214" cy="132" r="13" fill="#ff3355" opacity="0.9"><animate attributeName="opacity" values="0.9;0.25;0.9" dur="1.6s" repeatCount="indefinite"/></circle>`+
+  SV.txt(214,164,"LED",C.dim,11)+
+  SV.tail;
+}
+
+/* ============ definizione degli stadi (tutti visibili in pagina) ============ */
+const STAGES=[
+{ title:"Un muone attraversa lo scintillatore",
+  desc:()=>`Creato a 15 km di quota, vive 2,2 µs ma arriva fino a qui grazie alla <b>relatività</b>. Nella plastica
+   deposita ~2 MeV/cm: un lampo blu di pochi ns. Questo muone: <b>${fmt(S.npe,0)} fotoelettroni</b>.`,
+  svg:svgScint,
+  plot:{lite:true,color:"#8cc8ff",label:"intensità del lampo [u.a.]",tmax:400e-9},
+  ro:()=>[["~"+fmt(S.npe*20,0),"fotoni"],[fmt(S.npe,0),"fotoelettroni"],["0,998 c","velocità del µ"]]},
+{ title:"Il SiPM: da luce a corrente",
+  desc:()=>`Ogni fotone accende una micro-cella a valanga (bias <b>38,4 V</b> generato a bordo): carica fissa
+   ~0,5 pC. Le ${fmt(S.npe,0)} celle si scaricano insieme: impulso di corrente con τ = 45 ns.`,
+  svg:svgSipm,
+  plot:{traces:[{a:"iin",scale:1e3,color:C.gold,label:"corrente SiPM [mA]"}],tmax:500e-9},
+  ro:()=>[[fmt(S.npe*0.5,0)+" pC","carica"],[fmt(S.pk(S.iin)*1e3,2)+" mA","picco"],["45 ns","τ"]]},
+{ title:"Accoppiamento AC (R10 · C7)",
+  desc:()=>`La corrente sviluppa tensione su <b>R10</b>; <b>C7</b> blocca la continua e consegna solo
+   l'impulso alla base di Q1 (polarizzata da R9/R11). Le due curve quasi coincidono: C7 è «grande» per un impulso da 45 ns.`,
+  svg:()=>svgAC("C7 10 nF","R10 10k","R9 1,8k","dal SiPM","a Q1"),
+  plot:{traces:[{a:"sig",scale:1e3,color:C.gold,label:"V ingresso [mV]"},
+                {a:"b",scale:1e3,color:C.acc,label:"V base Q1 [mV]"}],tmax:600e-9},
+  ro:()=>[[fmt(S.pk(S.sig)*1e3,1)+" mV","picco ingresso"],[fmt(S.pk(S.b)*1e3,1)+" mV","in base a Q1"],["0,595 V","DC della base"]]},
+{ title:"Q1 (BFR93A): primo guadagno — e un ribaltone",
+  desc:()=>`NPN da 5 GHz in emettitore comune: più tensione in base → più corrente → <b>il collettore scende</b>.
+   Amplifica ~17× e <b>capovolge</b> il segnale. R11 retroaziona per stabilizzare il punto di lavoro.`,
+  svg:()=>svgQ("Q1 — BFR93A","emettitore comune, retroazione R11",true),
+  plot:{traces:[{a:"b",scale:1e3,color:C.acc,label:"ingresso: base [mV]"},
+                {a:"c",scale:1e3,color:C.mu,label:"uscita: collettore [mV]"}],tmax:600e-9},
+  ro:()=>{const g=S.pk(S.c)/Math.max(1e-9,S.pk(S.b));
+    return [["×"+fmt(g,1),"guadagno"],[fmt(S.pk(S.c)*1e3,0)+" mV","picco (negativo)"],["0,82 mA","riposo Q1"]];}},
+{ title:"Q2 (MMBTH81): si raddrizza e si spinge",
+  desc:()=>`Il PNP lavora al contrario: il segnale negativo lo accende di più e la sua corrente <b>tira su</b> R14.
+   Il segnale torna positivo (~1,6×, limitato da R13). Totale coppia: ~28×.
+   ${S.npe>320?"<b>Questo muone satura lo stadio</b>: il picco si appiattisce — ma al discriminatore basta «sopra o sotto».":""}`,
+  svg:()=>svgQ("Q2 — MMBTH81","PNP, degenerazione R13 = 560 Ω",false),
+  plot:{traces:[{a:"c",scale:1e3,color:C.mu,label:"ingresso: da Q1 [mV]"},
+                {a:"d",scale:1e3,color:C.ok,label:"uscita: collettore Q2 [mV]"}],tmax:600e-9},
+  ro:()=>{const g=S.pk(S.d)/Math.max(1e-9,S.pk(S.c));
+    return [["×"+fmt(g,2),"guadagno"],[fmt(S.pk(S.d)*1e3,0)+" mV","picco nodo D"],
+            ["×"+fmt(S.pk(S.d)/Math.max(1e-9,S.pk(S.b)),0),"totale"]];}},
+{ title:"Ultimo filtro (C11 · R15): l'impulso riparte da zero",
+  desc:()=>`Come all'ingresso: <b>C11</b> toglie la continua, così al comparatore arriva un impulso che parte
+   esattamente da 0 V e la soglia misura sempre la stessa cosa, qualunque deriva ci sia a monte.
+   <b>Qui puoi già trascinare la linea rossa.</b>`,
+  svg:()=>svgAC("C11 10 nF",null,"R15 1k","da Q2","al MAX961"),
+  plot:{traces:[{a:"e",scale:1e3,color:C.acc,label:"ingresso comparatore [mV]"}],tmax:600e-9,thr:true,drag:true},
+  ro:()=>[[fmt(S.pk(S.e)*1e3,0)+" mV","picco"],[fmt(S.pk(S.e)*1e3/35,1)+" p.e.","equivalente"],[fmt(S.vth*1e3,0)+" mV","soglia"]]},
+{ title:"Il discriminatore: la decisione in 7 nanosecondi",
+  desc:()=>`Il <b>MAX961</b> confronta segnale e soglia: sopra → 1, sotto → 0. La fisica analogica diventa
+   <b>informazione</b>. <b>Trascina la linea rossa</b>: sopra il picco il muone sparisce; troppo in basso,
+   nel mondo reale scatterebbe il rumore. La banda verde è il tempo passato sopra soglia (TOT).`,
+  svg:svgComp,
+  plot:{traces:[{a:"e",scale:1e3,color:C.acc,label:"segnale [mV]"}],tmax:800e-9,thr:true,drag:true,ttlband:true},
+  ro:()=>{const trig=S.trigT!==null,w=trig&&S.trigEnd?((S.trigEnd-S.trigT)*1e9):null;
+    return [[trig?"SÌ":"NO","trigger?"],[trig?fmt((S.trigT-T0)*1e9,0)+" ns":"—","ritardo"],[w?fmt(w,0)+" ns":"—","larghezza TOT"]];}},
+{ title:"Il latch (C9 · R16): niente doppi conteggi",
+  desc:()=>`Il segnale reale «frigge» attorno alla soglia. Il fronte di salita dell'uscita, via <b>C9</b>,
+   alza <b>LE</b> per ~70 ns e congela la decisione: un muone = un conteggio. Due componenti, zero software.`,
+  svg:svgLatch,
+  plot:{traces:[{a:"le",scale:1,color:C.vio,label:"tensione su LE [V]"},
+                {a:"ttl",scale:1,color:C.ok,label:"uscita comparatore [V]"}],tmax:800e-9},
+  ro:()=>[["~70 ns","latch"],["100 pF · 1 kΩ","C9 · R16"],[S.trigT?"1":"0","conteggi"]]},
+{ title:"Il bit finale: TTL, LED, conteggio",
+  desc:()=>`Il driver <b>MCP1402</b> consegna l'impulso al connettore J2 (coincidenze / acquisizione) e il
+   <b>555</b> lo stira a 11 ms per il LED. ${S.trigT?"<b>Questo muone è stato contato.</b>":"<b>Questo muone NON ha superato la soglia</b> — abbassala o lancia un muone più energetico."}`,
+  svg:svgOut,
+  plot:{traces:[{a:"ttl",scale:1,color:C.ok,label:"uscita TTL [V]"}],tmax:1.2e-6,led:true},
+  ro:()=>[[S.trigT?"1":"0","bit"],["11 ms","LED"],["~1,7 Hz","rate reale 10×10 cm"]]},
+];
+
+/* ============ costruzione della pagina ============ */
+const $=id=>document.getElementById(id);
+const DPR=Math.min(2,window.devicePixelRatio||1);
+const chainEl=$("chain");
+const cards=[],canvases=[];
+STAGES.forEach((st,i)=>{
+  const card=document.createElement("div");card.className="stagecard";card.id="card"+i;
+  card.innerHTML=`<div class="dot"></div>
+    <h3><span class="no">${String(i+1).padStart(2,"0")}</span>${st.title}</h3>
+    <div class="desc" id="desc${i}"></div>
+    <div class="row">
+      <div class="schembox" id="schem${i}"></div>
+      <div class="plotbox"><canvas id="plot${i}" height="215"></canvas></div>
+    </div>
+    <div class="ros" id="ro${i}"></div>`;
+  chainEl.appendChild(card);
+  cards.push(card);
+});
+STAGES.forEach((st,i)=>{canvases.push($("plot"+i));});
+function fitAll(){canvases.forEach(c=>{c.width=c.clientWidth*DPR;c.height=parseInt(c.getAttribute("height"))*DPR;});}
+window.addEventListener("resize",()=>{fitAll();drawAll(1);});
+
+/* ============ stato / ricalcolo ============ */
+let anim={running:false,t0:0};       // animazione "lancio"
+const STAGE_MS=650;                   // durata per stadio nella cascata
+function recompute(){S=runSim(+$("npe").value,$("vth").value/1000);}
+function refreshTexts(){
+  STAGES.forEach((st,i)=>{
+    $("desc"+i).innerHTML=st.desc();
+    $("schem"+i).innerHTML=st.svg();
+    $("ro"+i).innerHTML=st.ro().map(([v,l])=>`<div class="ro"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  });
+  $("bit").textContent="bit = "+(S.trigT?"1":"0");
+  $("bit").classList.toggle("on",!!S.trigT);
+  if(!anim.running)$("led").classList.toggle("on",!!S.trigT);
+}
+function landau(){
+  let u=0,w=0,s=0;do{u=Math.random()*2-1;w=Math.random()*2-1;s=u*u+w*w;}while(s>=1||s===0);
+  const z=u*Math.sqrt(-2*Math.log(s)/s);
+  return Math.max(20,Math.min(600,Math.round(220+60*(-Math.log(z*z+1e-12)))));
+}
+
+/* ============ disegno dei grafici ============ */
+function drawStage(i,prog){
+  const st=STAGES[i],ps=st.plot,cv=canvases[i];
+  const ctx=cv.getContext("2d");
+  const W=cv.width/DPR,H=cv.height/DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.clearRect(0,0,W,H);
+  const ml=48,mr=10,mt=10,mb=24,pw=W-ml-mr,ph=H-mt-mb;
+  const kmax=Math.round(NS*Math.min(1,ps.tmax/TEND));
+  let traces;
+  if(ps.lite){
+    const arr=new Float32Array(kmax);
+    for(let k=0;k<kmax;k++){const t=S.t[k];arr[k]=t>=T0?Math.exp(-(t-T0)/9e-9)*(1-Math.exp(-(t-T0)/1.2e-9)):0;}
+    traces=[{arr,scale:1,color:ps.color,label:ps.label}];
+  }else traces=ps.traces.map(tr=>({arr:S[tr.a],scale:tr.scale,color:tr.color,label:tr.label}));
+  let vmin=0,vmax=0;
+  traces.forEach(tr=>{for(let k=0;k<kmax;k++){const v=tr.arr[k]*tr.scale;if(v<vmin)vmin=v;if(v>vmax)vmax=v;}});
+  if(ps.thr)vmax=Math.max(vmax,S.vth*1e3*1.15);
+  if(vmax-vmin<1e-9)vmax=1;
+  const pad=(vmax-vmin)*0.12;vmax+=pad;vmin-=pad;
+  const X=k=>ml+k/(kmax-1)*pw, Y=v=>mt+ph-(v-vmin)/(vmax-vmin)*ph;
+  ctx.strokeStyle="#1b2547";ctx.fillStyle=C.dim;ctx.font="9.5px sans-serif";
+  for(let g=0;g<=4;g++){const v=vmin+(vmax-vmin)*g/4,y=Y(v);
+    ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(W-mr,y);ctx.stroke();
+    ctx.fillText(fmt(v,Math.abs(vmax)<10?2:0),4,y+3);}
+  for(let g=0;g<=6;g++){const x=ml+pw*g/6;
+    ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke();
+    if(g%2===0)ctx.fillText(fmt(ps.tmax*1e9*g/6,0)+" ns",x-10,H-8);}
+  if(ps.ttlband&&S.trigT!==null){
+    const k1=Math.round(S.trigT/TEND*NS),k2=Math.round((S.trigEnd||ps.tmax)/TEND*NS);
+    ctx.fillStyle="rgba(65,217,141,0.12)";
+    ctx.fillRect(X(Math.min(k1,kmax-1)),mt,Math.max(2,X(Math.min(k2,kmax-1))-X(Math.min(k1,kmax-1))),ph);
+  }
+  ctx.strokeStyle="#2a3763";ctx.beginPath();ctx.moveTo(ml,Y(0));ctx.lineTo(W-mr,Y(0));ctx.stroke();
+  traces.forEach((tr,ti)=>{
+    const kk=Math.max(2,Math.round(kmax*prog));
+    ctx.strokeStyle=tr.color;ctx.lineWidth=1.7;ctx.beginPath();
+    for(let k=0;k<kk;k++){const x=X(k),y=Y(tr.arr[k]*tr.scale);
+      if(k===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);}
+    ctx.stroke();ctx.lineWidth=1;
+    if(prog<1){const x=X(kk-1),y=Y(tr.arr[kk-1]*tr.scale);
+      ctx.fillStyle=tr.color;ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.fill();}
+    ctx.fillStyle=tr.color;ctx.fillRect(ml+6,mt+6+ti*14,9,3);
+    ctx.fillText(tr.label,ml+20,mt+11+ti*14);
+  });
+  if(ps.thr){
+    const y=Y(S.vth*1e3);
+    ctx.strokeStyle=C.thr;ctx.setLineDash([6,5]);ctx.lineWidth=ps.drag?2.2:1.4;
+    ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(W-mr,y);ctx.stroke();
+    ctx.setLineDash([]);ctx.lineWidth=1;
+    ctx.fillStyle=C.thr;
+    ctx.fillText("soglia "+fmt(S.vth*1e3,0)+" mV"+(ps.drag?"  ⇕":""),W-mr-130,y-5);
+    cv._thrY=y;cv._Yinv=py=>vmin+(vmax-vmin)*(mt+ph-py)/ph;
+  }else cv._thrY=null;
+  if(ps.led){
+    const on=S.trigT!==null&&prog>0.5;
+    ctx.fillStyle=on?"#ff3355":"#3a1020";
+    ctx.beginPath();ctx.arc(W-52,mt+34,14,0,7);ctx.fill();
+    if(on){ctx.strokeStyle="rgba(255,60,90,.5)";ctx.lineWidth=6;
+      ctx.beginPath();ctx.arc(W-52,mt+34,21,0,7);ctx.stroke();ctx.lineWidth=1;}
+    ctx.fillStyle=C.dim;ctx.fillText("LED",W-60,mt+64);
+  }
+}
+function drawAll(prog){for(let i=0;i<STAGES.length;i++)drawStage(i,prog);}
+
+/* ============ animazione «lancia il muone» ============ */
+const pulseDot=$("pulseDot");
+function launch(){
+  recompute();refreshTexts();
+  anim.running=true;anim.t0=performance.now();
+  $("led").classList.remove("on");
+  cards.forEach(c=>c.classList.remove("hot","done"));
+  cards[0].scrollIntoView({behavior:"smooth",block:"center"});
+}
+function animFrame(now){
+  if(!anim.running){drawAll(1);return;}
+  const el=now-anim.t0;
+  const total=STAGES.length*STAGE_MS;
+  const idx=Math.min(STAGES.length-1,Math.floor(el/STAGE_MS));
+  const frac=Math.min(1,(el-idx*STAGE_MS)/STAGE_MS);
+  // pallino sul rail
+  const card=cards[idx];
+  const top=card.offsetTop+26;
+  const nextTop=idx<STAGES.length-1?cards[idx+1].offsetTop+26:top+80;
+  pulseDot.style.opacity=1;
+  pulseDot.style.top=(top+(nextTop-top)*frac-12)+"px";
+  // stato card
+  cards.forEach((c,i)=>{
+    c.classList.toggle("hot",i===idx);
+    c.classList.toggle("done",i<idx);
+  });
+  // scroll dolce per seguire il pallino
+  if(frac<0.15)card.scrollIntoView({behavior:"smooth",block:"center"});
+  // grafici: gli stadi passati sono completi, quello attivo si disegna, i futuri restano vuoti al 5%
+  for(let i=0;i<STAGES.length;i++){
+    drawStage(i, i<idx?1:(i===idx?frac:0.02));
+  }
+  if(el>=total){
+    anim.running=false;
+    pulseDot.style.opacity=0;
+    cards.forEach(c=>{c.classList.remove("hot");c.classList.add("done");});
+    if(S.trigT)$("led").classList.add("on");
+    drawAll(1);
+  }
+}
+(function loop(now){animFrame(now||performance.now());requestAnimationFrame(loop);})();
+
+/* ============ interazioni ============ */
+function onParam(){
+  $("npev").textContent=$("npe").value;
+  $("vthv").textContent=$("vth").value;
+  recompute();refreshTexts();
+  if(!anim.running)drawAll(1);
+}
+$("npe").addEventListener("input",onParam);
+$("vth").addEventListener("input",onParam);
+$("newmu").onclick=()=>{$("npe").value=landau();onParam();};
+$("launch").onclick=launch;
+/* drag soglia su qualunque grafico che la mostra */
+canvases.forEach(cv=>{
+  let dragging=false;
+  cv.addEventListener("pointerdown",e=>{
+    if(cv._thrY==null)return;
+    const r=cv.getBoundingClientRect();
+    if(Math.abs((e.clientY-r.top)-cv._thrY)<16){dragging=true;cv.setPointerCapture(e.pointerId);e.preventDefault();}
+  });
+  cv.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    const r=cv.getBoundingClientRect();
+    const mv=cv._Yinv(e.clientY-r.top);
+    $("vth").value=Math.max(5,Math.min(700,Math.round(mv/5)*5));
+    onParam();
+  });
+  cv.addEventListener("pointerup",()=>dragging=false);
+});
+
+/* ============ avvio ============ */
+fitAll();
+$("npev").textContent=$("npe").value;
+$("vthv").textContent=$("vth").value;
+recompute();refreshTexts();drawAll(1);
+</script>
+</body>
+</html>
