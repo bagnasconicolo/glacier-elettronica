@@ -7,6 +7,11 @@ import uuid as _uuid
 from symlib import SYMS, lib_symbols_sexpr
 from netdata import COMPONENTS, NETS
 
+def sym_uuid(ref):
+    """UUID fisso del simbolo, ricavato dal riferimento: lo stesso va nel campo (path)
+    del footprint nel PCB, cosi' KiCad abbina simbolo e footprint (parita' schema/PCB)."""
+    return str(_uuid.uuid5(_uuid.NAMESPACE_URL, "glacier-elettronica/riv/" + ref))
+
 def U():
     return str(_uuid.uuid4())
 
@@ -549,7 +554,7 @@ def write_sch(fn, paper="A3", title="Riv. Cosmici 2024 - Amplif, alim, soglie"):
         sym_inst.append((u, ref, "PWR_FLAG", ""))
 
     for ref, symname, x, y, rot, mirror, value, fp in instances:
-        u = U()
+        u = sym_uuid(ref)
         mir = " (mirror x)" if mirror == "x" else ""
         out.append(f'  (symbol (lib_id "riv:{symname}") (at {x} {y} {rot}){mir} (unit 1) '
                    f'(in_bom yes) (on_board yes) (uuid {u})')

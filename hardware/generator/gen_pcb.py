@@ -723,6 +723,9 @@ def fix_gnd_islands(max_iter=4):
 def U():
     return str(uuid.uuid4())
 
+def sym_uuid(ref):          # identico a gen_sch.sym_uuid
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, "glacier-elettronica/riv/" + ref))
+
 
 # serigrafia aggiuntiva (variante didattica): {"F.SilkS": [anelli], "B.SilkS": [...]}.
 # Se presente, i riferimenti dei footprint vanno su F.Fab (sono gia' nei poligoni)
@@ -760,6 +763,7 @@ def write_pcb(fn, pour_parts):
         kind0, value, fpk, _ = COMPONENTS[ref]
         fp = FPS[FP_OF[fpk]]
         o.append(f'  (footprint "rivlib:{fp.name}" (layer "F.Cu") (tstamp {U()}) (at {x} {y} {rot})')
+        o.append(f'    (path "/{sym_uuid(ref)}")')     # legame con il simbolo dello schema
         o.append(f'    (descr "{fp.desc}")')
         o.append(f'    (attr {"smd" if all(pp[4]=="smd" for pp in fp.pads.values()) else "through_hole"})')
         o.append(f'    (fp_text reference "{ref}" (at 0 {fp.courtyard[1] - 0.8} {-rot}) '
