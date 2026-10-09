@@ -32,12 +32,12 @@ def placement():
                 out[r] = (x, y + dy, 180)  # pin 5-6-7 verso R20/C21/CF6
             else:
                 out[r] = (x, y + dy, rot)
-    # test point di canale: angolo in alto a destra (dove c'era il driver TTL)
+    # test point di canale: colonna lungo il bordo destro, sopra il LEMO
+    # (lascia libero il corridoio in alto a destra per le reti verso la coincidenza)
     for n in N.CHANNELS:
         dy = (n - 1) * STRIP
-        pos = [(79.0, 22.5), (83.0, 22.5), (87.0, 22.5), (91.0, 22.5), (95.0, 22.5), (95.0, 27.0)]
-        for i, (x, y) in enumerate(pos, 1):
-            out[f"TP{n}{i:02d}"] = (x, y + dy, 0)
+        for i in range(1, 7):
+            out[f"TP{n}{i:02d}"] = (97.0, 22.0 + (i - 1) * 4.0 + dy, 0)
     # coincidenza: angolo in basso a destra della striscia 2 (dove c'e' U6 nella 1)
     dy = STRIP
     out.update({
@@ -52,12 +52,15 @@ def placement():
         "JP2":  (82.5, 71.0 + dy, 0),
         "JP3":  (88.0, 71.0 + dy, 0),
     })
-    # test point comuni: angolo in basso a sinistra della striscia 3 (dove c'e' il boost nella 1)
-    dy = 2 * STRIP
-    for i in range(1, 7):
-        x = 25.0 + ((i - 1) % 3) * 5.0
-        y = 50.0 + ((i - 1) // 3) * 5.0 + dy
-        out[f"TP{i}"] = (x, y, 0)
+    # test point comuni: accanto al circuito che misurano
+    out.update({
+        "TP1": (49.0, 47.0, 0),               # VOUT40, vicino a C2/C3
+        "TP2": (92.5, 71.0, 0),               # +5V, vicino a J3
+        "TP3": (79.0, 71.0, 0),               # +3V3, vicino a U6
+        "TP4": (72.5, 47.0, 0),               # +3V6, vicino a U5
+        "TP5": (94.0, 127.5, 0),              # AND_OUT, vicino al LEMO J5
+        "TP6": (84.5, 72.5, 0),               # GND
+    })
     return out
 
 

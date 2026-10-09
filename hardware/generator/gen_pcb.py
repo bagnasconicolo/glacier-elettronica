@@ -3,7 +3,7 @@
 autorouter a griglia (F.Cu preferito, B.Cu con via), pour GND su B.Cu,
 DRC geometrico e verifica connettivita'.
 """
-import math, heapq, uuid
+import math, heapq, re, uuid
 from shapely.geometry import box, Point, LineString, MultiPolygon, Polygon
 from shapely.ops import unary_union
 from shapely.prepared import prep
@@ -736,7 +736,17 @@ def main(out_pcb="riv_cosmici/riv_cosmici.kicad_pcb", state="routing_state.json"
         add_gnd_vias()
         fails = route_all()
         if not fails:
-            break
+            # anche errori di DRC o reti aperte dopo il routing contano come falliti
+            _pk, _pa = gnd_pour()
+            bad = set()
+            for e in drc(_pk) + connectivity(_pk):
+                for n in re.findall(r"[A-Z+][A-Z0-9_+]*", str(e)):
+                    if n in NETS and n != "GND":
+                        bad.add(n)
+            fails = sorted(bad)
+            if not fails:
+                break
+            print(f"tentativo {attempt + 1}: errori DRC/connettivita' su {fails}")
         print(f"tentativo {attempt + 1}: falliti {fails} -> riprovo con queste reti per prime")
         first = fails + [n for n in first if n not in fails]
     # dedupe (il retry puo' duplicare percorsi identici)
