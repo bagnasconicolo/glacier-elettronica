@@ -166,15 +166,19 @@ modelli SPICE. Transitorio di 30 ms con accensione e 4 eventi a t = 10 ms
 | Corrente dai 5 V | 38 mA |
 | Muone 250 p.e. al comparatore | 1,14 V (saturato) |
 | CMP_Q / TTL J2 / GPIO Pi | 3,28 / 4,99 / 3,27 V |
-| Larghezza impulso al GPIO, ritardo | 236 ns, 8 ns |
-| Dark count 1 p.e. | 11 mV → nessun impulso |
+| Larghezza impulso al GPIO, ritardo | 300 ns, 8 ns |
+| Dark count 1 p.e. | ~10 mV → nessun impulso |
 | Muoni a 1,5 µs | risolti separatamente |
 | LED (555) | 10,9 ms |
 
-Impulso minimo in uscita: **~84 ns**, imposto dal latch C9/R16 del MAX961 (per eventi
-appena sopra soglia). La sensibilità vicino alla soglia dipende dalla capacità del SiPM
-(parametro `CSIPM`): 32 mV/p.e. con capacità trascurabile, 19 mV/p.e. con 100 pF,
-6 mV/p.e. con 600 pF; i muoni saturano comunque a ~1,1–1,2 V.
+SiPM simulato: **Broadcom AFBR-S4N22P014M** (VBD 32,5 V, 160 pF, recharge 55 ns,
+guadagno 7,3·10⁶ a 12 V OV → ~3,6·10⁶ e ~0,58 pC/p.e. a 5,9 V OV). Ampiezza al
+comparatore: 1 p.e. ≈ 10 mV, 3 p.e. ≈ 40 mV, 5 p.e. ≈ 71 mV, 10 p.e. ≈ 156 mV
+(l'amplificatore è leggermente espansivo), muoni saturati a ~1,0–1,2 V. Soglia di
+default 104 mV ≈ 7 p.e. Impulso minimo in uscita **~84 ns** (latch C9/R16).
+
+Temperatura (−10…+50 °C): BIAS sale di +28 mV/°C grazie a D1, contro ~30 mV/°C di
+VBD → sovratensione costante entro 0,1 V (5,85–5,94 V).
 
 Correzione di ricostruzione emersa dal confronto con l'originale: **V2 è un
 potenziometro** (cursore → R17), non un reostato. Il campo della soglia non cambia.

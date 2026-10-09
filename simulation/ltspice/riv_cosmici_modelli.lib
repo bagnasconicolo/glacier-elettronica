@@ -36,14 +36,15 @@
 .model DSCH_LT3461 D(IS=1u N=1.05 RS=0.6 CJO=10p BV=45 IBV=1u)
 
 * ---------------------------------------------------------------------
-* SiPM AFBR-S4N22P014M (Broadcom) visto dai suoi due terminali.
+* SiPM Broadcom AFBR-S4N22P014M (2x2 mm, 2464 celle da 40 um) visto dai
+* suoi due terminali. Valori di default dal datasheet: C terminale 160 pF,
+* recharge 55 ns, QPE per ~6 V di sovratensione (guadagno ~3,6e6).
 * A = anodo (segnale, centrale del cavo), K = catodo (bias +38,4 V, calza)
 * Ogni evento e' un impulso di corrente (salita TR, coda esponenziale TAU)
 * di carica NPE*QPE. Fino a 4 eventi (T1..T4, NPE1..NPE4); NPE=0 = assente.
-* CSIPM = capacita' terminale del SiPM: verificare sul datasheet.
 * ---------------------------------------------------------------------
 .subckt SIPM A K NPE1=0 T1=1 NPE2=0 T2=1 NPE3=0 T3=1 NPE4=0 T4=1
-+ QPE=0.5p TAU=45n TR=1n CSIPM=100p
++ QPE=0.58p TAU=55n TR=1n CSIPM=160p
 CD K A {CSIPM}
 RL K A 10G
 * forma d'impulso: salita lineare in TR, poi coda esponenziale con costante
@@ -124,7 +125,8 @@ BSUP VP VM I=max(I(VSNS),0)
 RNC1 NULL1 VM 1G
 RNC2 NULL2 VM 1G
 RSD SHDN VM 1G
-.model DIDEAL D(IS=1e-14 N=0.05)
+* XTI=0 EG=0: niente deriva termica (con N=0,05 esploderebbe con la temperatura)
+.model DIDEAL D(IS=1e-14 N=0.05 XTI=0 EG=0.01)
 .ends LT1636
 
 * ---------------------------------------------------------------------

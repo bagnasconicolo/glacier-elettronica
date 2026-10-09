@@ -51,10 +51,28 @@ Nessun valore del circuito originale INFN è stato cambiato.
    dimensioni dei pad sul datasheet della parte che si ordina.
 4. **J4**: il footprint è un header 2,54 mm; il LEMO va a pannello e si collega con un
    cavetto. **J2 (TTL_OUT) esce a 5 V: non collegarlo al Raspberry Pi.**
-5. **Capacità del SiPM**: dipende dal sensore e decide i mV per fotoelettrone vicino
-   alla soglia (da ~32 mV/p.e. senza capacità a ~19 mV/p.e. con 100 pF). I muoni
-   (≥ 80 p.e.) saturano comunque a ~1,1 V e vengono sempre contati. La soglia (V2)
-   va tarata sulla scheda vera guardando il singolo fotoelettrone all'oscilloscopio.
+5. **Soglia (V2) con il SiPM AFBR-S4N22P014M.** Simulando il sensore vero
+   (Broadcom, Farnell 4351470: VBD 32,5 V, 160 pF, recharge 55 ns, guadagno
+   7,3·10⁶ a 12 V di sovratensione) si ha, al bias di 38,4 V (sovratensione ~5,9 V,
+   guadagno ~3,6·10⁶):
+
+   | fotoelettroni | picco al comparatore |
+   |---|---|
+   | 1 | ~10 mV |
+   | 3 | ~40 mV |
+   | 5 | ~71 mV |
+   | 10 | ~156 mV |
+   | muone (≥ 80 p.e.) | ~1,0–1,2 V (saturato) |
+
+   Con V2 a metà corsa bassa (TH ≈ 104 mV) la soglia è a **~7 p.e.**: i dark count
+   (1–2 p.e., anche con un po' di crosstalk) sono scartati e i muoni sono tutti
+   contati con ampio margine. Per scendere a ~3 p.e. bastano ~40–50 mV su TH. La
+   taratura finale va fatta sulla scheda vera, guardando CMP_IN all'oscilloscopio.
+6. **Temperatura: il bias si compensa da solo.** La caduta di D1 (−2 mV/°C),
+   moltiplicata dall'LT1636, alza BIAS di **+28 mV/°C**, quasi uguale al coefficiente
+   di VBD del SiPM (~30 mV/°C). Simulando da −10 a +50 °C la sovratensione resta tra
+   5,85 e 5,94 V. Con R3 = 255k (punto 1) a 50 °C il boost ha ancora 0,3 V di margine
+   sopra il bias (39,4 V contro 39,1 V); a temperatura ambiente il margine è ~1 V.
 
 ## Ultimi passi in KiCad (consigliati)
 

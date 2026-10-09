@@ -34,8 +34,10 @@ Parametri principali (direttive `.param` in fondo allo schema):
 | Parametro | Significato | Default |
 |---|---|---|
 | `V1_POS` | posizione del trimmer V1 (bias SiPM) | 0,76 → 38,4 V |
-| `V2_POS` | posizione del trimmer V2 (soglia) | 0,92 → ~104 mV |
-| `CSIPM` | capacità del SiPM (dal suo datasheet) | 100 pF |
+| `V2_POS` | posizione del trimmer V2 (soglia) | 0,92 → ~104 mV (~7 p.e.) |
+| `VBD`, `G12`, `VOV` | SiPM AFBR-S4N22P014M: breakdown, guadagno a 12 V OV, sovratensione | 32,5 V, 7,3·10⁶, 5,94 V |
+| `QPE` | carica per fotoelettrone = q·G12·VOV/12 | ~0,58 pC |
+| `CSIPM`, `TAUSIPM` | capacità terminale e recharge del SiPM | 160 pF, 55 ns |
 | `T_EVn`, `NPE_EVn` | istante e fotoelettroni dei 4 eventi | muone 250, dark 1, muone 40, muone 150 p.e. |
 
 ## Cosa si vede
@@ -45,10 +47,15 @@ Parametri principali (direttive `.param` in fondo allo schema):
 - **Accensione**: +5V in 100 µs; +3V3 e +3V6 subito dopo; il boost carica VOUT40 a
   41,65 V in ~2,4 ms e l'LT1636 porta BIAS a 38,44 V.
 - **Muone 250 p.e.**: ~1,13 V all'ingresso del comparatore (saturato), CMP_Q 3,3 V per
-  236 ns, TTL 5 V su J2, 3,27 V sul GPIO del Pi con 8 ns di ritardo.
-- **Dark count 1 p.e.**: 11 mV, sotto soglia → nessun impulso.
+  300 ns, TTL 5 V su J2, 3,27 V sul GPIO del Pi con 8 ns di ritardo.
+- **Dark count 1 p.e.**: ~10 mV, sotto soglia → nessun impulso.
 - **Muone 40 p.e.** e **muone 150 p.e. a 1,5 µs**: due impulsi distinti.
 - **LED**: acceso 10,9 ms dal 555 (T = 1,1·R20·C21).
+
+Il SiPM simulato è il Broadcom **AFBR-S4N22P014M** (2×2 mm, 2464 celle, Farnell
+4351470), con i valori del datasheet. Per la temperatura usa `.options temp=…` (o
+`.temp` in LTspice): la compensazione di D1 tiene la sovratensione a 5,85–5,94 V da
+−10 a +50 °C.
 
 ## Verifica automatica (ngspice)
 
@@ -69,5 +76,7 @@ python verifica_ltspice.py   # 1) .asc == .cir  2) tutti i componenti KiCad pres
   e per la sequenza di accensione, non per il rumore del boost.
 - **Stabilità dei LDO** non modellata (vedi `hardware/PRIMA_DI_ORDINARE.md` sui
   condensatori d'uscita).
+- I regolatori comportamentali non hanno deriva termica: nelle simulazioni in
+  temperatura varia solo ciò che dipende da diodi e transistor (D1, Q1, Q2…).
 - Transistor del front-end con parametri tipici (±30% sul guadagno reale); il cavo
   Fileca non è modellato.

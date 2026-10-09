@@ -30,11 +30,16 @@
 *   POS piu' alto = cursore verso D1 = bias piu' alto. 0,76 -> ~38,4 V
 .param V1_POS=0.76
 * V2 (soglia): frazione di pista dal pin 1 (lato R19, alto) al cursore.
-*   soglia ~ 1,286 V * (1 - V2_POS).  0,92 -> ~100 mV (~3 p.e.)
+*   soglia ~ 1,286 V * (1 - V2_POS).  0,92 -> ~104 mV (~6 p.e.)
 .param V2_POS=0.92
-* capacita' terminale del SiPM (dal datasheet del sensore usato): divide la
-* carica con l'ingresso dell'amplificatore e cambia i mV per fotoelettrone
-.param CSIPM=100p
+* SiPM Broadcom AFBR-S4N22P014M (Farnell 4351470), dal datasheet:
+*   VBD = 32,5 V (32..33 V), C terminale = 160 pF, recharge = 55 ns,
+*   guadagno 7,3e6 a 12 V di sovratensione (cresce ~linearmente con VOV).
+*   VOV = BIAS - VBD: con BIAS = 38,44 V (V1_POS = 0,76) VOV = 5,94 V
+*   -> guadagno ~3,6e6 -> ~0,58 pC per fotoelettrone.
+.param VBD=32.5 G12=7.3Meg VOV=5.94
+.param QPE={1.602e-19*G12*VOV/12}
+.param CSIPM=160p TAUSIPM=55n
 * eventi nel SiPM: istante [s] e numero di fotoelettroni (0,5 pC/p.e.)
 .param T_EV1=10m     NPE_EV1=250
 .param T_EV2=10.01m  NPE_EV2=1
@@ -80,8 +85,8 @@ R5 INV VREG38 15k
 R8 VREG38 BIAS 1k
 C6 BIAS 0 100n
 * ===================== SiPM + amplificatore (Q1 BFR93A, Q2 MMBTH81) =====================
-* J1: SiPM AFBR-S4N22P014M fuori scheda (cavo Fileca)
-XSIPM SIG_IN BIAS SIPM NPE1={NPE_EV1} T1={T_EV1} NPE2={NPE_EV2} T2={T_EV2} NPE3={NPE_EV3} T3={T_EV3} NPE4={NPE_EV4} T4={T_EV4} CSIPM={CSIPM}
+* J1: SiPM Broadcom AFBR-S4N22P014M fuori scheda (cavo Fileca)
+XSIPM SIG_IN BIAS SIPM NPE1={NPE_EV1} T1={T_EV1} NPE2={NPE_EV2} T2={T_EV2} NPE3={NPE_EV3} T3={T_EV3} NPE4={NPE_EV4} T4={T_EV4} CSIPM={CSIPM} QPE={QPE} TAU={TAUSIPM}
 R10 SIG_IN 0 10k
 C7 SIG_IN Q1B 10n
 R9 Q1B 0 1.8k
