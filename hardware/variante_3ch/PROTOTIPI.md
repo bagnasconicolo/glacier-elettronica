@@ -11,7 +11,7 @@ dopo, se e quando servirà.
 | Voce | Dove | Quantità | Costo (IVA incl.) |
 |---|---|---|---|
 | PCB 103 × 215 mm + montaggio SMD | JLCPCB (`jlcpcb/`) | **5 PCB, montaggio su 2** | ~110–140 € (stima: rifare il preventivo) |
-| Chip da saldare a mano, strip, ponticelli | Mouser (`BOM_mouser_2prototipi.csv`) | per 2 schede + 1 chip di scorta | 122 € |
+| Chip da saldare a mano, strip, ponticelli, connettori KK | Mouser (`BOM_mouser_2prototipi.csv`) | per 2 schede + 1 chip di scorta | ~127 € |
 | SiPM AFBR-S4N22P014M | Mouser (stesso file) | 6 | 125 € (togliere se già disponibili) |
 | Raspberry Pi Zero 2 W + scheda SD 16–32 GB | qualsiasi rivenditore | 2 | ~50 € (o Pi già in laboratorio) |
 | Alimentatori 5 V | qualsiasi rivenditore | 4 (2 per la scheda, 2 per il Pi) | ~30 € |
@@ -34,9 +34,16 @@ Note sui prezzi:
 - **Una base in plexiglass** (taglio laser) con la scheda e il Pi sopra, su distanziali
   M3 da 10 mm negli 8 fori di fissaggio. Niente involucro chiuso: per un prototipo da
   laboratorio è più comodo per misurare con l'oscilloscopio.
-- **Le barre** (già a tenuta di luce) impilate su due staffe stampate in 3D, vicine alla
-  scheda: i cavi verso J101/J201/J301 vanno tenuti **corti (10–30 cm)** e fermati con una
-  fascetta, così il connettore non si stacca.
+- **Le barre** (già a tenuta di luce) impilate su due staffe stampate in 3D. Cavo dalla
+  barra alla scheda: **coassiale RG174 o RG316, fino a 50 cm** (simulato: il segnale cala
+  del 10 % e resta 7 volte sopra la soglia), fermato con una fascetta a ogni estremo.
+- **Connettore barra → scheda: Molex KK 254 a 2 poli, NON LEMO.** Nel cavo la calza
+  porta i +38 V del bias, mentre i LEMO della scheda hanno la carcassa a massa: un
+  connettore diverso rende impossibile lo scambio. Sulla scheda, al posto della strip,
+  l'header 22-27-2021 (con rampa di aggancio, entra negli stessi fori di J101/J201/J301);
+  sul cavo il connettore 22-01-3027 con due contatti 08-50-0114:
+  **pin 1 = conduttore centrale (segnale), pin 2 = calza (bias)**, guaina
+  termorestringente sulla calza.
 - **Il Pi lontano dai SiPM** (dall'altro lato della base), perché scalda.
 - **Alimentazione:** due alimentatori separati, uno per la scheda (5 V su J3) e uno per il
   Pi. Costa pochi euro in più e toglie un dubbio: se poi le misure sono pulite, si
