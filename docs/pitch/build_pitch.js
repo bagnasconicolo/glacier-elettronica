@@ -81,7 +81,7 @@ async function icon(Comp, color = "#FFFFFF", size = 256) {
     { placeholder: "body" });
   tb(s, "5 schede · 15 canali · budget completo €745", {
     x: 0.6, y: 5.45, w: 5.4, h: 0.4, fontSize: 16, bold: true, color: C.accent1 });
-  s.addImage({ path: IMG + "iso.png", x: 6.6, y: 1.4, w: 6.3, h: 6.3 / 1.533, objectName: "render scheda iso" });
+  s.addImage({ path: IMG + "iso.png", x: 6.6, y: 1.4, w: 6.3, h: 6.3 / 1.551, objectName: "render scheda iso" });
   s.addNotes("Presentiamo una scheda per rivelare i muoni dei raggi cosmici, pensata per portare la fisica delle particelle nelle scuole. Tre canali, uscita in coincidenza, tutto leggibile direttamente sulla scheda.");
 
   // ================================================================ 2 il fenomeno
@@ -146,11 +146,11 @@ async function icon(Comp, color = "#FFFFFF", size = 256) {
   pres.addSection({ title: "La scheda" });
   s = content("La scheda");
   s.addText("Una scheda che si spiega da sola", { placeholder: "title" });
-  s.addImage({ path: IMG + "top.png", x: 0.6, y: 1.4, w: 5.45 * 0.541, h: 5.45, objectName: "render scheda dall'alto" });
+  s.addImage({ path: IMG + "top.png", x: 0.6, y: 1.4, w: 5.45 * 0.553, h: 5.45, objectName: "render scheda dall'alto" });
   const feats = [
     [ic.layers, "Fasce dall'alto in basso", "alimentazione → tre canali identici → coincidenza"],
     [ic.chip, "Blocchi numerati come nello schema", "1–4 percorso del segnale, A–C circuiti di supporto"],
-    [ic.tag, "Ogni componente ha il suo nome", "178 riferimenti e i nomi dei test point stampati in serigrafia"],
+    [ic.tag, "Ogni componente ha il suo nome", "tutti i riferimenti e i nomi dei test point stampati in serigrafia"],
     [ic.book, "Una legenda sul retro", "«Come funziona», da leggere girando la scheda"],
   ];
   feats.forEach(([im, t, d], i) => {
@@ -160,7 +160,7 @@ async function icon(Comp, color = "#FFFFFF", size = 256) {
     tb(s, t, { x: 5.15, y: y - 0.02, w: 7.5, h: 0.42, fontSize: 20, bold: true, color: C.background1 });
     tb(s, d, { x: 5.15, y: y + 0.42, w: 7.5, h: 0.45, fontSize: 16, color: C.background2 });
   });
-  tb(s, "PCB 95 × 205 mm, 2 strati, maschera nera · 131 componenti montati in fabbrica",
+  tb(s, "PCB 103 × 215 mm, 2 strati, 8 fori M3 · 147 componenti montati in fabbrica",
     { x: 4.1, y: 6.45, w: 8.6, h: 0.35, fontSize: 12, color: C.accent3 });
   s.addNotes("La scheda è organizzata come lo schema: in alto l'alimentazione, poi tre canali identici, in fondo la coincidenza. Ogni blocco ha il suo nome e il suo numero, ogni componente il suo riferimento. Sul retro c'è una legenda che spiega il funzionamento.");
 

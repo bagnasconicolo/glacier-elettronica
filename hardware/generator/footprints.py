@@ -151,6 +151,12 @@ add(FP("HDR1x03",
              (-1.27, -1.27, -1.27, 1.27), (6.35, -1.27, 6.35, 1.27)],
        desc="Pin header 2.54 1x3"))
 
+# Foro di fissaggio M3: foro 3,2 mm metallizzato, piazzola 6 mm (a massa)
+add(FP("MH_M3",
+       [(1, 0, 0, 6.0, 6.0, "tht", 3.2)],
+       (-3.5, -3.5, 3.5, 3.5),
+       desc="Foro di fissaggio M3 metallizzato"))
+
 # Test point per sonda d'oscilloscopio: foro 1,0 mm (anello Keystone 5001/5000
 # o un filo piegato ad anello), pad 2,0 mm
 add(FP("TP_THT",

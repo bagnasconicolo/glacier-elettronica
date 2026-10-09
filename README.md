@@ -70,7 +70,7 @@ docs/              schemi in PDF (1 e 3 canali), RECAP_progetto.pdf, schema_orig
 | Uscite | LEMO/header 3,3 V + TTL 5 V | 3 LEMO 00 (canali) + 1 LEMO 00 (AND) |
 | Coincidenza | — | 74LVC1G11 con jumper di esclusione |
 | Test point | — | 6 per canale + 6 comuni |
-| PCB | 80 × 55 mm | 95 × 205 mm, serigrafia didattica |
+| PCB | 80 × 55 mm | 103 × 215 mm, serigrafia didattica, 8 fori M3 |
 | Schema PDF | `docs/schema_riv_cosmici_1canale.pdf` | `docs/schema_riv_cosmici_3canali.pdf` |
 
 Render 3D delle schede montate: `hardware/render3d/out/1ch/` e `out/3ch/`

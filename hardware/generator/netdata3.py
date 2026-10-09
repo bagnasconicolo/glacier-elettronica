@@ -140,7 +140,12 @@ NETS["SCL_ADC"] = [("U11", "8"), ("R43", "1")]
 NETS["I2C_SDA"] = [("R42", "2"), ("J6", "2")]
 NETS["I2C_SCL"] = [("R43", "2"), ("J6", "3")]
 
-PIN_COUNT = dict(PC1, LVC1G11=6, TP=1, MCP3424=14, CONN3=3)
+# ---- fori di fissaggio M3 (piazzola a massa)
+for k in range(1, 9):
+    COMPONENTS[f"MH{k}"] = ("MH", "M3", "MH3", {"note": "foro di fissaggio M3, a massa"})
+    NETS["GND"].append((f"MH{k}", "1"))
+
+PIN_COUNT = dict(PC1, LVC1G11=6, TP=1, MCP3424=14, CONN3=3, MH=1)
 NC_PINS = set()
 for r, p in NC1:
     if r in SHARED:

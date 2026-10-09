@@ -157,6 +157,10 @@ def build():
     stub("R43", ux + 28, uy + 5.08, rot=90, nets={"1": "SCL_ADC", "2": "I2C_SCL"})
     stub("J6", ux + 55, uy + 2.54, nets={"1": "GND", "2": "I2C_SDA", "3": "I2C_SCL"})
     G.T("verso Raspberry Pi (pull-up sul Pi)", ux + 42, uy - 6)
+    # ---- fori di fissaggio (a massa)
+    G.T("Fori di fissaggio M3 (a massa)", 360, 470)
+    for k in range(1, 9):
+        stub(f"MH{k}", 365 + (k - 1) * 10.16, 480, nets={"1": "GND"})
     G.T("Riv. Cosmici 2024 - VARIANTE 3 CANALI + coincidenza - da INFN sez. Torino (S. Gallian, rev. A)",
         200, 12)
 

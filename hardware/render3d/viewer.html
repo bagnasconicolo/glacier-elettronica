@@ -144,6 +144,7 @@ const MODELS = {
     g.add(box(7.62, 2.5, 2.54, mat.plastic, 2.54, 1.25, 0, 0.1));
     for (const x of [0, 2.54, 5.08]) g.add(box(0.64, 8.5, 0.64, mat.gold, x, 4.25 - 1.0, 0));
     return g; },
+  MH_M3: (c) => new THREE.Group(),                         // foro di fissaggio: solo la piazzola (texture)
   LEMO_EPL00: (c) => { const g = new THREE.Group();          // presa a gomito, frontale verso +x
     g.add(box(7, 7, 7, mat.chrome, 0, 3.6, 0, 0.6));
     g.add(cyl(2.9, 10.5, mat.chrome, "x", 8.6, 3.6, 0, 40));

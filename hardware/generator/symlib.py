@@ -167,6 +167,11 @@ add(Sym("CONN3", [P(1, -6.35, 2.54, 0, "1", ln=3.81),
          circ(-1.27, 2.54, 0.508), circ(-1.27, 0, 0.508), circ(-1.27, -2.54, 0.508)],
         "J", hide_pin_names=True))
 
+# ---------------- foro di fissaggio -----------------
+add(Sym("MH", [P(1, 0, -3.81, 90, "1", ln=1.27)],
+        [circ(0, 0, 1.27), circ(0, 0, 2.54)],
+        "H", hide_pin_names=True, hide_pin_numbers=True))
+
 # ---------------- test point -----------------
 add(Sym("TP", [P(1, 0, -2.54, 90, "1", ln=1.524)],
         [circ(0, 0, 0.762)],

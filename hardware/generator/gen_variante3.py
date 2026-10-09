@@ -55,6 +55,8 @@ gen_bom.NOTE.update({"74LVC1G11": "SN74LVC1G11DBVR, AND a 3 ingressi (coincidenz
 rows = []
 groups = {}
 for ref, (kind, value, fpk, extra) in netdata3.COMPONENTS.items():
+    if kind == "MH":                                # fori di fissaggio: non sono componenti
+        continue
     key = ("TP", "TP") if kind == "TP" else \
           (("LEMO", fpk) if fpk == "LEMO00" else (value, fpk))
     groups.setdefault(key, []).append(ref)
@@ -83,7 +85,7 @@ import gen_jlcpcb as GJ                            # noqa: E402
 DNP = {"U1", "U5", "U7", "J3", "J5", "J6", "JP1", "JP2", "JP3"}
 for n in netdata3.CHANNELS:
     DNP |= {netdata3.chref(r, n) for r in ("U3", "U8", "D1", "J1", "J4")}
-DNP |= {r for r in netdata3.COMPONENTS if r.startswith("TP")}
+DNP |= {r for r in netdata3.COMPONENTS if r.startswith("TP") or r.startswith("MH")}
 GJ.DNP = DNP
 GJ.OUT = os.path.join(DST, "jlcpcb")
 GJ.ZIP_SRC = gz

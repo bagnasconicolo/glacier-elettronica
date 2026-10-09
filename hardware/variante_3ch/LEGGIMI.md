@@ -1,6 +1,6 @@
 # Variante a 3 canali + coincidenza
 
-Una sola scheda (95 × 205 mm, 2 strati) con **tre front-end completi** del rivelatore
+Una sola scheda (103 × 215 mm, 2 strati, 8 fori di fissaggio M3) con **tre front-end completi** del rivelatore
 INFN — uno per barra di scintillatore — e la **coincidenza AND** già a bordo.
 Il PCB è pensato anche per **attività didattiche (STEM)**: è diviso in blocchi
 funzionali con il nome scritto in serigrafia, e i test point sono accanto ai punti che
@@ -30,12 +30,20 @@ circuito di ogni canale è **identico** all'originale INFN.
 | **Coincidenza** (in basso) | schema a blocchi di un canale in serigrafia; jumper JP1–JP3 → AND a 3 (U10) → LEMO J5 |
 | **Lato saldature** | legenda "Come funziona" (testo specchiato, si legge girando la scheda) |
 
-- Ogni canale ha **lo stesso piazzamento**, spostato di 52 mm: trovato un punto sul
+- Ogni canale ha **lo stesso piazzamento**, spostato di 54 mm: trovato un punto sul
   canale 1, è nello stesso posto sugli altri due.
 - **Riferimenti**: R9 del canale 2 si chiama R209, U3 del canale 3 si chiama U303, ecc.
   Tutti i riferimenti sono stampati in serigrafia.
 - Il circuito di ogni canale è **identico** all'originale INFN; tolto solo il driver TTL
   a 5 V (MCP1402, J2): le uscite sono LEMO a 3,3 V.
+
+## Fori di fissaggio
+
+8 fori **M3** (foro 3,2 mm metallizzato, piazzola 6 mm collegata a massa): ai quattro
+angoli e sui due lati in corrispondenza del confine tra un canale e l'altro, a 4 mm dai
+bordi. Per il montaggio su pannello bastano distanziali M3 da 10 mm (il trimmer più alto
+è 10 mm). Le posizioni esatte sono in `hardware/generator/pcb_data3.py` (`MH_POS`) e si
+possono controllare sul PDF in scala 1:1 (`stampa_1a1_riv_cosmici_3ch.pdf`).
 
 ## Uscite LEMO (bordo destro, dall'alto)
 
