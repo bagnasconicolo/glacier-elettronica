@@ -17,7 +17,7 @@ const srv = http.createServer((q, r) => {
 const port = srv.address().port;
 const exe = process.env.CHROME || "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 const browser = await chromium.launch({ executablePath: exe, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
-const W = 2000, H = variant === "3ch" ? 1400 : 1250;
+const W = 2000, H = 1250;
 for (const v of VIEWS) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   page.on("console", m => { if (m.type() !== "log") console.log("[page]", m.text()); });

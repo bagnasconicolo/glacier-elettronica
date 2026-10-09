@@ -82,8 +82,12 @@ for ref, symname, x, y, rot, mirror, value, fp in G.instances:
 VIEW = globals().get("VIEW", (10, 10, 340, 200))
 OUTSVG = globals().get("OUTSVG", "sch_render.svg")
 _W = 2720
+# MM=True: dimensioni in millimetri (per il PDF a grandezza reale del foglio)
+_size = (f'width="{VIEW[2]}mm" height="{VIEW[3]}mm"' if globals().get("MM")
+         else f'width="{_W}" height="{int(_W * VIEW[3] / VIEW[2])}"')
 hdr = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{VIEW[0]} {VIEW[1]} {VIEW[2]} {VIEW[3]}" '
-       f'width="{_W}" height="{int(_W * VIEW[3] / VIEW[2])}">'
+       f'{_size}>'
        f'<rect x="{VIEW[0]}" y="{VIEW[1]}" width="{VIEW[2]}" height="{VIEW[3]}" fill="white"/>')
-open(OUTSVG, "w").write(hdr + "\n".join(svg) + "</svg>")
+EXTRA = globals().get("EXTRA", [])          # elementi aggiuntivi (cornice, cartiglio)
+open(OUTSVG, "w").write(hdr + "\n".join(svg + EXTRA) + "</svg>")
 print(OUTSVG, "scritto")

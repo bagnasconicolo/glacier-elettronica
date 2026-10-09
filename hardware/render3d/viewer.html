@@ -17,6 +17,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 // ?v=1ch|3ch  &view=iso|top|front|detail  &w=  &h=
 const q = new URLSearchParams(location.search);
@@ -33,8 +34,11 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 0.85;
 document.body.appendChild(renderer.domElement);
+// ambiente "da studio": serve ai metalli (LEMO cromati, piedini stagnati) per riflettere qualcosa
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 // ---------- materiali
 const M = (c, r = 0.6, m = 0.0) => new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: m });
@@ -171,8 +175,8 @@ for (const c of data.comps) {
 }
 
 // ---------- luci
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a80, 0.9));
-const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a80, 0.45));
+const sun = new THREE.DirectionalLight(0xffffff, 1.8);
 sun.position.set(cx - 60, 140, cz + 80); sun.target.position.set(cx, 0, cz);
 sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
 const S = Math.max(BW, BH) * 0.75;
@@ -187,9 +191,12 @@ const cam = new THREE.PerspectiveCamera(30, W / H, 1, 2000);
 const D = Math.max(BW, BH);
 const views = {
   iso:    [[cx + D * 0.75, D * 1.15, cz + D * 1.25], [cx, 0, cz]],
-  top:    [[cx, D * (H > W ? 1.9 : 1.55), cz + 0.001], [cx, 0, cz]],
+  // dall'alto: distanza tale che tutta la scheda entri nell'inquadratura (fov 30 gradi)
+  top:    [[cx, Math.max(BH / 2, BW / 2 * H / W) / Math.tan(Math.PI / 12) * 1.12, cz + 0.001], [cx, 0, cz]],
   front:  [[cx + D * 1.1, D * 0.55, cz + D * 0.35], [cx, 0, cz]],
   detail: [[X1 + BW * 0.62, 38, Y1 + 62], [X1 + BW * 0.55, 0, Y1 + 22]],
+  coinc:  [[112, 42, 150], [86, 0, 120]],          // 3 canali: coincidenza + LEMO AND
+  lemo:   [[150, 55, 120], [94, 0, 95]],           // 3 canali: fila di LEMO sul bordo destro
 };
 const [p, t] = views[VIEW] || views.iso;
 cam.position.set(...p);
