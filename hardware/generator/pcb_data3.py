@@ -28,6 +28,10 @@ def placement():
                 out[r] = (96.0, 55.0 + dy, 0)
             elif ref == "R23":         # 33 ohm accanto al LEMO
                 out[r] = (89.8, 57.6 + dy, 90)
+            elif ref == "R21":         # LED sotto il 555, vicino al pin 3 (uscita)
+                out[r] = (84.5, 45.5 + dy, 0)
+            elif ref == "D3":
+                out[r] = (88.5, 45.5 + dy, 180)
             else:
                 out[r] = (x, y + dy, rot)
     # test point di canale: angolo in alto a destra (dove c'era il driver TTL)
@@ -39,16 +43,16 @@ def placement():
     # coincidenza: angolo in basso a destra della striscia 2 (dove c'e' U6 nella 1)
     dy = STRIP
     out.update({
-        "U10":  (84.0, 64.5 + dy, 0),
-        "CF11": (84.0, 60.5 + dy, 0),
-        "R30":  (90.0, 64.5 + dy, 90),
+        "U10":  (84.0, 65.5 + dy, 0),
+        "CF11": (86.5, 60.5 + dy, 90),
+        "R30":  (89.5, 64.0 + dy, 0),
         "J5":   (96.0, 66.0 + dy, 0),
+        "R31":  (78.0, 65.5 + dy, 90),
+        "R32":  (80.0, 65.5 + dy, 90),
+        "R33":  (81.5, 60.5 + dy, 90),
         "JP1":  (77.0, 71.0 + dy, 0),
         "JP2":  (82.5, 71.0 + dy, 0),
         "JP3":  (88.0, 71.0 + dy, 0),
-        "R31":  (78.0, 66.0 + dy, 90),
-        "R32":  (80.5, 61.5 + dy, 90),
-        "R33":  (87.5, 62.5 + dy, 90),
     })
     # test point comuni: angolo in basso a sinistra della striscia 3 (dove c'e' il boost nella 1)
     dy = 2 * STRIP

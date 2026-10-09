@@ -34,7 +34,11 @@ for net in list(GP.ROUTE_ORDER):
         order.append(net)
     else:
         order += [f"{net}{n}" for n in netdata3.CHANNELS if f"{net}{n}" in netdata3.NETS]
-order += ["AND_IN1", "AND_IN2", "AND_IN3", "AND_Y", "AND_OUT"]
+# le connessioni lunghe verso la coincidenza subito dopo le alimentazioni
+early = ["BUF_Y1", "BUF_Y2", "BUF_Y3", "AND_IN1", "AND_IN2", "AND_IN3"]
+i = order.index("+3V6") + 1
+order = [n for n in order[:i] if n not in early] + early + [n for n in order[i:] if n not in early]
+order += ["AND_Y", "AND_OUT"]
 order += [n for n in netdata3.NETS if n not in order and n != "GND"]
 GP.ROUTE_ORDER[:] = order
 
