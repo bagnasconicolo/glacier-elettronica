@@ -1,0 +1,10 @@
+Farnell Part Number,Quantity,Manufacturer Part Number,Manufacturer,Line Note
+4024725,6,LT3461ES6#TRMPBF,Analog Devices,U1 boost
+2519484,17,MAX961ESA+,Analog Devices,U?03 comparatore
+4020771,17,LT1636CS8#PBF,Analog Devices,U?08 op-amp
+3007624,12,LP2985AIM5-3.6/NOPB,Texas Instruments,U5 U7 LDO 3.6V
+3606680,20,1N4148,onsemi,D?01
+2250281,110,5000,Keystone,test point rosso
+2301278,25,5001,Keystone,test point nero GND
+2834673,20,MC-2228CG,Multicomp,jumper JP1-3
+4351470,15,AFBR-S4N22P014M,Broadcom,SiPM
