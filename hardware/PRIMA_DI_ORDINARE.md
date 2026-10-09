@@ -99,7 +99,9 @@ Il rate atteso su una paletta 10×10 cm è ~1,7 eventi/s.
 
 I file per JLCPCB (Gerber, BOM, CPL) e le opzioni del modulo d'ordine sono in
 [`hardware/jlcpcb/`](jlcpcb/LEGGIMI.md). U1 (LT3461), U3 (MAX961) e U8 (LT1636) sono
-esclusi dal montaggio e si saldano a mano, uno alla volta:
+esclusi dal montaggio e si saldano a mano, uno alla volta. Anche U5, U7 (LP2985-3.6),
+D1 e gli header J1–J4 si saldano a mano (esauriti o non riconosciuti a JLCPCB): vanno
+montati **per primi**, prima del passo 1.
 
 1. **Senza i tre chip**, 5 V su J3: +3V3 ≈ 3,30 V, +3V6 ≈ 3,60 V, VREF_B ≈ 3,6 V,
    assorbimento di pochi mA.
