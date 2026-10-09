@@ -158,7 +158,8 @@ JLCPCB monta 147 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | U108, U208, U308 | LT1636 | 3 |
 | U5, U7 | LP2985AIM5-3.6 | 2 |
 | D101, D201, D301 | 1N4148 | 3 |
-| J101, J201, J301, J3 | header 1×2 (SiPM, 5 V) | 4 |
+| J101, J201, J301 | Molex KK 254 22-27-2021 (cavo barra: 22-01-3027 + 2× 08-50-0114; pin 1 = centrale/segnale, pin 2 = calza/bias) | 3 |
+| J3 | header 1×2 (5 V) | 1 |
 | J6 | header 1×3 (I²C verso il Raspberry Pi) | 1 |
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
