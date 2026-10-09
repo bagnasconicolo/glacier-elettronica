@@ -1,0 +1,253 @@
+* =====================================================================
+* riv_cosmici_modelli.lib - modelli per la simulazione COMPLETA della
+* scheda "Riv. Cosmici 2024 - Amplif, alim, soglie" (INFN To)
+*
+* Compatibile LTspice (XVII / 24) e ngspice (>= 36): usa solo sorgenti B
+* con u(), min(), max(), tanh(), exp(); niente if()/?:/table().
+*
+* Gli integrati sono modelli COMPORTAMENTALI (macro-modelli) con i
+* parametri principali dei datasheet; i transistor e i diodi sono modelli
+* SPICE fisici. Ordine dei pin = numerazione dei pin del package reale,
+* identica allo schema KiCad (hardware/riv_cosmici.kicad_sch).
+*
+* Gradino "morbido" usato ovunque:  0.5*(1+tanh(x/w))
+* Le memorie (latch, flip-flop) sono realizzate con un nodo di stato
+* retroazionato attraverso una rete RC (tau ~ ns); la funzione logica e'
+* "affilata" da un tanh ripido attorno a 0,5, cosi' lo stato e' bistabile
+* (scatta a 0 o a 1 e non puo' fermarsi a meta'): portabile e robusto.
+* =====================================================================
+
+* ---------------------------------------------------------------------
+* Transistor e diodi
+* ---------------------------------------------------------------------
+* NXP BFR93A (NPN RF, fT 6 GHz) - parametri tipici
+.model BFR93A NPN(IS=50f BF=90 VAF=30 TF=32p CJC=0.9p CJE=1.2p RB=8 RE=0.6 RC=4)
+* onsemi MMBTH81 (PNP RF) - parametri tipici
+.model MMBTH81 PNP(IS=50f BF=70 VAF=25 TF=60p CJC=1.5p CJE=1.8p RB=10)
+* MMBT2222A = 2N2222A in SOT-23 (modello standard)
+* (MMBT2222A: non piu' usato sulla scheda, lasciato per prove)
+.model MMBT2222A NPN(IS=14.34f XTI=3 EG=1.11 VAF=74.03 BF=255.9 NE=1.307 ISE=14.34f
++ IKF=.2847 XTB=1.5 BR=6.092 NC=2 ISC=0 IKR=0 RC=1 CJC=7.306p MJC=.3416 VJC=.75
++ FC=.5 CJE=22.01p MJE=.377 VJE=.75 TR=46.91n TF=411.1p ITF=.6 VTF=1.7 XTF=3 RB=10)
+.model 1N4148 D(IS=2.52n RS=0.568 N=1.752 CJO=4p M=0.4 TT=20n BV=100 IBV=100u)
+* LED rosso 0805: Vf ~1.8-1.9 V a 5-10 mA
+.model LED_ROSSO D(IS=8e-18 N=2 RS=5 CJO=20p BV=5 IBV=10u)
+* Schottky interno del LT3461
+.model DSCH_LT3461 D(IS=1u N=1.05 RS=0.6 CJO=10p BV=45 IBV=1u)
+
+* ---------------------------------------------------------------------
+* SiPM Broadcom AFBR-S4N22P014M (2x2 mm, 2464 celle da 40 um) visto dai
+* suoi due terminali. Valori di default dal datasheet: C terminale 160 pF,
+* recharge 55 ns, QPE per ~6 V di sovratensione (guadagno ~3,6e6).
+* A = anodo (segnale, centrale del cavo), K = catodo (bias +38,4 V, calza)
+* Ogni evento e' un impulso di corrente (salita TR, coda esponenziale TAU)
+* di carica NPE*QPE. Fino a 4 eventi (T1..T4, NPE1..NPE4); NPE=0 = assente.
+* ---------------------------------------------------------------------
+.subckt SIPM A K NPE1=0 T1=1 NPE2=0 T2=1 NPE3=0 T3=1 NPE4=0 T4=1
++ QPE=0.58p TAU=55n TR=1n CSIPM=160p
+CD K A {CSIPM}
+RL K A 10G
+* forma d'impulso: salita lineare in TR, poi coda esponenziale con costante
+* TAU campionata a tratti (PWL: crea punti di calcolo sia in LTspice che
+* in ngspice, cosi' gli impulsi da 45 ns non vengono mai saltati)
+.param IP1={NPE1*QPE/TAU} IP2={NPE2*QPE/TAU} IP3={NPE3*QPE/TAU} IP4={NPE4*QPE/TAU}
+I1 K A PWL(0 0 {T1} 0 {T1+TR} {IP1} {T1+TR+0.1*TAU} {IP1*0.904837} {T1+TR+0.2*TAU} {IP1*0.818731} {T1+TR+0.35*TAU} {IP1*0.704688} {T1+TR+0.5*TAU} {IP1*0.606531} {T1+TR+0.75*TAU} {IP1*0.472367} {T1+TR+1*TAU} {IP1*0.367879} {T1+TR+1.4*TAU} {IP1*0.246597} {T1+TR+2*TAU} {IP1*0.135335} {T1+TR+3*TAU} {IP1*0.049787} {T1+TR+4.5*TAU} {IP1*0.011109} {T1+TR+7*TAU} {IP1*0.000912} {T1+TR+10*TAU} 0)
+I2 K A PWL(0 0 {T2} 0 {T2+TR} {IP2} {T2+TR+0.1*TAU} {IP2*0.904837} {T2+TR+0.2*TAU} {IP2*0.818731} {T2+TR+0.35*TAU} {IP2*0.704688} {T2+TR+0.5*TAU} {IP2*0.606531} {T2+TR+0.75*TAU} {IP2*0.472367} {T2+TR+1*TAU} {IP2*0.367879} {T2+TR+1.4*TAU} {IP2*0.246597} {T2+TR+2*TAU} {IP2*0.135335} {T2+TR+3*TAU} {IP2*0.049787} {T2+TR+4.5*TAU} {IP2*0.011109} {T2+TR+7*TAU} {IP2*0.000912} {T2+TR+10*TAU} 0)
+I3 K A PWL(0 0 {T3} 0 {T3+TR} {IP3} {T3+TR+0.1*TAU} {IP3*0.904837} {T3+TR+0.2*TAU} {IP3*0.818731} {T3+TR+0.35*TAU} {IP3*0.704688} {T3+TR+0.5*TAU} {IP3*0.606531} {T3+TR+0.75*TAU} {IP3*0.472367} {T3+TR+1*TAU} {IP3*0.367879} {T3+TR+1.4*TAU} {IP3*0.246597} {T3+TR+2*TAU} {IP3*0.135335} {T3+TR+3*TAU} {IP3*0.049787} {T3+TR+4.5*TAU} {IP3*0.011109} {T3+TR+7*TAU} {IP3*0.000912} {T3+TR+10*TAU} 0)
+I4 K A PWL(0 0 {T4} 0 {T4+TR} {IP4} {T4+TR+0.1*TAU} {IP4*0.904837} {T4+TR+0.2*TAU} {IP4*0.818731} {T4+TR+0.35*TAU} {IP4*0.704688} {T4+TR+0.5*TAU} {IP4*0.606531} {T4+TR+0.75*TAU} {IP4*0.472367} {T4+TR+1*TAU} {IP4*0.367879} {T4+TR+1.4*TAU} {IP4*0.246597} {T4+TR+2*TAU} {IP4*0.135335} {T4+TR+3*TAU} {IP4*0.049787} {T4+TR+4.5*TAU} {IP4*0.011109} {T4+TR+7*TAU} {IP4*0.000912} {T4+TR+10*TAU} 0)
+.ends SIPM
+
+* ---------------------------------------------------------------------
+* Trimmer 3296W, 3 pin: 1 - 2(cursore) - 3.  POS = frazione della pista
+* tra il pin 1 e il cursore (0 = cursore sul pin 1, 1 = cursore sul pin 3)
+* ---------------------------------------------------------------------
+.subckt POT 1 2 3 R=10k POS=0.5
+RA 1 2 {max(R*POS,1m)}
+RB 2 3 {max(R*(1-POS),1m)}
+.ends POT
+
+* ---------------------------------------------------------------------
+* LT3461 boost 1,3 MHz con Schottky integrato - MODELLO MEDIATO
+* pin: 1 SW, 2 GND, 3 FB, 4 SHDN, 5 VOUT, 6 VIN
+* Regola V(FB)=1,255 V erogando corrente in VOUT (max ~ ILIM_OUT, ricavato
+* dal limite di corrente dello switch); la potenza viene prelevata
+* dall'ingresso ATTRAVERSO L'INDUTTORE (pin SW) con rendimento ETA.
+* Il diodo Schottky interno (SW->VOUT) e' modellato esplicitamente: a
+* convertitore spento VOUT ~ VIN - 0,4 V come nel chip vero.
+* Non riproduce il ripple di commutazione a 1,3 MHz (vedi README).
+* ---------------------------------------------------------------------
+.subckt LT3461 SW GND FB SHDN VOUT VIN VFB=1.255 GM=5 ILIM_OUT=20m ETA=0.75
+* abilitazione: SHDN > 1 V e VIN > 2,5 V (UVLO)
+BEN en GND V=0.5*(1+tanh((V(SHDN,GND)-1)/0.05))*0.5*(1+tanh((V(VIN,GND)-2.5)/0.05))
+REN en GND 1G
+* corrente erogata in uscita (regolatore proporzionale + limite)
+BOUT GND VOUT I=V(en)*min(max({GM}*({VFB}-V(FB,GND)),0),{ILIM_OUT})
+* corrente assorbita dall'ingresso tramite L1 (bilancio di potenza):
+* riferita alla tensione del pin VIN, cosi' e' una sorgente comandata
+* (un carico a "potenza costante" sul nodo SW sarebbe una resistenza
+* negativa e farebbe oscillare L1 nel modello mediato)
+BIN SW GND I=V(en)*min(max({GM}*({VFB}-V(FB,GND)),0),{ILIM_OUT})*max(V(VOUT,GND),0)/({ETA}*max(V(VIN,GND),1))
+CSW SW GND 1n
+* smorzamento della risonanza L1/CSW (solo nel modello mediato: nel chip
+* vero il nodo SW e' sempre forzato dallo switch o dal diodo)
+RSNB SW snb 22
+CSNB snb GND 470n
+DS SW VOUT DSCH_LT3461
+* corrente di riposo
+RQ VIN GND 2.5k
+RFB FB GND 100Meg
+.ends LT3461
+
+* ---------------------------------------------------------------------
+* LT1636 operazionale micropower "Over-The-Top", rail-to-rail
+* pin: 1 NULL, 2 -IN, 3 +IN, 4 V-, 5 NULL, 6 OUT, 7 V+, 8 SHDN
+* GBW 220 kHz, A0 = 1e5, slew ~0,07 V/us, uscita rail-to-rail con
+* resistenza d'uscita; la corrente d'uscita viene prelevata da V+.
+* SHDN aperto = acceso (come nello schema).
+* ---------------------------------------------------------------------
+.subckt LT1636 NULL1 INM INP VM NULL2 OUT VP SHDN
+RIN INP INM 10Meg
+RQ VP VM 800k
+* stadio d'ingresso a transconduttanza con limitazione di corrente:
+* gm = 19,8 uS su CN1 = 14,3 pF -> GBW 220 kHz; Imax 1 uA -> slew 0,07 V/us
+BGM VM n1 I=min(max(19.8u*V(INP,INM),-1u),1u)
+RN1 n1 VM 1e9
+CN1 n1 VM 14.3p
+* clamp del nodo interno entro le alimentazioni (niente "wind-up")
+DCH n1 VP DIDEAL
+DCL VM n1 DIDEAL
+* stadio d'uscita: segue n1 limitato ai rail
+BO no VM V=min(max(V(n1,VM),0.02),V(VP,VM)-0.05)
+RO no OUTS 30
+VSNS OUTS OUT 0
+* la corrente erogata dall'uscita arriva da V+
+BSUP VP VM I=max(I(VSNS),0)
+RNC1 NULL1 VM 1G
+RNC2 NULL2 VM 1G
+RSD SHDN VM 1G
+* XTI=0 EG=0: niente deriva termica (con N=0,05 esploderebbe con la temperatura)
+.model DIDEAL D(IS=1e-14 N=0.05 XTI=0 EG=0.01)
+.ends LT1636
+
+* ---------------------------------------------------------------------
+* MAX961 comparatore 4,5 ns, uscite complementari, latch
+* pin: 1 IN+, 2 IN-, 3 SHDN, 4 LE, 5 GND, 6 Q, 7 QB, 8 VCC
+* Isteresi interna +-1,5 mV (3 mV totali); LE alto (> 1,4 V) = uscita
+* congelata, LE basso = trasparente. SHDN alto = spento (qui a GND).
+* Ritardo ~4,5 ns realizzato dalla rete RC del nodo di stato.
+* ---------------------------------------------------------------------
+.subckt MAX961 INP INM SHDN LE GND Q QB VCC HYST=1.5m
+* lat: 1 = latch attivo (NB: nomi dei nodi interni diversi da quelli dei
+* pin anche ignorando maiuscole/minuscole: in SPICE 'le' == 'LE')
+BLE lat GND V=0.5*(1+tanh((V(LE,GND)-1.4)/0.05))
+* decisione con isteresi (dipende dallo stato attuale s)
+BD d GND V=0.5*(1+tanh((V(INP,INM)+{HYST}*(2*V(s,GND)-1))/0.1m))
+* stato: se latch -> mantiene, altrimenti segue la decisione
+BS sd GND V=0.5*(1+tanh((V(lat)*V(s,GND)+(1-V(lat))*V(d)-0.5)/0.05))
+RS sd s 1k
+CS s GND 3p
+* SHDN alto -> spento (uscite a 0 V, approssimazione)
+BON on GND V=1-0.5*(1+tanh((V(SHDN,GND)-1.4)/0.05))
+BQ  qo  GND V=V(on)*V(VCC,GND)*V(s,GND)
+BQB qbo GND V=V(on)*V(VCC,GND)*(1-V(s,GND))
+RQ  qo  Q  50
+RQB qbo QB 50
+RQC VCC GND 750
+RLE LE GND 10Meg
+* diodi di protezione degli ingressi verso GND e VCC (sul fronte di discesa
+* di Q, C9 spinge LE sotto massa: nel chip vero lo blocca questo diodo)
+DLE1 GND LE DPROT
+DLE2 LE VCC DPROT
+DI1 GND INP DPROT
+DI2 GND INM DPROT
+RI1 INP GND 100Meg
+RI2 INM GND 100Meg
+.model DPROT D(IS=1e-15 RS=5 CJO=1p)
+.ends MAX961
+
+* ---------------------------------------------------------------------
+* MCP1402 driver MOSFET 500 mA, NON invertente
+* pin: 1 GND, 2 VDD, 3 IN, 4 GND, 5 OUT
+* soglie ingresso VIH 2,4 V / VIL 0,8 V (isteresi), ritardo ~35 ns,
+* uscita rail-to-rail con Ron ~ 12 ohm
+* ---------------------------------------------------------------------
+.subckt MCP1402 GND VDD IN GND2 OUT
+RGG GND GND2 1m
+BD d GND V=0.5*(1+tanh((V(IN,GND)-(1.6-0.8*(2*V(s,GND)-1)))/0.02))
+RS d s 1k
+CS s GND 25p
+BO o GND V=V(VDD,GND)*V(s,GND)
+RO o OUT 12
+RQ VDD GND 10k
+RIN IN GND 100Meg
+.ends MCP1402
+
+* ---------------------------------------------------------------------
+* Regolatore LDO generico: uscita = min(VNOM, VIN - VDROP), Rout,
+* corrente di uscita prelevata da VIN + corrente di riposo.
+* ---------------------------------------------------------------------
+* LP2985AIM5-3.6  pin: 1 VIN, 2 GND, 3 ON/OFF, 4 BYPASS, 5 VOUT
+.subckt LP2985 VIN GND ON BYP VOUT VNOM=3.6 VDROP=0.28
+BEN en GND V=0.5*(1+tanh((V(ON,GND)-1.0)/0.05))
+BO o GND V=V(en)*max(min({VNOM},V(VIN,GND)-{VDROP}),0)
+RO o os 0.05
+VSNS os VOUT 0
+BSUP VIN GND I=max(I(VSNS),0)
+RQ VIN GND 60k
+RON ON GND 10Meg
+RBY BYP GND 10Meg
+.ends LP2985
+
+* MCP1825S-3302  pin: 1 VIN, 2 GND, 3 VOUT, 4 (tab) GND
+.subckt MCP1825 VIN GND VOUT TAB VNOM=3.3 VDROP=0.21
+RTAB TAB GND 1m
+BO o GND V=max(min({VNOM},V(VIN,GND)-{VDROP}),0)
+RO o os 0.05
+VSNS os VOUT 0
+BSUP VIN GND I=max(I(VSNS),0)
+RQ VIN GND 40k
+.ends MCP1825
+
+* ---------------------------------------------------------------------
+* TLC555 / LMC555 timer CMOS
+* pin: 1 GND, 2 TRIG, 3 OUT, 4 RESET, 5 CTRL, 6 THRES, 7 DISCH, 8 VCC
+* CTRL = 2/3 VCC dal partitore interno; TRIG < CTRL/2 -> uscita alta;
+* THRES > CTRL -> uscita bassa e scarica attiva; RESET < 0,7 V -> basso.
+* ---------------------------------------------------------------------
+.subckt TLC555 GND TRIG OUT RESET CTRL THRES DISCH VCC
+RD1 VCC CTRL 50k
+RD2 CTRL mid 50k
+RD3 mid GND 50k
+BTR tr GND V=0.5*(1+tanh((V(CTRL,GND)/2-V(TRIG,GND))/0.01))
+BTH th GND V=0.5*(1+tanh((V(THRES,GND)-V(CTRL,GND))/0.01))
+BRS rs GND V=0.5*(1+tanh((V(RESET,GND)-0.7)/0.05))
+* flip-flop: trigger domina sulla soglia (come nel 555)
+BS sd GND V=0.5*(1+tanh((V(rs)*max(V(tr),V(s,GND)*(1-V(th)))-0.5)/0.05))
+RS sd s 1k
+CS s GND 20p
+BO o GND V=V(VCC,GND)*V(s,GND)
+RO o OUT 150
+* transistor di scarica (Ron ~ 15 ohm) quando l'uscita e' bassa
+* (soglia netta sullo stato: una perdita anche dello 0,1% scaricherebbe C21)
+BDIS DISCH GND I=0.5*(1+tanh((0.5-V(s,GND))/0.02))*V(DISCH,GND)/15
+RQ VCC GND 20k
+RTRG TRIG GND 100Meg
+RTHR THRES GND 100Meg
+.ends TLC555
+
+* ---------------------------------------------------------------------
+* 74LVC1G17 buffer singolo con ingresso a trigger di Schmitt
+* pin (SOT-23-5 DBV): 1 NC, 2 A, 3 GND, 4 Y, 5 VCC
+* a VCC = 3,3 V: VT+ ~1,7 V, VT- ~1,0 V, tpd ~4 ns, Rout ~20 ohm (24 mA)
+* ingresso tollerante fino a 5,5 V
+* ---------------------------------------------------------------------
+.subckt LVC1G17 NC A GND Y VCC
+BD d GND V=0.5*(1+tanh((V(A,GND)-(1.35-0.35*(2*V(s,GND)-1)))/0.02))
+RS d s 1k
+CS s GND 2.5p
+BO o GND V=V(VCC,GND)*V(s,GND)
+RO o Y 20
+RQ VCC GND 330k
+RIN A GND 100Meg
+RNC NC GND 1G
+.ends LVC1G17

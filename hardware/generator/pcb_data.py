@@ -83,6 +83,11 @@ PLACEMENT = {
     "CF8": (92.3, 60.8, 0),
     "U6":  (86.0, 65.5, 0),
     "CF9": (80.0, 61.5, 0),
+    # buffer d'uscita 3,3 V verso Raspberry Pi (dx, sotto il LED)
+    "U9":   (88.0, 52.5, 0),
+    "CF10": (88.0, 48.5, 0),
+    "R23":  (92.5, 52.5, 0),
+    "J4":   (97.0, 54.0, 270),
 }
 
 NETCLASS_W = {  # larghezza pista
@@ -137,7 +142,7 @@ if __name__ == "__main__":
     pads = abs_pads()
     print(len(pads), "pad")
     missing = [p for p in pads if p["net"] is None and (p["ref"], p["pin"]) not in
-               {("U8","1"),("U8","5"),("U8","8"),("U5","4"),("U7","4")}]
+               {("U8","1"),("U8","5"),("U8","8"),("U5","4"),("U7","4"),("U9","1")}]
     print("pad senza rete:", [(p['ref'], p['pin']) for p in missing])
     refs = set(PLACEMENT) ^ set(COMPONENTS)
     print("piazzamento mancante/di troppo:", refs)

@@ -2,13 +2,13 @@
 
 Front-end di lettura per un **rivelatore di muoni cosmici** basato su SiPM +
 scintillatore: amplificatore veloce, discriminatore a soglia regolabile,
-generazione del bias del SiPM, uscita TTL e **buffer d'uscita verso Arduino**.
+generazione del bias del SiPM, uscita TTL e **uscita 3,3 V per Raspberry Pi**.
 
 Ricostruzione completa in KiCad — dal solo PDF scansionato dello schema originale
 INFN sez. Torino ("Riv. Cosmici 2024 — Amplif, alim, soglie", S. Gallian) —
 accompagnata da simulazioni circuitali non lineari, un verificatore che gira
-**direttamente dallo schema**, un sito didattico interattivo e il firmware Arduino
-per il conteggio.
+**direttamente dallo schema**, la **simulazione LTspice della scheda completa** e un
+sito didattico interattivo.
 
 ![Licenza](https://img.shields.io/badge/licence-CERN--OHL--W--2.0-blue)
 ![KiCad](https://img.shields.io/badge/KiCad-6%2F7%2F8%2F9-green)
@@ -21,8 +21,8 @@ impulso di corrente. Due transistor — **BFR93A** (Q1) e **MMBTH81** (Q2) —
 amplificano di ~28×. Il comparatore **MAX961** confronta con la soglia impostata
 dal trimmer V2 e produce l'impulso digitale **CMP_Q**; una rete C9/R16 (latch)
 evita i doppi conteggi. Da qui il segnale va al driver **MCP1402** (uscita TTL su
-J2) e al **buffer** discreto (2× MMBT2222A) che lo rigenera a 0–5 V verso il
-connettore LEMO/J4, pronto per un Arduino. Un timer **555** accende un LED per
+J2) e al buffer **74LVC1G17** alimentato a 3,3 V, che lo porta sul connettore
+LEMO/J4 a 0–3,3 V, pronto per un GPIO del **Raspberry Pi**. Un timer **555** accende un LED per
 11 ms a ogni evento.
 
 Rate reale su una paletta 10×10 cm a livello del mare: **~1,7 muoni/s**.
@@ -37,22 +37,25 @@ Rate reale su una paletta 10×10 cm a livello del mare: **~1,7 muoni/s**.
 hardware/          progetto KiCad (schema, PCB, librerie, Gerber, BOM)
   riv_cosmici.kicad_pro/.kicad_sch/.kicad_pcb
   riv.kicad_sym, rivlib.pretty/        librerie simboli e footprint del progetto
-  gerber/                              Gerber RS-274X + Excellon (pronti per il fab)
+  gerber/, riv_cosmici_gerber.zip      Gerber RS-274X + Excellon (pronti per il fab)
   bom/                                 distinta base (.xlsx e .csv) con codici Farnell/RS
+  PRIMA_DI_ORDINARE.md                 cosa e' verificato e cosa decidere prima dell'ordine
+  jlcpcb/                              Gerber, BOM e CPL per PCB + montaggio su JLCPCB
   previews/                            anteprime PNG
   generator/                           script Python che GENERANO lo hardware (sorgente)
 simulation/        modelli circuitali non lineari + verifica dallo schema
+  ltspice/             SCHEDA COMPLETA per LTspice (.asc) e ngspice (.cir) + verifica
   sim_catena.py        catena di segnale (SiPM -> ampli -> comparatore)
   sim_muoni.py         treno di muoni (Poisson + Landau) + dark count
-  sim_buffer.py        buffer d'uscita: CMP_Q vs TTL, storage time
-  sim_treno_completo.py catena END-TO-END fino al pin Arduino
+  sim_buffer.py        (variante superata) vecchio buffer a 2 transistor
+  sim_treno_completo.py (variante superata) catena fino a un Arduino a 5 V
   netlist_from_kicad.py   estrae la netlist dal .kicad_sch
-  verify_from_schematic.py simula DALLA netlist estratta (front-end + buffer)
+  verify_from_schematic.py simula DALLA netlist estratta (front-end + uscita)
   make_recap.py        genera il PDF di recap
-  riv_cosmici_frontend.cir  netlist SPICE per LTspice/ngspice
+  riv_cosmici_frontend.cir  netlist SPICE del solo front-end (storica)
   figures/             grafici generati
 web/               sito didattico interattivo (single-file, offline)
-firmware/          sketch Arduino per il conteggio dei muoni
+firmware/          (variante superata) sketch Arduino
 docs/              RECAP_progetto.pdf  +  schema_originale_INFN.pdf (scansione di partenza)
 ```
 
@@ -65,15 +68,23 @@ pronti per la produzione (2 layer, 80×55 mm; DRC geometrico e connettività a z
 errori). La BOM in `hardware/bom/` riporta i codici d'ordine Farnell/RS trascritti
 dal progetto originale.
 
-### ⚠ Da verificare prima di produrre
+### Prima di ordinare
 
-- **MCP1402 (U4)**: piedinatura come da disegno INFN — confrontare col datasheet
-  Microchip DS20002052 prima dell'ordine.
-- **L1 (47 µH, RS 693-4344)**: footprint generico 5×5/6×6 mm — verificare l'ingombro
-  reale.
-- **J4 (LEMO)**: footprint provvisorio (header 2,54); sostituire con quello LEMO
-  (es. EPL.00.250.NTN) prima del layout. Il buffer non è ancora nel PCB/Gerber.
-- Rifare il fill delle zone e lanciare ERC/DRC ufficiali in KiCad.
+Leggi **[`hardware/PRIMA_DI_ORDINARE.md`](hardware/PRIMA_DI_ORDINARE.md)**: elenca cosa è
+stato verificato (schema = originale INFN pin per pin, piedinature sui datasheet, DRC e
+connettività del PCB, simulazione della scheda intera) e i punti da decidere al
+montaggio, che non richiedono modifiche al PCB: R3 per restare sotto i 40 V del
+LT3461, i condensatori d'uscita dei regolatori, l'ingombro di L1 e il LEMO.
+
+Rigenerare tutto (schema, PCB, Gerber, BOM, anteprime) dal modello dati:
+
+```bash
+cd hardware/generator
+python gen_sch.py && python gen_pcb.py && python gerber_out.py && python gen_bom.py
+python gen_jlcpcb.py   # dopo aver aggiornato hardware/gerber e lo zip
+python render_sch.py && python render_pcb.py
+# schema, PCB e Gerber escono in generator/riv_cosmici/: copiarli in hardware/
+```
 
 ## Simulazioni
 
@@ -94,8 +105,22 @@ guadagno ~35 mV/fotoelettrone, saturazione oltre ~40 p.e.; soglia regolabile da
 ~2 mV a ~1,3 V; 7 muoni → 7 conteggi con 46 dark count rigettati; rate medio
 1,68 conteggi/s a scala reale.
 
-Per LTspice/ngspice: `simulation/riv_cosmici_frontend.cir` (parametri NPE e VTH in
-testa al file).
+### Simulazione LTspice della scheda COMPLETA
+
+In `simulation/ltspice/` c'è tutta la scheda — alimentazioni, boost 40 V, bias del SiPM,
+front-end, soglia, comparatore con latch, driver TTL, 555 + LED, uscita per il
+Raspberry Pi — come **schema LTspice** (`riv_cosmici_completo.asc`, si apre e si preme
+Run) e come netlist (`.cir`, anche per ngspice). È generata dallo stesso modello dati
+dello schema KiCad: riferimenti e nomi delle reti coincidono.
+
+```bash
+cd simulation/ltspice
+python verifica_ltspice.py   # .asc == .cir, copertura KiCad, 21 controlli, grafico
+```
+
+![simulazione completa](simulation/figures/sim_ltspice_completo.png)
+
+Dettagli, parametri e limiti dei modelli: [`simulation/ltspice/LEGGIMI.md`](simulation/ltspice/LEGGIMI.md).
 
 ### Verifica DIRETTA dallo schema
 
@@ -105,7 +130,7 @@ allo schema vero:
 ```bash
 cd simulation
 python verify_from_schematic.py            # front-end letto dal .kicad_sch
-python verify_from_schematic.py --buffer   # buffer letto dal .kicad_sch
+python verify_from_schematic.py --uscita   # + stadio d'uscita (U9 -> J4) dal .kicad_sch
 ```
 
 `netlist_from_kicad.py` estrae la netlist per geometria direttamente dal file
@@ -129,18 +154,19 @@ esterne), con dentro lo **stesso solver circuitale** portato in JavaScript:
   in tempo reale.
 - `rivelatore_cosmici.html` — cruscotto con muoni animati e conteggio.
 
-## Firmware Arduino
+## Lettura con Raspberry Pi
 
-`firmware/conta_muoni/conta_muoni.ino` conta i muoni via interrupt hardware e
-stampa i conteggi/s sul monitor seriale. Collega **J4 → D2** (con 330 Ω in serie)
-e **GND → GND**. Solo per Arduino a **5 V** (Uno/Nano/Mega); per board a 3,3 V
-alimentare il buffer a 3,3 V o prendere da CMP_Q per non danneggiare il pin.
+J4 pin 1 → un GPIO (es. GPIO17) con 330 Ω in serie, J4 pin 2 → GND. L'uscita è
+0–3,3 V. Ogni muone dà un impulso di ≥ 84 ns: va contato **a interrupt sul fronte di
+salita** (es. `libgpiod`, eventi `RISING_EDGE`), non in polling. **Non collegare J2**
+(TTL a 5 V) al Pi. Lo sketch in `firmware/` è della vecchia variante Arduino a 5 V.
 
 ## Rigenerare lo hardware
 
 Gli script in `hardware/generator/` sono il "sorgente" da cui sono stati generati
-schema, PCB e Gerber (via codice, per costruzione riproducibile). Per rigenerare:
-`python gen_sch.py`, `python gen_pcb.py`, `python gerber_out.py`.
+schema, PCB, Gerber e BOM (via codice, per costruzione riproducibile), tutti dallo
+stesso modello dati `netdata.py`; i comandi sono nella sezione "Prima di ordinare".
+Anche la simulazione LTspice (`simulation/ltspice/gen_ltspice.py`) parte da lì.
 
 ## Crediti e licenza
 

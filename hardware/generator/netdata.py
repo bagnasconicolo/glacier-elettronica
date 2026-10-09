@@ -76,6 +76,14 @@ COMPONENTS = {
     "J1":  ("CONN2", "SiPM",    "HDR2", {"note": "cavo Fileca: 1=segnale 2=bias(calza)"}),
     "J2":  ("CONN2", "TTL_OUT", "HDR2", {}),
     "J3":  ("CONN2", "PWR_5V",  "HDR2", {}),
+    # Buffer d'uscita verso Raspberry Pi (aggiunto, non presente nell'originale
+    # INFN): CMP_Q -> U9 74LVC1G17 (buffer Schmitt CMOS, alimentato a +3V3)
+    # -> R23 33 ohm (adattamento serie per il cavo coassiale) -> J4.
+    # Uscita 0..3,3 V, compatibile con i GPIO del Pi (che NON tollerano 5 V).
+    "U9":   ("LVC1G17", "74LVC1G17", "SOT23-5", {"note": "SN74LVC1G17DBVR o equivalente"}),
+    "CF10": ("C", "100n", "C0805", {"note": "decoupling 74LVC1G17"}),
+    "R23":  ("R", "33R", "R0805", {"note": "terminazione serie verso cavo coassiale"}),
+    "J4":   ("CONN2", "LEMO_OUT", "HDR2", {"note": "1=segnale 0/3,3V 2=GND; verso LEMO a pannello / GPIO Raspberry Pi"}),
 }
 
 # ---------------------------------------------------------------- nets
@@ -96,6 +104,7 @@ NETS = {
         ("CF1", "2"), ("CF2", "2"), ("CF3", "2"), ("CF4", "2"), ("CF5", "2"),
         ("CF6", "2"), ("CF7", "2"), ("CF8", "2"), ("CF9", "2"),
         ("J2", "2"), ("J3", "1"),
+        ("U9", "3"), ("CF10", "2"), ("J4", "2"),
         ("R1", "2"), ("R2", "2"), ("R22", "2"),
     ],
     "+5V": [
@@ -111,6 +120,7 @@ NETS = {
         ("U3", "8"), ("CF2", "1"),
         ("U2", "8"), ("U2", "4"), ("CF5", "1"),
         ("R20", "2"),
+        ("U9", "5"), ("CF10", "1"),       # buffer a 3,3 V: GPIO Raspberry Pi
     ],
     "+3V6": [("U5", "5"), ("CF4", "1"), ("R19", "2")],
     # riferimento 3,6V (secondo LP2985) -> D1 -> partitore V1
@@ -135,11 +145,14 @@ NETS = {
     "CMP_IN": [("C11", "2"), ("R15", "1"), ("U3", "1")],
     # soglia
     "TH": [("U3", "2"), ("R17", "1")],
-    "TH_W": [("R17", "2"), ("V2", "1"), ("V2", "2"), ("R19", "1")],
+    # V2 e' un potenziometro (come nell'originale INFN): estremo alto su R19,
+    # cursore su R17 -> TH, estremo basso su R18
+    "TH_W": [("R17", "2"), ("V2", "2")],
+    "TH_HI": [("V2", "1"), ("R19", "1")],
     "TH_LO": [("V2", "3"), ("R18", "1")],
     # latch / uscite comparatore
     "LE": [("U3", "4"), ("R16", "1"), ("C9", "1")],
-    "CMP_Q": [("U3", "6"), ("C9", "2"), ("U4", "3")],
+    "CMP_Q": [("U3", "6"), ("C9", "2"), ("U4", "3"), ("U9", "2")],
     "CMP_QB": [("U3", "7"), ("U2", "2")],
     "TTL_OUT": [("U4", "5"), ("J2", "1")],
     # monostabile LED
@@ -147,6 +160,9 @@ NETS = {
     "CTL555": [("U2", "5"), ("CF6", "1")],
     "LED_A": [("U2", "3"), ("R21", "1")],
     "LED_K": [("R21", "2"), ("D3", "2")],                          # D3: 1=K 2=A
+    # buffer d'uscita
+    "BUF_Y": [("U9", "4"), ("R23", "1")],
+    "BUF_OUT": [("R23", "2"), ("J4", "1")],
 }
 
 # pin totali attesi per tipo (per il check di completezza)
@@ -154,10 +170,11 @@ PIN_COUNT = {
     "R": 2, "C": 2, "L": 2, "D": 2, "LED": 2, "NPN": 3, "PNP": 3, "POT": 3,
     "CONN2": 2,
     "LT3461": 6, "TLC555": 8, "MAX961": 8, "MCP1402": 5, "LP2985": 5,
-    "MCP1825": 4, "LT1636": 8,
+    "MCP1825": 4, "LT1636": 8, "LVC1G17": 5,
 }
 # pin volutamente non connessi
-NC_PINS = {("U8", "1"), ("U8", "5"), ("U8", "8"), ("U5", "4"), ("U7", "4")}
+NC_PINS = {("U8", "1"), ("U8", "5"), ("U8", "8"), ("U5", "4"), ("U7", "4"),
+           ("U9", "1")}
 
 def check():
     used = {}

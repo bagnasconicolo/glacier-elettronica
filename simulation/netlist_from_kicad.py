@@ -59,6 +59,8 @@ def extract(path):
         libname = inst.libId.split(":")[-1]
         pins = libpins.get(libname, {})
         abspins = {num: _pin_abs(inst, px, py) for num, (px, py) in pins.items()}
+        if libname == "PWR_FLAG":   # marcatore ERC, non e' una rete
+            continue
         if libname.startswith("PWR_"):
             net = libname[4:]
             for xy in abspins.values(): powerpts.append((net, xy))

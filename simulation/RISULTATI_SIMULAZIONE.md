@@ -1,5 +1,13 @@
 # Simulazione della catena di segnale
 
+> **Novità: simulazione della scheda COMPLETA** — alimentazioni, boost, bias,
+> front-end, comparatore, uscite, 555 — in `ltspice/` (schema LTspice + netlist,
+> verificata con ngspice). Vedi la sezione in fondo e `ltspice/LEGGIMI.md`.
+> Le sezioni "Buffer d'uscita" e "Treno completo fino ad Arduino" descrivono la
+> variante precedente (buffer a 2 transistor a 5 V), sostituita dal 74LVC1G17 a 3,3 V
+> per la lettura con Raspberry Pi.
+
+
 Transitorio non lineare (MNA + backward Euler, BJT Ebers-Moll) dell'intera catena:
 impulso SiPM → C7 → Q1 BFR93A → Q2 MMBTH81 → C11 → MAX961 (comportamentale con
 isteresi ±2 mV e latch via C9/R16). Impulso SiPM modellato come corrente
@@ -141,3 +149,36 @@ tutti i pin agganciano i fili); gli unici pin "flottanti" segnalati sono i NC
 intenzionali (BYP dell'LP2985, ingressi inusati dell'LT1636). Il buffer aggiunto
 (Q3/Q4) è nella netlist estratta ma non nel solver del front-end (che si ferma al
 comparatore); per simularlo end-to-end si usa `sim_treno_completo.py`.
+
+## Scheda completa: LTspice / ngspice (`ltspice/`)
+
+Netlist e schema LTspice generati da `hardware/generator/netdata.py` (stesso modello
+dati del KiCad); integrati con macromodelli dai datasheet, transistor e diodi con
+modelli SPICE. Transitorio di 30 ms con accensione e 4 eventi a t = 10 ms
+(`python ltspice/verifica_ltspice.py`, 21 controlli tutti superati):
+
+| Grandezza | Simulato |
+|---|---|
+| +3V3 / +3V6 / riferimento 3,6 V | 3,30 / 3,60 / 3,60 V |
+| VOUT40 (boost LT3461) | 41,65 V (calcolo: 1,255 V × 33,2) |
+| BIAS SiPM (V1_POS = 0,76) | 38,44 V, raggiunto dopo 2,4 ms |
+| Punto di lavoro Q1 B / C, Q2 C | 0,59 / 2,47 / 0,42 V (come `sim_catena.py`) |
+| Corrente dai 5 V | 38 mA |
+| Muone 250 p.e. al comparatore | 1,14 V (saturato) |
+| CMP_Q / TTL J2 / GPIO Pi | 3,28 / 4,99 / 3,27 V |
+| Larghezza impulso al GPIO, ritardo | 300 ns, 8 ns |
+| Dark count 1 p.e. | ~10 mV → nessun impulso |
+| Muoni a 1,5 µs | risolti separatamente |
+| LED (555) | 10,9 ms |
+
+SiPM simulato: **Broadcom AFBR-S4N22P014M** (VBD 32,5 V, 160 pF, recharge 55 ns,
+guadagno 7,3·10⁶ a 12 V OV → ~3,6·10⁶ e ~0,58 pC/p.e. a 5,9 V OV). Ampiezza al
+comparatore: 1 p.e. ≈ 10 mV, 3 p.e. ≈ 40 mV, 5 p.e. ≈ 71 mV, 10 p.e. ≈ 156 mV
+(l'amplificatore è leggermente espansivo), muoni saturati a ~1,0–1,2 V. Soglia di
+default 104 mV ≈ 7 p.e. Impulso minimo in uscita **~84 ns** (latch C9/R16).
+
+Temperatura (−10…+50 °C): BIAS sale di +28 mV/°C grazie a D1, contro ~30 mV/°C di
+VBD → sovratensione costante entro 0,1 V (5,85–5,94 V).
+
+Correzione di ricostruzione emersa dal confronto con l'originale: **V2 è un
+potenziometro** (cursore → R17), non un reostato. Il campo della soglia non cambia.

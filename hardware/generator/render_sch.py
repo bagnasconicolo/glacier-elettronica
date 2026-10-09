@@ -79,7 +79,7 @@ for ref, symname, x, y, rot, mirror, value, fp in G.instances:
     text(ref, x - 1, y - 1.2, size=1.6, col="#000080", anchor="middle")
     text(value, x - 1, y + 2.2, size=1.3, col="#000080", anchor="middle")
 
-hdr = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 300 200" '
-       'width="2400" height="1600"><rect x="0" y="0" width="440" height="300" fill="white"/>')
+hdr = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 340 200" '
+       'width="2720" height="1600"><rect x="0" y="0" width="440" height="300" fill="white"/>')
 open("sch_render.svg", "w").write(hdr + "\n".join(svg) + "</svg>")
 print("sch_render.svg scritto")

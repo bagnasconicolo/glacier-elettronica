@@ -493,9 +493,11 @@ ROUTE_ORDER = [
     "SW", "VOUT40", "FB", "VREG38", "BIAS", "INV",     # boost/HV corti e critici
     "SIG_IN", "Q1B", "Q1C", "Q2E", "Q2C", "CMP_IN",    # catena di segnale
     "+5V", "+3V3", "+3V6",                              # potenza
-    "TH", "TH_W", "TH_LO", "LE", "CMP_Q", "CMP_QB", "TTL_OUT",
+    "CTL555", "LED_A",                                  # corti, prima di CMP_Q
+    "TH", "TH_W", "TH_HI", "TH_LO", "LE", "CMP_Q", "CMP_QB", "TTL_OUT",
     "VSET", "VADJ_HI", "VADJ_LO", "VREF_B",
-    "T555", "CTL555", "LED_A", "LED_K",
+    "T555", "LED_K",
+    "BUF_Y", "BUF_OUT",                                   # buffer d'uscita
 ]
 
 def route_all():
@@ -722,9 +724,20 @@ if __name__ == "__main__":
     bad = check_courtyards()
     if bad:
         print("COURTYARD:", bad)
-    add_escape_stubs()
-    add_gnd_vias()
-    fails = route_all()
+    # rip-up & retry: se qualche rete fallisce si riparte da zero
+    # instradando per prime le reti fallite (fino a 8 tentativi)
+    base_order = list(ROUTE_ORDER)
+    first = []
+    for attempt in range(8):
+        tracks.clear(); vias.clear()
+        ROUTE_ORDER[:] = first + [n for n in base_order if n not in first]
+        add_escape_stubs()
+        add_gnd_vias()
+        fails = route_all()
+        if not fails:
+            break
+        print(f"tentativo {attempt + 1}: falliti {fails} -> riprovo con queste reti per prime")
+        first = fails + [n for n in first if n not in fails]
     # dedupe (il retry puo' duplicare percorsi identici)
     seen = set(); tt = []
     for t in tracks:

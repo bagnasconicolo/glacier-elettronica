@@ -18,3 +18,12 @@ venv/
 /build/
 *.tmp
 .DS_Store
+
+# output dei generatori hardware (copiati poi in hardware/)
+hardware/generator/riv_cosmici/
+hardware/generator/routing_state.json
+hardware/generator/*.svg
+
+# output di simulazione ngspice
+simulation/ltspice/*.raw
+simulation/ltspice/*.log
