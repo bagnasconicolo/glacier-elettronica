@@ -24,6 +24,7 @@ SYM_MAP = {  # kind -> lib symbol
     "PNP": "PNP", "POT": "POT", "CONN2": "CONN2", "LT3461": "LT3461",
     "TLC555": "TLC555", "MAX961": "MAX961", "MCP1402": "MCP1402",
     "LP2985": "LP2985", "MCP1825": "MCP1825", "LT1636": "LT1636",
+    "LVC1G17": "LVC1G17",
 }
 
 instances = []   # (ref, symname, x, y, rot, mirror, value, footprint)
@@ -134,14 +135,12 @@ T("Comparatore di soglia", 130, 36)
 # ---- blocco 3: soglia regolabile
 path((115.57, 80.01), (115.57, 83.82)); L("TH", 115.57, 80.01)
 place("R17", 115.57, 87.63)
-J(115.57, 91.44)
+# V2 potenziometro: cursore -> R17 -> TH, estremo alto -> R19 -> +3V6
 place("V2", 115.57, 97.79)
-w(115.57, 91.44, 115.57, 93.98)
-path((119.38, 97.79), (120.65, 97.79), (120.65, 91.44))
-J(120.65, 91.44)
-path((115.57, 91.44), (120.65, 91.44), (121.92, 91.44))
-place("R19", 125.73, 91.44, 90)
-w(129.54, 91.44, 132.08, 91.44); PW("+3V6", 132.08, 91.44)
+path((119.38, 97.79), (120.65, 97.79), (120.65, 91.44), (115.57, 91.44))
+path((115.57, 93.98), (107.95, 93.98), (107.95, 91.44))
+place("R19", 107.95, 87.63, 180)
+PW("+3V6", 107.95, 83.82)
 w(115.57, 101.6, 115.57, 104.14)
 place("R18", 115.57, 107.95); PW("GND", 115.57, 111.76)
 T("Soglia (V2)", 105, 78)
@@ -289,6 +288,22 @@ place("CF9", 194.31, 175.26); PW("GND", 194.31, 179.07)
 path((213.36, 161.29), (213.36, 158.75), (210.82, 158.75), (208.28, 158.75), (208.28, 161.29))
 PW("GND", 210.82, 158.75, 180); J(210.82, 158.75)
 T("Alimentazione 5V -> 3,3V", 200, 152)
+
+# ---- blocco 9: buffer d'uscita 3,3 V verso Raspberry Pi (aggiunto)
+place("U9", 276.86, 160.02)
+w(264.16, 160.02, 269.24, 160.02); L("CMP_Q", 264.16, 160.02)
+NCm(269.24, 162.56)
+path((276.86, 153.67), (276.86, 143.51), (289.56, 143.51))
+PW("+3V3", 276.86, 143.51)
+place("CF10", 289.56, 147.32); PW("GND", 289.56, 151.13)
+w(276.86, 166.37, 276.86, 168.91); PW("GND", 276.86, 168.91)
+w(284.48, 160.02, 288.29, 160.02)
+place("R23", 292.1, 160.02, 90)
+w(295.91, 160.02, 300.99, 160.02)
+place("J4", 307.34, 161.29)
+path((300.99, 162.56), (298.45, 162.56), (298.45, 166.37)); PW("GND", 298.45, 166.37)
+T("Buffer uscita 3,3V -> Raspberry Pi (74LVC1G17)", 262, 136)
+T("LEMO", 311, 157)
 
 T("Riv. Cosmici 2024 - Amplif, alim, soglie - ricostruito da PDF INFN sez. Torino (S. Gallian, rev. A)", 130, 20)
 
@@ -447,7 +462,7 @@ def write_sch(fn):
     out.append(f'  (uuid {U()})')
     out.append('  (paper "A3")')
     out.append('  (title_block (title "Riv. Cosmici 2024 - Amplif, alim, soglie") '
-               '(date "2026-07-14") (rev "A1") (company "INFN sez. Torino / ricostruzione") '
+               '(date "2026-10-09") (rev "A2") (company "INFN sez. Torino / ricostruzione") '
                '(comment 1 "Ricostruito dal PDF originale di S. Gallian (20/06/2024)"))')
     out.append('  (lib_symbols')
     for line in lib_symbols_sexpr().splitlines():

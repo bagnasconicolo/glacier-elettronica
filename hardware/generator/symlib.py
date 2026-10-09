@@ -206,6 +206,13 @@ add(icbox("MCP1402", 12.7, 10.16,
           [("2", 0, "VDD", "power_in")],
           [("1", -2.54, "GND", "power_in"), ("4", 2.54, "GND", "power_in")]))
 
+# 74LVC1G17 buffer Schmitt (SOT-23-5 DBV): 1 NC, 2 A, 3 GND, 4 Y, 5 VCC
+add(icbox("LVC1G17", 10.16, 7.62,
+          [("2", 0, "A", "input"), ("1", -2.54, "NC", "no_connect")],
+          [("4", 0, "Y", "output")],
+          [("5", 0, "VCC", "power_in")],
+          [("3", 0, "GND", "power_in")]))
+
 # LP2985: left IN(1) EN(3) ; right OUT(5) BYP(4) ; bottom GND(2)
 add(icbox("LP2985", 12.7, 10.16,
           [("1", 2.54, "IN", "power_in"), ("3", -2.54, "EN", "input")],

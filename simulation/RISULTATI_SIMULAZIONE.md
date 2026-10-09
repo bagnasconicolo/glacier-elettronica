@@ -1,5 +1,13 @@
 # Simulazione della catena di segnale
 
+> **Novità: simulazione della scheda COMPLETA** — alimentazioni, boost, bias,
+> front-end, comparatore, uscite, 555 — in `ltspice/` (schema LTspice + netlist,
+> verificata con ngspice). Vedi la sezione in fondo e `ltspice/LEGGIMI.md`.
+> Le sezioni "Buffer d'uscita" e "Treno completo fino ad Arduino" descrivono la
+> variante precedente (buffer a 2 transistor a 5 V), sostituita dal 74LVC1G17 a 3,3 V
+> per la lettura con Raspberry Pi.
+
+
 Transitorio non lineare (MNA + backward Euler, BJT Ebers-Moll) dell'intera catena:
 impulso SiPM → C7 → Q1 BFR93A → Q2 MMBTH81 → C11 → MAX961 (comportamentale con
 isteresi ±2 mV e latch via C9/R16). Impulso SiPM modellato come corrente
@@ -141,3 +149,32 @@ tutti i pin agganciano i fili); gli unici pin "flottanti" segnalati sono i NC
 intenzionali (BYP dell'LP2985, ingressi inusati dell'LT1636). Il buffer aggiunto
 (Q3/Q4) è nella netlist estratta ma non nel solver del front-end (che si ferma al
 comparatore); per simularlo end-to-end si usa `sim_treno_completo.py`.
+
+## Scheda completa: LTspice / ngspice (`ltspice/`)
+
+Netlist e schema LTspice generati da `hardware/generator/netdata.py` (stesso modello
+dati del KiCad); integrati con macromodelli dai datasheet, transistor e diodi con
+modelli SPICE. Transitorio di 30 ms con accensione e 4 eventi a t = 10 ms
+(`python ltspice/verifica_ltspice.py`, 21 controlli tutti superati):
+
+| Grandezza | Simulato |
+|---|---|
+| +3V3 / +3V6 / riferimento 3,6 V | 3,30 / 3,60 / 3,60 V |
+| VOUT40 (boost LT3461) | 41,65 V (calcolo: 1,255 V × 33,2) |
+| BIAS SiPM (V1_POS = 0,76) | 38,44 V, raggiunto dopo 2,4 ms |
+| Punto di lavoro Q1 B / C, Q2 C | 0,59 / 2,47 / 0,42 V (come `sim_catena.py`) |
+| Corrente dai 5 V | 38 mA |
+| Muone 250 p.e. al comparatore | 1,14 V (saturato) |
+| CMP_Q / TTL J2 / GPIO Pi | 3,28 / 4,99 / 3,27 V |
+| Larghezza impulso al GPIO, ritardo | 236 ns, 8 ns |
+| Dark count 1 p.e. | 11 mV → nessun impulso |
+| Muoni a 1,5 µs | risolti separatamente |
+| LED (555) | 10,9 ms |
+
+Impulso minimo in uscita: **~84 ns**, imposto dal latch C9/R16 del MAX961 (per eventi
+appena sopra soglia). La sensibilità vicino alla soglia dipende dalla capacità del SiPM
+(parametro `CSIPM`): 32 mV/p.e. con capacità trascurabile, 19 mV/p.e. con 100 pF,
+6 mV/p.e. con 600 pF; i muoni saturano comunque a ~1,1–1,2 V.
+
+Correzione di ricostruzione emersa dal confronto con l'originale: **V2 è un
+potenziometro** (cursore → R17), non un reostato. Il campo della soglia non cambia.

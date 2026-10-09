@@ -1,23 +1,14 @@
 # -*- coding: utf-8 -*-
 """Render SVG del PCB per controllo visivo."""
+import json
 import gen_pcb as G
+from shapely.geometry import Polygon as _Poly
 
-G.add_escape_stubs(); G.add_gnd_vias()
-G.route_all()
-# dedupe come nel main
-seen = set(); tt = []
-for t in G.tracks:
-    key = (t["net"], t["layer"], tuple(t["pts"]), t["w"])
-    if key not in seen:
-        seen.add(key); tt.append(t)
-G.tracks[:] = tt
-seen = set(); vv = []
-for v in G.vias:
-    key = (v["net"], v["x"], v["y"])
-    if key not in seen:
-        seen.add(key); vv.append(v)
-G.vias[:] = vv
-pour_keep, _ = G.gnd_pour()
+# usa il routing salvato da gen_pcb.py (stesso stato dei Gerber e del .kicad_pcb)
+st = json.load(open("routing_state.json"))
+G.tracks[:] = st["tracks"]
+G.vias[:] = st["vias"]
+pour_keep = [_Poly(ext, holes) for ext, holes in zip(st["pour"], st["pour_holes"])]
 
 X1, Y1, X2, Y2 = G.X1, G.Y1, G.X2, G.Y2
 svg = []

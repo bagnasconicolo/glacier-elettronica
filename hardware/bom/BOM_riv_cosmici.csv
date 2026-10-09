@@ -1,4 +1,22 @@
-Rif.,Qta,Valore/Parte,Package,Codice ordine (da PDF),Note
+Rif.,Qta,Valore/Parte,Package,Codice ordine,Note
+C1,1,22pF,0805,,
+C2,1,1uF 100V,1210,,"dielettrico X7R, 100V (nodo VOUT40 ~41 V)"
+C3 C6,2,100n 100V,1206,,"X7R 100V (nodi 40V/38,4V)"
+C4 CF1 CF2 CF3 CF4 CF5 CF6 CF7 CF8 CF9 CF10,11,100n,0805,,X7R 50V (CF = disaccoppiamento)
+C7,1,10nF,0805,,
+C9,1,100pF,0805,,
+C11,1,10n,0805,,
+C21,1,100nF,0805,,
+C22,1,1uF,0805,,
+D1,1,1N4148,DO-35,,assiale DO-35 (o 1N4148W SOD-123 adattando il footprint)
+D3,1,LED rosso,0805,,LED rosso 0805 (pin 1 = catodo)
+J1,1,SiPM,Header 2.54 1x2,,"verso scintillatore, cavo Fileca schermato; calza = bias 38,4V"
+J2,1,TTL_OUT,Header 2.54 1x2,,uscita 0-5 V (MCP1402): NON collegare ai GPIO del Raspberry Pi
+J3,1,PWR_5V,Header 2.54 1x2,,"pin 1 = GND, pin 2 = +5V"
+J4,1,LEMO_OUT,Header 2.54 1x2,,"uscita 0-3,3 V per GPIO Raspberry Pi; footprint header 2.54 -> LEMO a pannello via cavo"
+L1,1,47uH,SMD 5x5/6x6,RS 693-4344,verificare l'ingombro della parte RS effettiva contro il footprint 5x5
+Q1,1,BFR93A,SOT-23,RS 892-2365,
+Q2,1,MMBTH81,SOT-23,RS 104-1196,
 R1 R10,2,10k,0805,,
 R2,1,68k,0805,,
 R3,1,270k,0805,,
@@ -15,20 +33,7 @@ R18,1,10R,0805,,
 R19,1,18k,0805,,
 R21,1,82R,0805,,
 R22,1,220k,0805,,
-C1,1,22pF,0805,,
-C2,1,1uF 100V,1210,,"dielettrico X7R, 100V (nodo 40,2V)"
-C3 C6,2,100n 100V,1206,,"X7R 100V (nodi 40V/38,4V)"
-C4 CF1 CF2 CF3 CF4 CF5 CF6 CF7 CF8 CF9,10,100n,0805,,
-C7,1,10nF,0805,,
-C9,1,100pF,0805,,
-C11,1,10n,0805,,
-C21,1,100nF,0805,,
-C22,1,1uF,0805,,
-L1,1,47uH,SMD 5x5/6x6,RS 693-4344,verificare ingombro della parte RS effettiva
-D1,1,1N4148,DO-35,,assiale DO-35 (o 1N4148W SOD-123 adattando footprint)
-D3,1,LED rosso,0805,,LED rosso 0805
-Q1,1,BFR93A,SOT-23,RS 892-2365,
-Q2,1,MMBTH81,SOT-23,RS 104-1196,
+R23,1,33R,0805,,terminazione serie del cavo verso Raspberry Pi
 U1,1,LT3461,SOT-23-6 (ThinSOT),Farnell 4024725,
 U2,1,TLC555/LMC555,SO-8,RS 196-2112 (LMC555CM),
 U3,1,MAX961,SO-8,RS 189-9176,
@@ -36,11 +41,6 @@ U4,1,MCP1402,SOT-23-5,RS 668-4203,
 U5 U7,2,LP2985AIM5-3.6,SOT-23-5,RS 812-2417,
 U6,1,MCP1825S-3302,SOT-223,RS 669-5092,
 U8,1,LT1636,SO-8,Farnell 4020771,
+U9,1,74LVC1G17,SOT-23-5,,"SN74LVC1G17DBVR (TI) o equivalente; buffer 3,3 V verso Raspberry Pi"
 V1 V2,2,10k,Trimmer 3296W,,Bourns 3296W-1-103LF o equivalente
-J1,1,SiPM,Header 2.54 1x2,,"verso scintillatore, cavo Fileca schermato; calza = bias 38,4V"
-J2,1,TTL_OUT,Header 2.54 1x2,,
-J3,1,PWR_5V,Header 2.54 1x2,,
 (fuori scheda),1,SiPM AFBR-S4N22P014M,-,Farnell 4351470,montato su PCB separato incollato allo scintillatore
-R23 R24 R25 R26,4,1k,0805,,buffer LEMO (Rin/Rc/Rb/RL)
-Q3 Q4,2,MMBT2222A,SOT-23,,buffer d'uscita LEMO (2N2222 SMD)
-J4,1,LEMO_OUT,Header 2.54 1x2*,,*footprint provvisorio: sostituire con LEMO EPL.00.250.NTN o simile

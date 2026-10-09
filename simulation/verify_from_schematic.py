@@ -177,49 +177,34 @@ if __name__ == "__main__":
     print("\nRISULTATO:", "la simulazione dallo schema COINCIDE col riferimento" if ok else "DISCREPANZA")
 
 
-# ============ estensione: BUFFER d'uscita dallo schema ============
-def build_buffer(path):
-    """estrae il buffer (da CMP_Q, attraverso R/Q, rail +5V) dal .kicad_sch."""
+# ============ estensione: uscita verso Raspberry Pi dallo schema ============
+# Il buffer discreto a 2 transistor e' stato sostituito da U9 74LVC1G17
+# (alimentato a +3V3). La simulazione della scheda intera e' in
+# ltspice/ (verifica_ltspice.py); qui si controlla dallo schema KiCad che lo
+# stadio d'uscita sia collegato come previsto.
+def check_output_stage(path):
     comps, nets, cpn = extract(path)
-    start = cpn.get(("R23","1")) or "CMP_Q"        # ingresso buffer
-    dev_of_net = {}
-    for ref,c in comps.items():
-        if c["lib"] in ("R","NPN","PNP") or c["value"] in BJTMODEL:
-            for num in c["pins"]:
-                dev_of_net.setdefault(cpn[(ref,num)],[]).append(ref)
-    nodes=set(); devices=set(); frontier=[start]
-    while frontier:
-        net=frontier.pop()
-        if net in RAILS: continue
-        if net in nodes: continue
-        nodes.add(net)
-        for ref in dev_of_net.get(net,[]):
-            if not ref.startswith(("R2","Q3","Q4")): continue  # solo buffer
-            devices.add(ref)
-            for num in comps[ref]["pins"]:
-                nn=cpn[(ref,num)]
-                if nn not in nodes and nn not in RAILS: frontier.append(nn)
-    R=[]; Q=[]
-    for ref in devices:
-        c=comps[ref]; p={n:cpn[(ref,n)] for n in c["pins"]}
-        if c["lib"]=="R": R.append((ref, rval(c["value"]), p['1'], p['2']))
-        else:
-            m=BJTMODEL.get(c["value"], dict(IS=1e-14,BF=200,BR=4,pnp=(c["lib"]=="PNP")))
-            Q.append((ref, m, p['1'], p['2'], p['3']))
-    return dict(nodes=sorted(nodes), R=R, Q=Q, start=start,
-                out=cpn.get(("J4","1")), comps=comps, cpn=cpn)
+    exp = {("U9", "2"): "CMP_Q", ("U9", "3"): "GND", ("U9", "5"): "+3V3",
+           ("J4", "2"): "GND", ("U4", "3"): "CMP_Q", ("U4", "2"): "+5V"}
+    ok = True
+    for (ref, pin), net in exp.items():
+        got = cpn.get((ref, pin))
+        good = got == net
+        ok &= good
+        print(f"  {ref}.{pin:2s} -> {got!s:8s} (atteso {net:6s}) {'OK' if good else 'ERRATO'}")
+    y = cpn[("U9", "4")]
+    out = cpn[("J4", "1")]
+    r23 = {cpn[("R23", "1")], cpn[("R23", "2")]}
+    good = r23 == {y, out} and comps["R23"]["value"] == "33R"
+    ok &= good
+    print(f"  U9.Y -> R23 ({comps['R23']['value']}) -> J4.1      {'OK' if good else 'ERRATO'}")
+    # nessun pin dello stadio d'uscita verso +5V oltre al driver TTL U4
+    on5 = [r for (r, p), n in cpn.items() if n == "+5V" and r in ("U9", "R23", "J4")]
+    ok &= not on5
+    print("  niente +5V verso J4 (GPIO del Pi a 3,3 V):", "OK" if not on5 else f"ERRATO {on5}")
+    return ok
 
-if __name__ == "__main__" and "--buffer" in __import__("sys").argv:
-    b=build_buffer("../hardware/riv_cosmici.kicad_sch")
-    print("=== buffer estratto dal .kicad_sch ===")
-    print("nodi:", b["nodes"])
-    for ref,R,a,c in b["R"]: print(f"  {ref} = {R:.0f} Ohm  ({a} - {c})")
-    for ref,m,B,E,C in b["Q"]: print(f"  {ref} = {'PNP' if m['pnp'] else 'NPN'}  B={B} E={E} C={C}")
-    print("ingresso =", b["start"], " uscita LEMO/J4 =", b["out"])
-    # verifica topologia attesa: Rin CMP_Q->baseQ3, Rc +5->collQ3, Rb collQ3->baseQ4, RL +5->collQ4=out
-    q3=[q for q in b["Q"] if q[0]=="Q3"][0]; q4=[q for q in b["Q"] if q[0]=="Q4"][0]
-    okE = q3[3]=="GND" and q4[3]=="GND"
-    okRc = any(r[1] and abs(r[1]-1000)<1 for r in b["R"])
-    print("\nemettitori a massa:", "OK" if okE else "NO",
-          "| tutte R=1k:", "OK" if all(abs((r[1] or 0)-1000)<1 for r in b["R"]) else "NO")
-    print("topologia buffer coerente con sim_buffer:", "OK" if okE else "DA CONTROLLARE")
+if __name__ == "__main__" and "--uscita" in __import__("sys").argv:
+    print("=== stadio d'uscita estratto dal .kicad_sch ===")
+    ok = check_output_stage("../hardware/riv_cosmici.kicad_sch")
+    print("\nRISULTATO:", "OK" if ok else "ERRORI")

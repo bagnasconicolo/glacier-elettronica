@@ -1,0 +1,177 @@
+* =====================================================================
+* riv_cosmici_completo.cir - SCHEDA COMPLETA "Riv. Cosmici 2024"
+* (INFN sez. Torino, S. Gallian - "Amplif, alim, soglie", rev. A)
+* + buffer d'uscita 3,3 V verso Raspberry Pi.
+*
+* GENERATO da gen_ltspice.py a partire da hardware/generator/netdata.py,
+* lo stesso modello dati dello schema KiCad: riferimenti e nomi di rete
+* sono quelli dello schema (GND = 0, +5V = V5, +3V3 = V3V3, +3V6 = V3V6).
+* Non modificare a mano: cambia netdata.py e rigenera.
+*
+* LTspice : apri riv_cosmici_completo.asc (schema) oppure questo file
+*           (File > Open, tipo file: Netlists) e premi Run. Modelli e
+*           simboli .asy devono stare nella stessa cartella.
+* ngspice : ngspice -b riv_cosmici_completo.cir
+*
+* Cosa succede nel transitorio (30 ms):
+*   0-0,1 ms  la +5V sale (J3), partono i regolatori 3,3 V e 3,6 V
+*   0-3 ms    il boost LT3461 carica VOUT40 (~41,7 V), l'LT1636 porta
+*             il bias del SiPM (rete BIAS) a ~38,4 V
+*   10 ms     EV1..EV4: un muone grande, un dark count (1 p.e., sotto soglia),
+*             un muone medio, un muone ravvicinato al terzo
+*   Uscite:   CMP_Q/CMP_QB (3,3 V), TTL_OUT (5 V, J2), BUF_OUT (J4 ->
+*             GPIO Raspberry Pi, 0-3,3 V), LED D3 acceso ~11 ms dal 555
+* =====================================================================
+.include riv_cosmici_modelli.lib
+
+* ----------------------------- parametri -----------------------------
+.param VIN=5
+* V1 (regolazione tensione SiPM): frazione di pista dal pin 1 (lato R7).
+*   POS piu' alto = cursore verso D1 = bias piu' alto. 0,76 -> ~38,4 V
+.param V1_POS=0.76
+* V2 (soglia): frazione di pista dal pin 1 (lato R19, alto) al cursore.
+*   soglia ~ 1,286 V * (1 - V2_POS).  0,92 -> ~100 mV (~3 p.e.)
+.param V2_POS=0.92
+* capacita' terminale del SiPM (dal datasheet del sensore usato): divide la
+* carica con l'ingresso dell'amplificatore e cambia i mV per fotoelettrone
+.param CSIPM=100p
+* eventi nel SiPM: istante [s] e numero di fotoelettroni (0,5 pC/p.e.)
+.param T_EV1=10m     NPE_EV1=250
+.param T_EV2=10.01m  NPE_EV2=1
+.param T_EV3=10.02m  NPE_EV3=40
+.param T_EV4=10.0215m NPE_EV4=150
+
+* ===================== Alimentazione: J3 5 V -> U6 3,3 V (+ disaccoppiamenti) =====================
+* J3: alimentatore esterno 5 V, rampa 100 us
+VJ3 VIN_EXT 0 PWL(0 0 100u {VIN})
+* cavo di alimentazione
+RJ3_CAVO VIN_EXT V5 0.05
+XU6 V5 0 V3V3 0 MCP1825
+CF8 V5 0 100n
+CF9 V3V3 0 100n
+C22 V5 0 1u
+CF1 V3V3 0 100n
+CF2 V3V3 0 100n
+CF3 V5 0 100n
+CF5 V3V3 0 100n
+* ===================== Boost LT3461 -> VOUT40 (~41,7 V) =====================
+XU1 SW 0 FB V5 VOUT40 V5 LT3461
+L1 V5 L1_DCR 47u
+* DCR di L1
+RL1_DCR L1_DCR SW 0.5
+C2 VOUT40 0 1u
+C3 VOUT40 0 100n
+R3 VOUT40 FB 270k
+C1 VOUT40 FB 22p
+R1 FB 0 10k
+R2 FB 0 68k
+R22 FB 0 220k
+* ===================== Regolatore bias SiPM 38,4 V (LT1636, V1) =====================
+XU7 V5 0 V5 NC_U7_4 VREF_B LP2985
+CF7 VREF_B 0 100n
+D1 VREF_B VADJ_HI 1N4148
+XV1 VADJ_LO VSET VADJ_HI POT R=10k POS={V1_POS}
+R7 VADJ_LO 0 27k
+R6 VSET 0 100k
+C4 VSET 0 100n
+XU8 NC_U8_1 INV VSET 0 NC_U8_5 VREG38 VOUT40 NC_U8_8 LT1636
+R4 INV 0 1.2k
+R5 INV VREG38 15k
+R8 VREG38 BIAS 1k
+C6 BIAS 0 100n
+* ===================== SiPM + amplificatore (Q1 BFR93A, Q2 MMBTH81) =====================
+* J1: SiPM AFBR-S4N22P014M fuori scheda (cavo Fileca)
+XSIPM SIG_IN BIAS SIPM NPE1={NPE_EV1} T1={T_EV1} NPE2={NPE_EV2} T2={T_EV2} NPE3={NPE_EV3} T3={T_EV3} NPE4={NPE_EV4} T4={T_EV4} CSIPM={CSIPM}
+R10 SIG_IN 0 10k
+C7 SIG_IN Q1B 10n
+R9 Q1B 0 1.8k
+R11 Q1B Q1C 5.6k
+Q1 Q1C Q1B 0 BFR93A
+R12 Q1C V3V3 1k
+R13 Q2E V3V3 560
+Q2 Q2C Q1C Q2E MMBTH81
+R14 Q2C 0 1k
+C11 Q2C CMP_IN 10n
+R15 CMP_IN 0 1k
+* ===================== Soglia: U5 3,6 V, V2, R17-R19 =====================
+XU5 V5 0 V5 NC_U5_4 V3V6 LP2985
+CF4 V3V6 0 100n
+R19 TH_HI V3V6 18k
+XV2 TH_HI TH_W TH_LO POT R=10k POS={V2_POS}
+R18 TH_LO 0 10
+R17 TH TH_W 470
+* ===================== Comparatore MAX961 + latch C9/R16 =====================
+XU3 CMP_IN TH 0 LE 0 CMP_Q CMP_QB V3V3 MAX961
+R16 LE 0 1k
+C9 LE CMP_Q 100p
+* ===================== Uscite: MCP1402 -> J2 TTL 5 V ; 74LVC1G17 -> J4 3,3 V -> Raspberry Pi =====================
+XU4 0 V5 CMP_Q 0 TTL_OUT MCP1402
+* J2: carico TTL
+RLJ2 TTL_OUT 0 10k
+* J2: carico TTL
+CLJ2 TTL_OUT 0 30p
+XU9 NC_U9_1 CMP_Q 0 BUF_Y V3V3 LVC1G17
+CF10 V3V3 0 100n
+R23 BUF_Y BUF_OUT 33
+* J4: cavo coassiale ~1 m
+CCAVO BUF_OUT 0 100p
+* 330 ohm in serie lato Raspberry Pi (consigliato)
+RSER_RPI BUF_OUT RPI_GPIO 330
+* ingresso GPIO
+CRPI RPI_GPIO 0 5p
+* pull-down interno GPIO
+RRPI RPI_GPIO 0 50k
+* ===================== Monostabile TLC555 + LED (~11 ms) =====================
+XU2 0 CMP_QB LED_A V3V3 CTL555 T555 T555 V3V3 TLC555
+R20 T555 V3V3 100k
+C21 T555 0 100n
+CF6 CTL555 0 100n
+R21 LED_A LED_K 82
+D3 LED_K 0 LED_ROSSO
+* ----------------------------- analisi -------------------------------
+.tran 1u 30m 0 2u
+* ---- misure (identiche in LTspice e ngspice; in LTspice i risultati
+*      sono in View > SPICE Error Log)
+* punto di lavoro a riposo (prima degli eventi)
+.meas tran V_3V3     FIND V(V3V3)   AT=9.9m
+.meas tran V_3V6     FIND V(V3V6)   AT=9.9m
+.meas tran V_REFB    FIND V(VREF_B) AT=9.9m
+.meas tran V_OUT40   FIND V(VOUT40) AT=9.9m
+.meas tran V_FB      FIND V(FB)     AT=9.9m
+.meas tran V_SET     FIND V(VSET)   AT=9.9m
+.meas tran V_BIAS    FIND V(BIAS)   AT=9.9m
+.meas tran V_TH      FIND V(TH)     AT=9.9m
+.meas tran VB_Q1     FIND V(Q1B)    AT=9.9m
+.meas tran VC_Q1     FIND V(Q1C)    AT=9.9m
+.meas tran VE_Q2     FIND V(Q2E)    AT=9.9m
+.meas tran VC_Q2     FIND V(Q2C)    AT=9.9m
+.meas tran I_5V      FIND I(VJ3)    AT=9.9m
+.meas tran T_BIAS_OK WHEN V(BIAS)=38 RISE=1
+* evento 1: muone 250 p.e.
+.meas tran PK_EV1    MAX  V(CMP_IN)  FROM=9.999m  TO=10.003m
+.meas tran Q_EV1     MAX  V(CMP_Q)   FROM=9.999m  TO=10.003m
+.meas tran TTL_EV1   MAX  V(TTL_OUT) FROM=9.999m  TO=10.003m
+.meas tran RPI_EV1   MAX  V(RPI_GPIO)  FROM=9.999m  TO=10.003m
+.meas tran W_Q_EV1   TRIG V(CMP_Q)   VAL=1.65 RISE=1 TD=9.99m TARG V(CMP_Q)   VAL=1.65 FALL=1 TD=9.99m
+.meas tran W_TTL_EV1 TRIG V(TTL_OUT) VAL=2.5  RISE=1 TD=9.99m TARG V(TTL_OUT) VAL=2.5  FALL=1 TD=9.99m
+.meas tran W_RPI_EV1 TRIG V(RPI_GPIO)  VAL=1.65 RISE=1 TD=9.99m TARG V(RPI_GPIO)  VAL=1.65  FALL=1 TD=9.99m
+.meas tran D_RPI_EV1 TRIG V(CMP_Q)   VAL=1.65 RISE=1 TD=9.99m TARG V(RPI_GPIO)  VAL=1.65  RISE=1 TD=9.99m
+* evento 2: dark count 1 p.e. (deve restare sotto soglia)
+.meas tran PK_EV2    MAX  V(CMP_IN)  FROM=10.009m TO=10.013m
+.meas tran Q_EV2     MAX  V(CMP_Q)   FROM=10.009m TO=10.013m
+* evento 3: muone piccolo 40 p.e.
+.meas tran PK_EV3    MAX  V(CMP_IN)  FROM=10.019m TO=10.0213m
+.meas tran Q_EV3     MAX  V(CMP_Q)   FROM=10.019m TO=10.0213m
+.meas tran RPI_EV3   MAX  V(RPI_GPIO)  FROM=10.019m TO=10.0215m
+.meas tran W_Q_EV3   TRIG V(CMP_Q)   VAL=1.65 RISE=1 TD=10.019m TARG V(CMP_Q)  VAL=1.65 FALL=1 TD=10.019m
+.meas tran W_RPI_EV3 TRIG V(RPI_GPIO)  VAL=1.65  RISE=1 TD=10.019m TARG V(RPI_GPIO) VAL=1.65 FALL=1 TD=10.019m
+* evento 4: muone 150 p.e. a 1,5 us dal precedente
+.meas tran Q_EV4     MAX  V(CMP_Q)   FROM=10.0215m TO=10.0225m
+.meas tran RPI_EV4   MAX  V(RPI_GPIO)  FROM=10.0215m TO=10.0225m
+* monostabile 555 + LED
+.meas tran VA_LED    MAX  V(LED_A)  FROM=10m TO=12m
+.meas tran VK_LED    MAX  V(LED_K)  FROM=10m TO=12m
+.meas tran T_LED     TRIG V(LED_A) VAL=1.65 RISE=1 TD=9.99m TARG V(LED_A) VAL=1.65 FALL=1 TD=9.99m
+.meas tran V_LED_OFF FIND V(LED_A)  AT=29m
+.end
+
