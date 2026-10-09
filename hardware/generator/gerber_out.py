@@ -139,7 +139,16 @@ for ref, (x, y, rot) in G.PLACEMENT.items():
     for (sx1, sy1, sx2, sy2) in fp.silk:
         d1 = rot_delta(sx1, sy1, rot); d2 = rot_delta(sx2, sy2, rot)
         g.line((x + d1[0], y + d1[1]), (x + d2[0], y + d2[1]), 0.12)
+SILK = globals().get("SILK")          # poligoni di serigrafia aggiuntivi (variante didattica)
+if SILK:
+    for ring in SILK.get("F.SilkS", []):
+        g.region(ring)
 g.write()
+if SILK and SILK.get("B.SilkS"):
+    g = Gerber(f"{NAME}-B_SilkS.gbr", "Legend,Bot")
+    for ring in SILK["B.SilkS"]:
+        g.region(ring)
+    g.write()
 
 # ---------------- edge ----------------
 g = Gerber(f"{NAME}-Edge_Cuts.gbr", "Profile,NP")

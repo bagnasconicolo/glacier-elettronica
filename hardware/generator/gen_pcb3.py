@@ -3,7 +3,7 @@
 
 Riusa il generatore della scheda a 1 canale (gen_pcb: autorouter, pour GND,
 DRC, connettivita'; gerber_out; render_pcb) con il modello a 3 canali
-(netdata3) e il piazzamento a tre strisce (pcb_data3).
+(netdata3), il piazzamento didattico a blocchi (pcb_data3) e la serigrafia (silk3).
 
     python gen_pcb3.py   ->  riv_cosmici_3ch/riv_cosmici_3ch.kicad_pcb, gerber/, pcb_render
 """
@@ -42,6 +42,20 @@ order += ["AND_Y", "AND_OUT"]
 order += [n for n in netdata3.NETS if n not in order and n != "GND"]
 GP.ROUTE_ORDER[:] = order
 
+# corridoio delle uscite verso la coincidenza: piste fisse, aggiunte prima delle
+# via GND (che cosi' lo evitano) a ogni tentativo del router
+_stubs = GP.add_escape_stubs
+
+
+def _stubs_and_corridor():
+    _stubs()
+    t, v = P3.corridor_tracks()
+    GP.tracks.extend(t)
+    GP.vias.extend(v)
+
+
+GP.add_escape_stubs = _stubs_and_corridor
+
 # avanzamento del routing (la scheda a 3 canali richiede parecchi minuti)
 import time as _t                                  # noqa: E402
 _route_net = GP.route_net
@@ -57,13 +71,45 @@ def _route_net_log(net):
 GP.route_net = _route_net_log
 
 
-if __name__ == "__main__":
+def solo_serigrafia():
+    """riscrive .kicad_pcb, Gerber e anteprima dal routing salvato (senza ri-instradare)"""
+    import json
+    import silk3
+    from shapely.geometry import Polygon
+    silk, miss = silk3.build()
+    json.dump(silk, open(os.path.join(OUT, "silk.json"), "w"))
+    print("serigrafia:", {k: len(v) for k, v in silk.items()}, "riferimenti mancanti:", miss)
+    GP.SILK_POLYS = silk
+    st = json.load(open(STATE))
+    GP.tracks[:] = st["tracks"]
+    GP.vias[:] = st["vias"]
+    pour = [Polygon(e, h) for e, h in zip(st["pour"], st["pour_holes"])]
+    GP.write_pcb(os.path.join(OUT, "riv_cosmici_3ch.kicad_pcb"), pour)
+    runpy.run_path(os.path.join(HERE, "gerber_out.py"),
+                   init_globals={"STATE": STATE, "OUT": os.path.join(OUT, "gerber"),
+                                 "NAME": "riv_cosmici_3ch", "SILK": silk})
+    runpy.run_path(os.path.join(HERE, "render_pcb.py"),
+                   init_globals={"STATE": STATE, "OUTSVG": os.path.join(OUT, "pcb3_render.svg"),
+                                 "SILKJSON": os.path.join(OUT, "silk.json")})
+
+
+if __name__ == "__main__" and "--solo-serigrafia" in sys.argv:
+    solo_serigrafia()
+elif __name__ == "__main__":
     os.makedirs(os.path.join(OUT, "gerber"), exist_ok=True)
+    # serigrafia didattica (blocchi, titoli, test point, riferimenti, legenda sul retro)
+    import json
+    import silk3
+    silk, miss = silk3.build()
+    json.dump(silk, open(os.path.join(OUT, "silk.json"), "w"))
+    print("serigrafia:", {k: len(v) for k, v in silk.items()}, "riferimenti mancanti:", miss)
+    GP.SILK_POLYS = silk
     fails, errs, cerr = GP.main(os.path.join(OUT, "riv_cosmici_3ch.kicad_pcb"), STATE)
     runpy.run_path(os.path.join(HERE, "gerber_out.py"),
                    init_globals={"STATE": STATE, "OUT": os.path.join(OUT, "gerber"),
-                                 "NAME": "riv_cosmici_3ch"})
+                                 "NAME": "riv_cosmici_3ch", "SILK": silk})
     runpy.run_path(os.path.join(HERE, "render_pcb.py"),
-                   init_globals={"STATE": STATE, "OUTSVG": os.path.join(OUT, "pcb3_render.svg")})
+                   init_globals={"STATE": STATE, "OUTSVG": os.path.join(OUT, "pcb3_render.svg"),
+                                 "SILKJSON": os.path.join(OUT, "silk.json")})
     if fails or errs or cerr:
         raise SystemExit(1)

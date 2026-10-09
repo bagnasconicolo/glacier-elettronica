@@ -63,7 +63,7 @@ for (value, fpk), refs in groups.items():
     if value == "100n":
         note = "X7R 50V (CF = disaccoppiamento)"
     if value == "TP":
-        value, note = "test point", "anello Keystone 5001 (rosso) / 5000 (nero) o filo"
+        value, note = "test point", "anello Keystone 5000 (rosso) / 5001 (nero, GND) o filo"
     if value == "LEMO":
         value, note = "LEMO EPL.00.250.NTN", "presa a gomito da circuito stampato (gia' disponibili)"
     rows.append([" ".join(refs), len(refs), value, gen_bom.PKG[fpk], gen_bom.ORDER.get(value, ""), note])

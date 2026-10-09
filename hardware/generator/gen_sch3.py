@@ -124,7 +124,7 @@ def build():
         yy = cy - 15 + k * 12.7
         stub(f"JP{n}", 385.0, yy, nets={"1": f"BUF_Y{n}", "2": f"AND_IN{n}"})
         stub(f"R3{n}", 402.0, yy, rot=90, nets={"1": f"AND_IN{n}", "2": "+3V3"})
-    stub("U10", cx, cy, nets={"1": "AND_IN1", "3": "AND_IN2", "6": "AND_IN3",
+    stub("U10", cx, cy, nets={"3": "AND_IN1", "1": "AND_IN2", "6": "AND_IN3",
                               "4": "AND_Y", "5": "+3V3", "2": "GND"})
     stub("CF11", cx + 15, cy - 10, nets={"1": "+3V3", "2": "GND"})
     stub("R30", cx + 22, cy + 10, rot=90, nets={"1": "AND_Y", "2": "AND_OUT"})

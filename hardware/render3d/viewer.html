@@ -19,7 +19,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-// ?v=1ch|3ch  &view=iso|top|front|detail  &w=  &h=
+// ?v=1ch|3ch  &view=iso|top|front|detail|coinc|lemo|ch1  &w=  &h=
 const q = new URLSearchParams(location.search);
 const VAR = q.get("v") || "1ch";
 const VIEW = q.get("view") || "iso";
@@ -189,14 +189,16 @@ shadowFloor.rotation.x = -Math.PI / 2; shadowFloor.position.y = -T - 0.01; shado
 // ---------- camera
 const cam = new THREE.PerspectiveCamera(30, W / H, 1, 2000);
 const D = Math.max(BW, BH);
+const DI = Math.max(BW, BH * 0.72);        // schede lunghe: inquadratura iso piu' vicina
 const views = {
-  iso:    [[cx + D * 0.75, D * 1.15, cz + D * 1.25], [cx, 0, cz]],
+  iso:    [[cx + DI * 0.75, DI * 1.15, cz + DI * 1.25], [cx, 0, cz]],
   // dall'alto: distanza tale che tutta la scheda entri nell'inquadratura (fov 30 gradi)
   top:    [[cx, Math.max(BH / 2, BW / 2 * H / W) / Math.tan(Math.PI / 12) * 1.12, cz + 0.001], [cx, 0, cz]],
   front:  [[cx + D * 1.1, D * 0.55, cz + D * 0.35], [cx, 0, cz]],
   detail: [[X1 + BW * 0.62, 38, Y1 + 62], [X1 + BW * 0.55, 0, Y1 + 22]],
-  coinc:  [[112, 42, 150], [86, 0, 120]],          // 3 canali: coincidenza + LEMO AND
-  lemo:   [[150, 55, 120], [94, 0, 95]],           // 3 canali: fila di LEMO sul bordo destro
+  coinc:  [[100, 48, 258], [78, 0, 212]],          // 3 canali: schema a blocchi, coincidenza, LEMO AND
+  lemo:   [[165, 70, 165], [105, 0, 135]],         // 3 canali: fila di LEMO sul bordo destro
+  ch1:    [[67, 88, 112], [67, 0, 73]],            // 3 canali: canale 1 quasi dall'alto (serigrafia)
 };
 const [p, t] = views[VIEW] || views.iso;
 cam.position.set(...p);

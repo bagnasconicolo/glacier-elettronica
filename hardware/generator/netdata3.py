@@ -76,7 +76,8 @@ COMPONENTS.update({
     "R30":  ("R", "33R", "R0805", {"note": "terminazione serie uscita AND"}),
     "J5":   ("CONN2", "LEMO_AND", "LEMO00", {"note": "uscita coincidenza, LEMO EPL.00.250.NTN"}),
 })
-AND_PIN = {1: "1", 2: "3", 3: "6"}           # A, B, C del 74LVC1G11
+AND_PIN = {1: "3", 2: "1", 3: "6"}           # B, A, C del 74LVC1G11 (ingressi equivalenti;
+                                             # ordine scelto per piste senza incroci)
 for n in CHANNELS:
     COMPONENTS[f"JP{n}"] = ("CONN2", f"INCL_CH{n}", "HDR2",
                             {"note": f"jumper: chiuso = canale {n} nella coincidenza"})

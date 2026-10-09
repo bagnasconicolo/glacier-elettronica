@@ -39,7 +39,7 @@ pads = PD.abs_pads()
 MASK = "#1e6b3c"
 TRACK = "#2f8d50"
 COPPER = "#d9d6cc"         # HASL
-SILK = "#f4f4ee"
+SILK_C = "#f4f4ee"
 
 
 def tx(x):
@@ -73,20 +73,29 @@ for p in pads:
                    f'width="{w * PX:.1f}" height="{h * PX:.1f}" rx="{0.15 * PX:.1f}" fill="{COPPER}"/>')
     if p["kind"] != "smd":
         svg.append(f'<circle cx="{tx(p["x"]):.1f}" cy="{ty(p["y"]):.1f}" r="{p["drill"] / 2 * PX:.1f}" fill="#111"/>')
-# serigrafia: contorni dei footprint e riferimenti
+# serigrafia: contorni dei footprint + riferimenti (o la serigrafia didattica, se c'e')
+SILK = os.path.join(os.path.dirname(STATE), "silk.json") if variant == "3ch" else None
+silk = json.load(open(SILK)) if SILK and os.path.exists(SILK) else None
+if silk:
+    for ring in silk["F.SilkS"]:
+        pts = " ".join(f"{tx(x):.1f},{ty(y):.1f}" for x, y in ring)
+        svg.append(f'<polygon points="{pts}" fill="{SILK_C}"/>')
 for ref, (x, y, rot) in PD.PLACEMENT.items():
     fp = FPS[PD.FP_OF[PD.COMPONENTS[ref][2]]]
     for (sx1, sy1, sx2, sy2) in fp.silk:
         a = PD.rot_delta(sx1, sy1, rot)
         b = PD.rot_delta(sx2, sy2, rot)
         svg.append(f'<line x1="{tx(x + a[0]):.1f}" y1="{ty(y + a[1]):.1f}" x2="{tx(x + b[0]):.1f}" '
-                   f'y2="{ty(y + b[1]):.1f}" stroke="{SILK}" stroke-width="{0.15 * PX:.1f}"/>')
+                   f'y2="{ty(y + b[1]):.1f}" stroke="{SILK_C}" stroke-width="{0.15 * PX:.1f}"/>')
+    if silk:
+        continue
     cy1 = fp.courtyard[1]
     lx, ly = PD.rot_delta(0, cy1 - 0.5, rot)
     svg.append(f'<text x="{tx(x + lx):.1f}" y="{ty(y + ly):.1f}" font-family="DejaVu Sans, Arial" '
-               f'font-size="{0.9 * PX:.1f}" fill="{SILK}" text-anchor="middle">{ref}</text>')
-svg.append(f'<text x="{tx(X1 + 2):.1f}" y="{ty(Y2 - 1.2):.1f}" font-family="DejaVu Sans, Arial" '
-           f'font-size="{1.4 * PX:.1f}" fill="{SILK}">{TITLE} - CERN-OHL-W-2.0</text>')
+               f'font-size="{0.9 * PX:.1f}" fill="{SILK_C}" text-anchor="middle">{ref}</text>')
+if not silk:
+  svg.append(f'<text x="{tx(X1 + 2):.1f}" y="{ty(Y2 - 1.2):.1f}" font-family="DejaVu Sans, Arial" '
+           f'font-size="{1.4 * PX:.1f}" fill="{SILK_C}">{TITLE} - CERN-OHL-W-2.0</text>')
 svg.append("</svg>")
 open(os.path.join(OUT, "top.svg"), "w").write("\n".join(svg))
 import cairosvg                                   # noqa: E402

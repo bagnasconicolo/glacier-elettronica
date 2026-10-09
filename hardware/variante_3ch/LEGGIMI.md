@@ -1,7 +1,10 @@
 # Variante a 3 canali + coincidenza
 
-Una sola scheda (80 × 165 mm, 2 strati) con **tre front-end completi** del rivelatore
+Una sola scheda (95 × 205 mm, 2 strati) con **tre front-end completi** del rivelatore
 INFN — uno per barra di scintillatore — e la **coincidenza AND** già a bordo.
+Il PCB è pensato anche per **attività didattiche (STEM)**: è diviso in blocchi
+funzionali con il nome scritto in serigrafia, e i test point sono accanto ai punti che
+misurano.
 
 ![PCB](anteprima_pcb_3ch.png)
 
@@ -18,17 +21,21 @@ Tutto è generato da `hardware/generator/` (`netdata3.py`, `gen_sch3.py`, `pcb_d
 `gen_pcb3.py`, `gen_variante3.py`) a partire dal modello della scheda a 1 canale: il
 circuito di ogni canale è **identico** all'originale INFN.
 
-## Com'è fatta
+## Com'è fatta (si legge dall'alto in basso)
 
-- **Tre strisce da 55 mm**, una per canale, ognuna con lo stesso piazzamento della
-  scheda singola: SiPM (J101/J201/J301) a sinistra, uscita LEMO a destra.
-- **In comune** (striscia 1): ingresso 5 V (J3), regolatore 3,3 V (U6), boost LT3461
-  (U1, alimenta i 3 regolatori di bias, ~8 mA a 41 V), riferimenti 3,6 V (U5 soglie,
-  U7 bias).
-- **Per canale**: bias del SiPM regolabile (V101/V201/V301), soglia regolabile
-  (V102/V202/V302), comparatore MAX961, LED del 555, buffer 74LVC1G17 → LEMO.
+| Fascia | Cosa c'è |
+|---|---|
+| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `SURVOLTORE 5V -> 41V` (U1, LT3461) → `RIFERIMENTI 3,6V` (U5 soglie, U7 bias); cartiglio |
+| **Canale 1, 2, 3** | riga alta = percorso del segnale da sinistra a destra: `1 SiPM` → `2 AMPLIFICATORE` → `3 COMPARATORE` → `4 USCITA` (LEMO sul bordo destro); riga bassa = circuiti di supporto sotto il blocco che servono: `A ALIMENTAZIONE SiPM ~38V` (V1), `B SOGLIA` (V2), `C LED` (555) |
+| **Coincidenza** (in basso) | schema a blocchi di un canale in serigrafia; jumper JP1–JP3 → AND a 3 (U10) → LEMO J5 |
+| **Lato saldature** | legenda "Come funziona" (testo specchiato, si legge girando la scheda) |
+
+- Ogni canale ha **lo stesso piazzamento**, spostato di 52 mm: trovato un punto sul
+  canale 1, è nello stesso posto sugli altri due.
 - **Riferimenti**: R9 del canale 2 si chiama R209, U3 del canale 3 si chiama U303, ecc.
-- **Tolto** il driver TTL a 5 V (MCP1402, J2): le uscite sono LEMO a 3,3 V.
+  Tutti i riferimenti sono stampati in serigrafia.
+- Il circuito di ogni canale è **identico** all'originale INFN; tolto solo il driver TTL
+  a 5 V (MCP1402, J2): le uscite sono LEMO a 3,3 V.
 
 ## Uscite LEMO (bordo destro, dall'alto)
 
@@ -36,8 +43,8 @@ circuito di ogni canale è **identico** all'originale INFN.
 |---|---|
 | J104 | canale 1 (0–3,3 V, 33 Ω in serie) |
 | J204 | canale 2 |
-| J5 | **coincidenza AND** dei canali inclusi |
 | J304 | canale 3 |
+| J5 | **coincidenza AND** dei canali inclusi (in basso) |
 
 Footprint per **LEMO EPL.00.250.NTN** (presa a gomito da circuito stampato, serie 00):
 contatto centrale + 4 piedini di schermo su quadrato 5,08 mm, fori 0,8 mm, frontale
@@ -46,7 +53,12 @@ del PCB in scala 1:1** e verifica fori e distanza dal bordo.
 
 ## Coincidenza e jumper JP1–JP3
 
-U10 (74LVC1G11) fa l'AND delle uscite dei tre canali. Ogni ingresso passa da un jumper:
+U10 (74LVC1G11) fa l'AND delle uscite dei tre canali. Ogni ingresso passa da un jumper
+(sulla scheda c'è scritto `CH1`, `CH2`, `CH3` sotto ciascuno). Le uscite dei canali
+scendono alla coincidenza in un **corridoio riservato** lungo il bordo destro, senza
+passare sopra i circuiti degli altri canali. I tre ingressi dell'AND sono equivalenti:
+il canale 1 va al pin 3 (B), il 2 al pin 1 (A), il 3 al pin 6 (C), per avere piste
+senza incroci.
 
 | JP | Chiuso | Aperto |
 |---|---|---|
@@ -60,16 +72,30 @@ barre i fronti arrivano entro pochi ns e gli impulsi si sovrappongono.
 
 ## Test point per oscilloscopio
 
-| Canale n (TPn01…TPn06, colonna sul bordo destro) | Comuni |
+Ogni test point ha il nome stampato accanto ed è **a pochi mm dal nodo che misura**:
+le piste che li collegano sono corte e non fanno da antenna (nella versione precedente
+i test point erano in colonna sul bordo e aggiungevano fino a 7 cm di pista
+sull'ingresso dell'amplificatore).
+
+| Canale n (stesse posizioni in ogni canale) | Scritta | Dove |
+|---|---|---|
+| TPn01 SIG_IN (anodo SiPM) | `SiPM` | accanto a J1 |
+| TPn06 GND | `GND` | sopra TPn01: molla di massa della sonda |
+| TPn05 BIAS (~38 V: attenzione) | `BIAS` | sotto il filtro R8/C6 |
+| TPn02 CMP_IN (ingresso comparatore) | `IN` | accanto a U3 |
+| TPn03 TH (soglia) | `SOGLIA` | accanto a R17 |
+| TPn04 CMP_Q (uscita comparatore) | `OUT` | tra U3 e il buffer |
+
+| Comuni | Scritta |
 |---|---|
-| TPn01 SIG_IN (anodo SiPM) | TP1 VOUT40 (~41 V) |
-| TPn02 CMP_IN (ingresso comparatore) | TP2 +5V |
-| TPn03 TH (soglia) | TP3 +3V3 |
-| TPn04 CMP_Q (uscita comparatore) | TP4 +3V6 |
-| TPn05 BIAS (~38 V: attenzione) | TP5 uscita AND |
-| TPn06 GND (massa per la pinza della sonda) | TP6 GND |
+| TP1 VOUT40 (~41 V) | `41V` |
+| TP2 +5V, TP6 GND | `5V`, `GND` (accanto a J3) |
+| TP3 +3V3 | `3,3V` |
+| TP4 +3V6 | `3,6V` |
+| TP5 uscita AND | `AND` |
 
 Fori da 1 mm per anelli Keystone 5000 (rossi) / 5001 (neri, GND) o un filo piegato.
+Usa una sonda 10× con la molla di massa corta sul GND più vicino.
 
 ## Montaggio
 
@@ -98,5 +124,9 @@ CF7, CF9) valgono le stesse note della scheda singola.
 
 - Schema: netlist riletta dal `.kicad_sch` per geometria = modello dati (0 differenze).
 - PCB: autorouter + DRC geometrico + connettività: **0 errori**.
+- Piste corte e uguali nei tre canali (mm): ingresso SiPM 9, ingresso comparatore 18,
+  soglia 16–24, bias 9–11, uscita comparatore 26–28.
+- Serigrafia: testo alto almeno 0,9 mm (tratto ~0,17 mm), mai sopra i pad; generata da
+  `silk3.py` e identica in KiCad (`gr_poly`) e nei Gerber.
 - Non ancora fatto: simulazione SPICE della scheda a 3 canali (il canale è identico a
   quello simulato in `simulation/ltspice/`); ERC/DRC ufficiali in KiCad.

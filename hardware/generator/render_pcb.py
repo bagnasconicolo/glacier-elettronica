@@ -46,8 +46,13 @@ for p in G.pads:
 for v in G.vias:
     svg.append(f'<circle cx="{v["x"]}" cy="{v["y"]}" r="{G.VIA_D/2}" fill="#208020"/>')
     svg.append(f'<circle cx="{v["x"]}" cy="{v["y"]}" r="{G.VIA_DRILL/2}" fill="white"/>')
-# courtyard + ref
-for ref, ct in G.courtyards():
+# serigrafia didattica (se passata): sostituisce courtyard + riferimenti
+SILKJSON = globals().get("SILKJSON")
+if SILKJSON:
+    for ring in json.load(open(SILKJSON))["F.SilkS"]:
+        pts = " ".join(f"{x:.3f},{y:.3f}" for x, y in ring)
+        svg.append(f'<polygon points="{pts}" fill="#202020" opacity="0.85"/>')
+for ref, ct in ([] if SILKJSON else G.courtyards()):
     b = ct.bounds
     rect(b[0], b[1], b[2], b[3], "none", 1.0, "#909090")
     svg.append(f'<text x="{(b[0]+b[2])/2:.2f}" y="{b[1]-0.3:.2f}" font-size="1.1" text-anchor="middle" fill="#202020" font-family="monospace">{ref}</text>')
