@@ -4,7 +4,7 @@ U103 U203 U303;MAX961ESA+ (comparatore, SO-8);2519484;3;16;
 U108 U208 U308;LT1636CS8#PBF (op-amp, SO-8);(cerca per MPN);3;16;ATTENZIONE: il vecchio codice 4020771 e' la versione MSOP (CMS8), NON entra nel footprint
 U5 U7;LP2985AIM5-3.6/NOPB (LDO 3.6 V, SOT-23-5);(cerca per MPN);2;12;in alternativa RS 812-2417
 D101 D201 D301;1N4148-TAP (DO-35);2889103;3;20;il vecchio 3606680 era una bobina da 5000 pezzi con 24 settimane di attesa
-J101 J201 J301 J3 JP1-3 + tutti i TP;strip maschio 1x40 passo 2,54 (Wurth 61304011121);(cerca per MPN);38 pin;5;i test point diventano pin di strip: niente Keystone
+J101 J201 J301 J3 J6 JP1-3 + tutti i TP;strip maschio 1x40 passo 2,54 (Wurth 61304011121);(cerca per MPN);41 pin;6;i test point diventano pin di strip: niente Keystone
 JP1-JP3;ponticello 2,54 mm (Multicomp MC-2228CG);2834673;3;20;
 SiPM;Broadcom AFBR-S4N22P014M;4351470;3;15;
 J104 J204 J304 J5;LEMO EPL.00.250.NTN;-;4;20;gia' disponibili: non ordinare

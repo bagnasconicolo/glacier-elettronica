@@ -44,7 +44,8 @@ U5_PART = BLOCKS[3][BLOCKS[3].index("# LP2985 3,6V (U5)"):]
 B7 = BLOCKS[7]
 i7 = B7.index("path((132.08, 184.15), (137.16, 184.15)")
 CH7 = B7[:i7] + ('w(132.08, 184.15, 137.16, 184.15); L("VREF_B", 137.16, 184.15)\n'
-                 'T("regolazione tensione (V1)", 112, 190)\n')
+                 'T("regolazione tensione (V1)", 112, 190)\n'
+                 'L("VREG38", 165.1, 158.75)\n')          # verso il partitore del monitor
 U7_PART = ('path((137.16, 184.15), (143.51, 184.15), (144.78, 184.15)); L("VREF_B", 137.16, 184.15)\n'
            + B7[B7.index('place("CF7"'):])
 U7_PART = U7_PART.replace('T("regolazione tensione (V1)", 112, 190)\n', "")
@@ -134,6 +135,28 @@ def build():
     G.T("Test point comuni", 360, 330)
     for i, net in enumerate(netdata3.TP_SHARED, 1):
         stub(f"TP{i}", 362 + (i - 1) * 12.7, 342, nets={"1": net})
+    # ---- monitor delle tensioni: partitori + ADC MCP3424 + connettore I2C
+    mx, my = 360.0, 400.0
+    G.T("MONITOR TENSIONI: partitori 1M/43k su VREG38n e VOUT40 -> ADC MCP3424 (I2C, 0x68) -> Raspberry Pi",
+        mx - 2, my - 22)
+    divs = [(netdata3.chref("R50", n), netdata3.chref("R51", n), netdata3.chref("C50", n),
+             f"VREG38{n}", f"MON{n}") for n in netdata3.CHANNELS]
+    divs.append(("R40", "R41", "C40", "VOUT40", "MON4"))
+    for k, (rt, rb, cm, top, mon) in enumerate(divs):
+        x = mx + k * 25.4
+        stub(rt, x, my, nets={"1": top, "2": mon})                 # simboli R/C verticali
+        stub(rb, x, my + 15.24, nets={"1": mon, "2": "GND"})
+        stub(cm, x + 7.62, my + 15.24, nets={"1": mon, "2": "GND"})
+    ux, uy = mx + 140, my + 10
+    stub("U11", ux, uy, nets={"1": "MON1", "2": "GND", "3": "MON2", "4": "GND",
+                              "11": "MON3", "12": "GND", "13": "MON4", "14": "GND",
+                              "5": "GND", "6": "+3V3", "7": "SDA_ADC", "8": "SCL_ADC",
+                              "9": "GND", "10": "GND"})
+    stub("CF12", ux + 22, uy - 20, nets={"1": "+3V3", "2": "GND"})
+    stub("R42", ux + 28, uy - 5.08, rot=90, nets={"1": "SDA_ADC", "2": "I2C_SDA"})
+    stub("R43", ux + 28, uy + 5.08, rot=90, nets={"1": "SCL_ADC", "2": "I2C_SCL"})
+    stub("J6", ux + 55, uy + 2.54, nets={"1": "GND", "2": "I2C_SDA", "3": "I2C_SCL"})
+    G.T("verso Raspberry Pi (pull-up sul Pi)", ux + 42, uy - 6)
     G.T("Riv. Cosmici 2024 - VARIANTE 3 CANALI + coincidenza - da INFN sez. Torino (S. Gallian, rev. A)",
         200, 12)
 

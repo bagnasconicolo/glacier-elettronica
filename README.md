@@ -194,3 +194,7 @@ materiale didattico: questo repository.
 Rilasciato sotto **CERN Open Hardware Licence Version 2 — Weakly Reciprocal**
 (CERN-OHL-W-2.0): vedi `LICENSE` e `LICENSE.CERN-OHL-W-2.0.txt`. Il software di
 supporto (script Python/JS, firmware) è distribuito con lo stesso spirito.
+
+## Monitor delle tensioni (scheda a 3 canali)
+
+Un ADC MCP3424 sulla scheda legge i tre bias dei SiPM e l'alta tensione; il Raspberry Pi li legge in I²C con `software/monitor_tensioni.py`. Dettagli e verifica che non disturbi le misure: `hardware/variante_3ch/LEGGIMI.md` e `simulation/ltspice/verifica_monitor.py`.

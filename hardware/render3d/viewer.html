@@ -111,6 +111,12 @@ const MODELS = {
       const l = gull(1.95, 3.1, z, H); g.add(l); const r = gull(-1.95, -3.1, z, H); g.add(r); }
     const dot = cyl(0.3, 0.05, M(0x444444, 0.9), "y", -1.2, H + 0.12, -1.8); g.add(dot);
     g.add(label(short(c.value), 4.4, 3.4, H + 0.1, "#d8d8d8", Math.PI / 2)); return g; },
+  SOIC14: (c) => { const g = new THREE.Group(), H = 1.5;
+    g.add(box(3.9, H, 8.65, mat.epoxy, 0, H / 2 + 0.1, 0, 0.12));
+    for (let i = 0; i < 7; i++) { const z = -3.81 + i * 1.27;
+      g.add(gull(1.95, 3.1, z, H)); g.add(gull(-1.95, -3.1, z, H)); }
+    g.add(cyl(0.3, 0.05, M(0x444444, 0.9), "y", -1.2, H + 0.12, -3.6));
+    g.add(label(short(c.value), 7.5, 3.4, H + 0.1, "#d8d8d8", Math.PI / 2)); return g; },
   SOT223: (c) => { const g = new THREE.Group(), H = 1.6;
     g.add(box(6.5, H, 3.5, mat.epoxy, 0, H / 2 + 0.1, 0, 0.12));
     for (const x of [-2.3, 0, 2.3]) { const l = gull(0, 0, 0, H); g.add(box(0.7, 0.15, 1.6, mat.tin, x, 0.4, 2.4));
@@ -133,6 +139,10 @@ const MODELS = {
   HDR1x02: (c) => { const g = new THREE.Group();
     g.add(box(5.08, 2.5, 2.54, mat.plastic, 1.27, 1.25, 0, 0.1));
     for (const x of [0, 2.54]) g.add(box(0.64, 8.5, 0.64, mat.gold, x, 4.25 - 1.0, 0));
+    return g; },
+  HDR1x03: (c) => { const g = new THREE.Group();
+    g.add(box(7.62, 2.5, 2.54, mat.plastic, 2.54, 1.25, 0, 0.1));
+    for (const x of [0, 2.54, 5.08]) g.add(box(0.64, 8.5, 0.64, mat.gold, x, 4.25 - 1.0, 0));
     return g; },
   LEMO_EPL00: (c) => { const g = new THREE.Group();          // presa a gomito, frontale verso +x
     g.add(box(7, 7, 7, mat.chrome, 0, 3.6, 0, 0.6));

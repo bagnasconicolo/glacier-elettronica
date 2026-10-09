@@ -315,6 +315,9 @@ def build_top():
     x, y, _ = PD.PLACEMENT["J5"]
     place_text("AND", 1.25, near(x - 0.5, y - 5.5, 0, 0, rmax=2) + near(x - 0.5, y + 6.0, 0, 0, rmax=3),
                required=True)
+    x, y, _ = PD.PLACEMENT["J6"]
+    for k, lab in enumerate(("1", "2", "3")):        # nomi dei pin nel sottotitolo del blocco
+        place_text(lab, 0.9, [(x - 1.4 - d, y + k * 2.54, "r", "mid") for d in (0, 0.2, 0.4)], required=True)
     x, y, _ = PD.PLACEMENT["J3"]
     place_text("GND", 0.9, near(x + 3.5, y, 0, 0, rmax=2), required=True)
     place_text("+5V", 0.9, near(x + 3.5, y + 2.54, 0, 0, rmax=2), required=True)

@@ -56,6 +56,30 @@ def _stubs_and_corridor():
 
 GP.add_escape_stubs = _stubs_and_corridor
 
+# le linee del monitor (MON1..4) non devono passare vicino ai nodi analogici
+# sensibili, ne' sullo stesso strato ne' sull'altro (niente incroci sotto l'amplificatore
+# e il comparatore, niente tagli nel piano di massa sotto di loro)
+SENSITIVE = ("SIG_IN", "Q1B", "Q1C", "Q2E", "Q2C", "CMP_IN", "TH", "TH_W", "TH_HI", "TH_LO",
+             "LE", "BIAS", "VSET", "INV")
+KEEP_MON = 1.2                                       # mm di distanza minima
+_build_obstacles = GP.build_obstacles
+
+
+def _build_obstacles_mon(net, w):
+    obs = _build_obstacles(net, w)
+    if net.startswith("MON"):
+        from shapely.geometry import LineString
+        sens = {f"{b}{n}" for b in SENSITIVE for n in netdata3.CHANNELS}
+        extra = [GP.pad_rect(p, KEEP_MON + w / 2) for p in GP.pads if p["net"] in sens]
+        extra += [LineString(t["pts"]).buffer(t["w"] / 2 + KEEP_MON + w / 2)
+                  for t in GP.tracks if t["net"] in sens]
+        for L in ("F.Cu", "B.Cu"):
+            obs[L] = obs[L] + extra
+    return obs
+
+
+GP.build_obstacles = _build_obstacles_mon
+
 # avanzamento del routing (la scheda a 3 canali richiede parecchi minuti)
 import time as _t                                  # noqa: E402
 _route_net = GP.route_net

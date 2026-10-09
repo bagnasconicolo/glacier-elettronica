@@ -72,6 +72,10 @@ CH = {
     "V1":   (19.0, 43.5, 0),
     "R7":   (12.0, 45.5, 0),
     "D1":   (26.5, 38.0, 0),
+    # monitor: partitore 1M/43k + 100n sull'uscita del regolatore (VREG38), verso l'ADC
+    "R50":  (21.0, 29.0, 0),
+    "R51":  (25.5, 31.5, 90),
+    "C50":  (29.0, 31.5, 90),
     # B soglia del comparatore
     "V2":   (46.0, 35.5, 0),
     "R18":  (39.0, 30.5, 0),
@@ -118,6 +122,16 @@ PWR = {
     "CF4": (67.0, 8.0, 90),
     "U7":  (62.0, 18.0, 0),
     "CF7": (67.0, 18.0, 90),
+    # partitore del monitor sull'alta tensione
+    "R40": (57.0, 5.0, 90),
+    "R41": (57.0, 10.5, 90),
+    "C40": (57.0, 15.5, 90),
+    # monitor tensioni: ADC MCP3424 + connettore I2C verso il Raspberry Pi
+    "U11":  (79.5, 11.0, 0),
+    "CF12": (77.0, 4.0, 0),
+    "R42":  (87.3, 10.0, 0),
+    "R43":  (87.3, 13.0, 0),
+    "J6":   (93.0, 8.0, 270),
 }
 PWR_TP = {
     "TP2": (9.0, 19.5),      # +5V
@@ -216,15 +230,18 @@ CH_BLOCKS = [
     ("2 AMPLIFICATORE", "2 transistor", ["C7", "R9", "Q1", "R11", "R12", "Q2", "R13", "R14", "CF1"]),
     ("3 COMPARATORE", "segnale > soglia?", ["C11", "R15", "U3", "CF2", "R16", "C9", "R17", "TP02", "TP03", "TP04"]),
     ("4 USCITA", "buffer 3,3V -> LEMO", ["U9", "CF10", "R23"]),
-    ("A ALIMENTAZIONE SiPM ~38V", "V1 regola la tensione", ["U8", "R4", "R5", "R6", "C4", "V1", "R7", "D1"]),
+    ("A ALIMENTAZIONE SiPM ~38V", "V1 regola la tensione", ["U8", "R4", "R5", "R6", "C4", "V1", "R7", "D1",
+                                                            "R50", "R51", "C50"]),
     ("B SOGLIA", "V2 regola la soglia", ["V2", "R18", "R19"]),
     ("C LED", "lampeggia a ogni evento", ["U2", "R20", "C21", "CF5", "CF6", "R21", "D3"]),
 ]
 PWR_BLOCKS = [
     ("5V IN", None, ["J3", "TP2", "TP6"]),
     ("3,3V", None, ["U6", "CF8", "CF9", "TP3"]),
-    ("ALTA TENSIONE 41V", None, ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1"]),
-    ("RIFERIMENTI 3,6V", None, ["U5", "CF4", "U7", "CF7", "TP4"]),
+    ("ALTA TENSIONE 41V", None, ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1",
+                                  "R40", "R41", "C40"]),
+    ("RIFERIMENTI", "3,6 V stabili", ["U5", "CF4", "U7", "CF7", "TP4"]),
+    ("MONITOR", "J6 al Pi: 1 GND 2 SDA 3 SCL", ["U11", "CF12", "R42", "R43", "J6"]),
 ]
 COINC_BLOCKS = [
     ("COINCIDENZA (AND)", "jumper chiuso = canale incluso",
