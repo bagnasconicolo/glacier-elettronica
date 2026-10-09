@@ -69,7 +69,7 @@ barre i fronti arrivano entro pochi ns e gli impulsi si sovrappongono.
 | TPn05 BIAS (~38 V: attenzione) | TP5 uscita AND |
 | TPn06 GND (massa per la pinza della sonda) | TP6 GND |
 
-Fori da 1 mm per anelli Keystone 5001 (rossi) / 5000 (neri, GND) o un filo piegato.
+Fori da 1 mm per anelli Keystone 5000 (rossi) / 5001 (neri, GND) o un filo piegato.
 
 ## Montaggio
 
@@ -86,6 +86,8 @@ JLCPCB monta 131 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
 | TP* | test point | 24 |
+
+Ordine Farnell per 5 schede (con scorta): `ordine_farnell.csv`.
 
 Prima accensione: come per la scheda singola (`../PRIMA_DI_ORDINARE.md`), un canale
 alla volta: alimentazioni → U1 → per ogni canale U?08 (regola il bias **senza SiPM**)
