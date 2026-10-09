@@ -7,12 +7,14 @@ import json
 import gen_pcb as G
 from shapely.geometry import Polygon as _Poly
 
-st = json.load(open("routing_state.json"))
+STATE = globals().get("STATE", "routing_state.json")
+NAME = globals().get("NAME", "riv_cosmici")
+st = json.load(open(STATE))
 G.tracks[:] = st["tracks"]
 G.vias[:] = st["vias"]
 pour_keep = [_Poly(ext, holes) for ext, holes in zip(st["pour"], st["pour_holes"])]
 
-OUT = "riv_cosmici/gerber"
+OUT = globals().get("OUT", "riv_cosmici/gerber")
 os.makedirs(OUT, exist_ok=True)
 X1, Y1, X2, Y2 = G.X1, G.Y1, G.X2, G.Y2
 
@@ -88,8 +90,8 @@ def pad_flash(g, p, grow=0.0):
         g.flash_rect(p["x"], p["y"], w, h)
 
 # ---------------- copper ----------------
-for layer, fname, fn in (("F.Cu", "riv_cosmici-F_Cu.gbr", "Copper,L1,Top"),
-                         ("B.Cu", "riv_cosmici-B_Cu.gbr", "Copper,L2,Bot")):
+for layer, fname, fn in (("F.Cu", f"{NAME}-F_Cu.gbr", "Copper,L1,Top"),
+                         ("B.Cu", f"{NAME}-B_Cu.gbr", "Copper,L2,Bot")):
     g = Gerber(fname, fn)
     if layer == "B.Cu":   # regioni PRIMA: le LPC non devono cancellare pad/via/tracce
         for part in pour_keep:
@@ -110,8 +112,8 @@ for layer, fname, fn in (("F.Cu", "riv_cosmici-F_Cu.gbr", "Copper,L1,Top"),
     g.write()
 
 # ---------------- mask (aperture = pad + 0.05) ----------------
-for layer, fname, fn in (("F", "riv_cosmici-F_Mask.gbr", "Soldermask,Top"),
-                         ("B", "riv_cosmici-B_Mask.gbr", "Soldermask,Bot")):
+for layer, fname, fn in (("F", f"{NAME}-F_Mask.gbr", "Soldermask,Top"),
+                         ("B", f"{NAME}-B_Mask.gbr", "Soldermask,Bot")):
     g = Gerber(fname, fn)
     for p in G.pads:
         if p["kind"] == "smd" and layer == "F":
@@ -121,7 +123,7 @@ for layer, fname, fn in (("F", "riv_cosmici-F_Mask.gbr", "Soldermask,Top"),
     g.write()
 
 # ---------------- paste (solo smd top) ----------------
-g = Gerber("riv_cosmici-F_Paste.gbr", "Paste,Top")
+g = Gerber(f"{NAME}-F_Paste.gbr", "Paste,Top")
 for p in G.pads:
     if p["kind"] == "smd":
         pad_flash(g, p)
@@ -131,7 +133,7 @@ g.write()
 from pcb_data import rot_delta
 from footprints import FPS
 from pcb_data import FP_OF, COMPONENTS
-g = Gerber("riv_cosmici-F_SilkS.gbr", "Legend,Top")
+g = Gerber(f"{NAME}-F_SilkS.gbr", "Legend,Top")
 for ref, (x, y, rot) in G.PLACEMENT.items():
     fp = FPS[FP_OF[COMPONENTS[ref][2]]]
     for (sx1, sy1, sx2, sy2) in fp.silk:
@@ -140,7 +142,7 @@ for ref, (x, y, rot) in G.PLACEMENT.items():
 g.write()
 
 # ---------------- edge ----------------
-g = Gerber("riv_cosmici-Edge_Cuts.gbr", "Profile,NP")
+g = Gerber(f"{NAME}-Edge_Cuts.gbr", "Profile,NP")
 for a, b in (((X1, Y1), (X2, Y1)), ((X2, Y1), (X2, Y2)),
              ((X2, Y2), (X1, Y2)), ((X1, Y2), (X1, Y1))):
     g.line(a, b, 0.1)
@@ -166,7 +168,7 @@ for d in sorted(holes):
     for (x, y) in holes[d]:
         lines.append(f"X{x:.3f}Y{-y:.3f}")
 lines.append("M30")
-open(os.path.join(OUT, "riv_cosmici-PTH.drl"), "w").write("\n".join(lines) + "\n")
+open(os.path.join(OUT, f"{NAME}-PTH.drl"), "w").write("\n".join(lines) + "\n")
 
 print("gerber scritti in", OUT)
 

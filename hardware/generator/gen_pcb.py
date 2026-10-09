@@ -679,6 +679,7 @@ def write_pcb(fn, pour_parts):
         for num, (px, py, w, h, k, drill) in fp.pads.items():
             net = pnmap.get(num)
             nets = f' (net {NETIDS[net]} "{net}")' if net else ''
+            num = num.split("#")[0]          # pad multipli dello stesso pin
             if k == "smd":
                 o.append(f'    (pad "{num}" smd roundrect (at {px} {py} {rot}) (size {w} {h}) '
                          f'(layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.2){nets} (tstamp {U()}))')
@@ -720,7 +721,7 @@ def write_pcb(fn, pour_parts):
     print("scritto", fn, f"({len(tracks)} tracce, {len(vias)} via)")
 
 # ---------------- main ----------------
-if __name__ == "__main__":
+def main(out_pcb="riv_cosmici/riv_cosmici.kicad_pcb", state="routing_state.json"):
     bad = check_courtyards()
     if bad:
         print("COURTYARD:", bad)
@@ -762,7 +763,12 @@ if __name__ == "__main__":
     json.dump({"tracks": tracks, "vias": vias,
                "pour": [list(p.exterior.coords) for p in pour_keep],
                "pour_holes": [[list(h.coords) for h in p.interiors] for p in pour_keep]},
-              open("routing_state.json", "w"))
-    write_pcb("riv_cosmici/riv_cosmici.kicad_pcb", pour_keep)
+              open(state, "w"))
+    write_pcb(out_pcb, pour_keep)
     print("routing falliti:", fails)
     print("DRC err:", len(errs), " CONN err:", len(cerr))
+    return fails, errs, cerr
+
+
+if __name__ == "__main__":
+    main()

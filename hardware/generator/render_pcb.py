@@ -5,7 +5,7 @@ import gen_pcb as G
 from shapely.geometry import Polygon as _Poly
 
 # usa il routing salvato da gen_pcb.py (stesso stato dei Gerber e del .kicad_pcb)
-st = json.load(open("routing_state.json"))
+st = json.load(open(globals().get("STATE", "routing_state.json")))
 G.tracks[:] = st["tracks"]
 G.vias[:] = st["vias"]
 pour_keep = [_Poly(ext, holes) for ext, holes in zip(st["pour"], st["pour_holes"])]
@@ -54,5 +54,5 @@ for ref, ct in G.courtyards():
 
 hdr = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{X1-3} {Y1-3} {X2-X1+6} {Y2-Y1+6}" width="2200" height="{int(2200*(Y2-Y1+6)/(X2-X1+6))}">'
        f'<rect x="{X1-3}" y="{Y1-3}" width="{X2-X1+6}" height="{Y2-Y1+6}" fill="white"/>')
-open("pcb_render.svg", "w").write(hdr + "\n".join(svg) + "</svg>")
+open(globals().get("OUTSVG", "pcb_render.svg"), "w").write(hdr + "\n".join(svg) + "</svg>")
 print("pcb_render.svg ok")

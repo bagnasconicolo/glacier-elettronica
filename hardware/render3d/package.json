@@ -1,0 +1,7 @@
+{
+  "name": "riv-cosmici-render3d",
+  "private": true,
+  "type": "module",
+  "description": "Render 3D della scheda montata (three.js + Chromium headless)",
+  "dependencies": { "three": "0.160.0", "playwright-core": "^1.47.0" }
+}

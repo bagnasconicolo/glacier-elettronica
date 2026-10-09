@@ -26,6 +26,7 @@ class FP:
         for (sx1, sy1, sx2, sy2) in self.silk:
             o.append(f'  (fp_line (start {sx1} {sy1}) (end {sx2} {sy2}) (layer "F.SilkS") (width 0.12))')
         for num, (x, y, w, h, kind, drill) in self.pads.items():
+            num = num.split("#")[0]          # "2#3" = terzo pad del pin 2
             if kind == "smd":
                 o.append(f'  (pad "{num}" smd roundrect (at {x} {y}) (size {w} {h}) '
                          f'(layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.2))')
@@ -128,6 +129,26 @@ add(FP("HDR1x02",
        silk=[(-1.27, -1.27, 3.81, -1.27), (-1.27, 1.27, 3.81, 1.27),
              (-1.27, -1.27, -1.27, 1.27), (3.81, -1.27, 3.81, 1.27)],
        desc="Pin header 2.54 1x2"))
+
+# Test point per sonda d'oscilloscopio: foro 1,0 mm (anello Keystone 5001/5000
+# o un filo piegato ad anello), pad 2,0 mm
+add(FP("TP_THT",
+       [(1, 0, 0, 2.0, 2.0, "tht", 1.0)],
+       (-1.3, -1.3, 1.3, 1.3),
+       desc="Test point THT, foro 1.0 mm"))
+
+# LEMO serie 00, presa a gomito da circuito stampato EPL.00.250.NTN:
+# contatto centrale + 4 piedini di schermo su quadrato 5,08 mm, fori 0,8 mm.
+# Il frontale guarda verso +X: piazzare con X del centro a ~4 mm dal bordo
+# scheda; il corpo (L = 17,5 mm) sporge oltre il bordo. Courtyard solo sulla
+# parte sopra la scheda.
+add(FP("LEMO_EPL00",
+       [(1, 0, 0, 1.5, 1.5, "tht", 0.8),
+        ("2", -2.54, -2.54, 1.5, 1.5, "tht", 0.8), ("2#2", 2.54, -2.54, 1.5, 1.5, "tht", 0.8),
+        ("2#3", -2.54, 2.54, 1.5, 1.5, "tht", 0.8), ("2#4", 2.54, 2.54, 1.5, 1.5, "tht", 0.8)],
+       (-3.8, -3.8, 4.0, 3.8),
+       silk=[(-3.5, -3.5, 4.0, -3.5), (-3.5, 3.5, 4.0, 3.5), (-3.5, -3.5, -3.5, 3.5)],
+       desc="LEMO EPL.00.250.NTN gomito, 00 serie (frontale verso +X)"))
 
 # Induttore di potenza 5x5 (SRN5040 e simili)
 add(FP("L_PWR_5050",
