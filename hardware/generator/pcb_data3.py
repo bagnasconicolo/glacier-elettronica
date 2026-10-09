@@ -28,10 +28,8 @@ def placement():
                 out[r] = (96.0, 55.0 + dy, 0)
             elif ref == "R23":         # 33 ohm accanto al LEMO
                 out[r] = (89.8, 57.6 + dy, 90)
-            elif ref == "R21":         # LED sotto il 555, vicino al pin 3 (uscita)
-                out[r] = (84.5, 45.5 + dy, 0)
-            elif ref == "D3":
-                out[r] = (88.5, 45.5 + dy, 180)
+            elif ref == "U2":          # 555 ruotato: uscita (pin 3) verso R21/LED,
+                out[r] = (x, y + dy, 180)  # pin 5-6-7 verso R20/C21/CF6
             else:
                 out[r] = (x, y + dy, rot)
     # test point di canale: angolo in alto a destra (dove c'era il driver TTL)
