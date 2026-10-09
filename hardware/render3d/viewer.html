@@ -19,14 +19,15 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-// ?v=1ch|3ch  &view=iso|top|front|detail|coinc|lemo|ch1  &w=  &h=
+// ?v=1ch|3ch  &view=iso|top|front|detail|coinc|lemo|ch1|tp|tp2  &pcb=nero  &bg=rrggbb  &w=  &h=
 const q = new URLSearchParams(location.search);
 const VAR = q.get("v") || "1ch";
 const VIEW = q.get("view") || "iso";
+const NERO = q.get("pcb") === "nero";
 const W = +(q.get("w") || innerWidth), H = +(q.get("h") || innerHeight);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf2f2ef);
+scene.background = new THREE.Color(q.get("bg") ? parseInt(q.get("bg"), 16) : 0xf2f2ef);
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
 renderer.setSize(W, H);
@@ -159,12 +160,12 @@ function sot(L, Wd, H, pins, value) { const g = new THREE.Group();
 const data = await (await fetch(`out/${VAR}/scene.json`)).json();
 const [X1, Y1, X2, Y2] = data.board, BW = X2 - X1, BH = Y2 - Y1, T = data.thickness;
 const cx = (X1 + X2) / 2, cz = (Y1 + Y2) / 2;
-const tex = await new THREE.TextureLoader().loadAsync(`out/${VAR}/top.png`);
+const tex = await new THREE.TextureLoader().loadAsync(`out/${VAR}/${NERO ? "top_nero" : "top"}.png`);
 tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-const side = M(0x2f5a39, 0.8);
+const side = M(NERO ? 0x1a1a1a : 0x2f5a39, 0.8);
 const top = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.42, metalness: 0.05 });
 const board = new THREE.Mesh(new THREE.BoxGeometry(BW, T, BH),
-  [side, side, top, M(0x1e5a35, 0.6), side, side]);
+  [side, side, top, M(NERO ? 0x111111 : 0x1e5a35, 0.6), side, side]);
 board.position.set(cx, -T / 2, cz); board.receiveShadow = true; scene.add(board);
 
 for (const c of data.comps) {
@@ -199,6 +200,8 @@ const views = {
   coinc:  [[100, 48, 258], [78, 0, 212]],          // 3 canali: schema a blocchi, coincidenza, LEMO AND
   lemo:   [[165, 70, 165], [105, 0, 135]],         // 3 canali: fila di LEMO sul bordo destro
   ch1:    [[67, 88, 112], [67, 0, 73]],            // 3 canali: canale 1 quasi dall'alto (serigrafia)
+  tp:     [[44, 42, 104], [46, 0, 66]],             // 3 canali: test point Keystone del canale 1
+  tp2:    [[60, 30, 74], [58, 0, 34]],             // 3 canali: test point della fascia alimentazione
 };
 const [p, t] = views[VIEW] || views.iso;
 cam.position.set(...p);

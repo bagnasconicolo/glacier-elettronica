@@ -5,6 +5,7 @@ con posizione, rotazione e tipo di package. La disegna viewer.html (three.js).
 
     python scene.py 1ch   ->  out/1ch/scene.json + out/1ch/top.png
     python scene.py 3ch   ->  out/3ch/scene.json + out/3ch/top.png
+    python scene.py 3ch nero  ->  out/3ch/top_nero.png (maschera nera)
 """
 import json, math, os, sys
 
@@ -36,8 +37,10 @@ X1, Y1, X2, Y2 = PD.BOARD
 st = json.load(open(STATE))
 pads = PD.abs_pads()
 
-MASK = "#1e6b3c"
-TRACK = "#2f8d50"
+# colore della maschera: verde (default) o nero  ->  python scene.py 3ch nero
+BLACK = "nero" in sys.argv[2:]
+MASK = "#141414" if BLACK else "#1e6b3c"
+TRACK = "#242424" if BLACK else "#2f8d50"
 COPPER = "#d9d6cc"         # HASL
 SILK_C = "#f4f4ee"
 
@@ -97,9 +100,10 @@ if not silk:
   svg.append(f'<text x="{tx(X1 + 2):.1f}" y="{ty(Y2 - 1.2):.1f}" font-family="DejaVu Sans, Arial" '
            f'font-size="{1.4 * PX:.1f}" fill="{SILK_C}">{TITLE} - CERN-OHL-W-2.0</text>')
 svg.append("</svg>")
-open(os.path.join(OUT, "top.svg"), "w").write("\n".join(svg))
+TOPNAME = "top_nero" if BLACK else "top"
+open(os.path.join(OUT, TOPNAME + ".svg"), "w").write("\n".join(svg))
 import cairosvg                                   # noqa: E402
-cairosvg.svg2png(url=os.path.join(OUT, "top.svg"), write_to=os.path.join(OUT, "top.png"))
+cairosvg.svg2png(url=os.path.join(OUT, TOPNAME + ".svg"), write_to=os.path.join(OUT, TOPNAME + ".png"))
 
 comps = []
 for ref, (x, y, rot) in PD.PLACEMENT.items():
