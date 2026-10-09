@@ -92,3 +92,11 @@ GJ.ZIP_SRC = gz
 GJ.main()
 print("variante a 3 canali in", os.path.normpath(DST))
 print("DNP (a mano):", len(DNP), "componenti")
+
+# nomi delle reti del PCB = nomi che KiCad ricava dallo schema (parita' schema/PCB)
+import subprocess as _sp
+try:
+    _sp.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "allinea_reti_kicad.py"),
+             os.path.join(DST, "riv_cosmici_3ch")], check=True)
+except Exception as _e:                      # KiCad non installato: il PCB resta valido,
+    print("!! nomi delle reti non allineati a KiCad:", _e)   # cambia solo il nome delle reti

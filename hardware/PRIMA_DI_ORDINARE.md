@@ -98,6 +98,11 @@ di un pad tondo o arrotondato (ora ogni pista arriva al centro del pad), piccole
 del piano di massa staccate dal resto (ora ricollegate) e due giunzioni a T nello schema
 che KiCad non collegava (ora i fili sono spezzati in ogni giunzione).
 
+Con KiCad 10 (`kicad-cli sch erc` e `kicad-cli pcb drc --schematic-parity --refill-zones`):
+0 collegamenti mancanti; la parità schema/PCB è a posto (footprint legati ai simboli,
+nomi delle reti allineati con `generator/allinea_reti_kicad.py`); l'ERC segnala solo
+`endpoint_off_grid` (fili dello schema fuori dalla griglia da 1,27 mm: estetico).
+
 Per controllare a vista: aprire il `.kicad_pro` con KiCad ≥ 7, ERC sullo schema,
 tasto B per riempire le zone, DRC sul PCB.
 

@@ -198,7 +198,7 @@ def icbox(name, w, h, left, right, top, bottom, ref="U", label_extra=None):
 # LT3461: left: VIN(6) SHDN(4) GND(2) | right: SW(1) CAP(5) FB(3)
 add(icbox("LT3461", 12.7, 10.16,
           [("6", 2.54, "VIN", "power_in"), ("4", 0, "~SHDN", "input"), ("2", -2.54, "GND", "power_in")],
-          [("1", 2.54, "SW", "output"), ("5", 0, "CAP", "output"), ("3", -2.54, "FB", "input")],
+          [("1", 2.54, "SW", "output"), ("5", 0, "CAP", "power_out"), ("3", -2.54, "FB", "input")],
           [], []))
 
 # MAX961: left: IN+(1) IN-(2) LE(4) SHDN(3) ; right: Q(6) ~Q(7) ; top VCC(8) ; bottom GND(5)
