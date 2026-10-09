@@ -46,12 +46,17 @@ cairosvg.svg2png(url=os.path.join(SRC, "pcb3_render.svg"),
 # ---- BOM completa (tutti i componenti, anche quelli da saldare a mano)
 import gen_bom                                     # noqa: E402
 gen_bom.COMPONENTS = netdata3.COMPONENTS
-gen_bom.PKG.update({"LEMO00": "LEMO 00 (EPL.00.250.NTN)", "TP": "test point THT"})
+gen_bom.PKG.update({"LEMO00": "LEMO 00 (EPL.00.250.NTN)", "TP": "test point THT",
+                    "SO14": "SOIC-14", "HDR3": "header 1x3 2,54", "KK2": "Molex KK 254 2 poli (22-27-2021)"})
 gen_bom.NOTE.update({"74LVC1G11": "SN74LVC1G11DBVR, AND a 3 ingressi (coincidenza)",
+                     "MCP3424": "MCP3424-E/SL, ADC I2C del monitor tensioni (LCSC C640884)",
+                     "1M": "partitore monitor (alto)", "43k": "partitore monitor (basso)",
                      "10k": ""})
 rows = []
 groups = {}
 for ref, (kind, value, fpk, extra) in netdata3.COMPONENTS.items():
+    if kind == "MH":                                # fori di fissaggio: non sono componenti
+        continue
     key = ("TP", "TP") if kind == "TP" else \
           (("LEMO", fpk) if fpk == "LEMO00" else (value, fpk))
     groups.setdefault(key, []).append(ref)
@@ -77,10 +82,10 @@ with open(os.path.join(DST, "BOM_riv_cosmici_3ch.csv"), "w", newline="") as f:
 
 # ---- JLCPCB: BOM e CPL (montaggio solo delle parti comuni e reperibili)
 import gen_jlcpcb as GJ                            # noqa: E402
-DNP = {"U1", "U5", "U7", "J3", "J5", "JP1", "JP2", "JP3"}
+DNP = {"U1", "U5", "U7", "J3", "J5", "J6", "JP1", "JP2", "JP3"}
 for n in netdata3.CHANNELS:
     DNP |= {netdata3.chref(r, n) for r in ("U3", "U8", "D1", "J1", "J4")}
-DNP |= {r for r in netdata3.COMPONENTS if r.startswith("TP")}
+DNP |= {r for r in netdata3.COMPONENTS if r.startswith("TP") or r.startswith("MH")}
 GJ.DNP = DNP
 GJ.OUT = os.path.join(DST, "jlcpcb")
 GJ.ZIP_SRC = gz

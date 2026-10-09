@@ -1,0 +1,8 @@
+(footprint "rivlib:MH_M3" (version 20211014) (generator rivgen) (layer "F.Cu")
+  (attr through_hole)
+  (descr "Foro di fissaggio M3 metallizzato")
+  (fp_text reference "REF**" (at 0 -3.2) (layer "F.SilkS") (effects (font (size 0.8 0.8) (thickness 0.12))))
+  (fp_text value "VAL**" (at 0 3.2) (layer "F.Fab") (effects (font (size 0.8 0.8) (thickness 0.12))))
+  (fp_rect (start -3.5 -3.5) (end 3.5 3.5) (layer "F.CrtYd") (width 0.05) (fill none))
+  (pad "1" thru_hole circle (at 0 0) (size 6.0 6.0) (drill 3.2) (layers "*.Cu" "*.Mask"))
+)

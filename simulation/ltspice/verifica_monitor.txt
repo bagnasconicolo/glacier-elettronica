@@ -1,0 +1,11 @@
+misura                                                          RIF       REALE      STRESS
+bias SiPM a riposo (V)                                       38.441      38.441      38.441
+ondulazione bias durante gli eventi (V)                   0.0023061   0.0023061    0.002306
+muone 250 p.e.: picco all'ingresso del comparatore (V)       1.1281      1.1281      1.1281
+muone 250 p.e.: durata impulso al Raspberry (s)          2.9004e-07  2.9004e-07  2.9003e-07
+rumore 1 p.e.: picco (V), deve restare sotto soglia       0.0069475   0.0069475   0.0069454
+rumore 1 p.e.: uscita comparatore (V), deve restare 0    2.7534e-07  2.7536e-07  7.2439e-09
+muone 40 p.e.: picco (V)                                    0.84141     0.84141      0.8414
+muone 40 p.e.: uscita al Raspberry (V)                       3.2746      3.2746      3.2746
+muone ravvicinato: uscita al Raspberry (V)                   3.2746      3.2746      3.2746
+punto di misura a t = 9,9 ms: 1.3970 V; a regime sara' 1.5848 V (VREG38 38.441 V x 43/1043). Il filtro 41 kohm x 100 nF ha tau = 4,1 ms: dopo l'accensione la lettura e' stabile in ~20 ms (qui la simulazione e' ancora nel transitorio).

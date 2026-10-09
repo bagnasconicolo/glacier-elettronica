@@ -1,6 +1,6 @@
 # Variante a 3 canali + coincidenza
 
-Una sola scheda (95 × 205 mm, 2 strati) con **tre front-end completi** del rivelatore
+Una sola scheda (103 × 215 mm, 2 strati, 8 fori di fissaggio M3) con **tre front-end completi** del rivelatore
 INFN — uno per barra di scintillatore — e la **coincidenza AND** già a bordo.
 Il PCB è pensato anche per **attività didattiche (STEM)**: è diviso in blocchi
 funzionali con il nome scritto in serigrafia, e i test point sono accanto ai punti che
@@ -25,17 +25,25 @@ circuito di ogni canale è **identico** all'originale INFN.
 
 | Fascia | Cosa c'è |
 |---|---|
-| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `ALTA TENSIONE 41V` (U1, LT3461) → `RIFERIMENTI 3,6V` (U5 soglie, U7 bias) |
+| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `ALTA TENSIONE 41V` (U1, LT3461) → `RIFERIMENTI` 3,6 V (U5 soglie, U7 bias) → `MONITOR` (ADC delle tensioni, I²C) |
 | **Canale 1, 2, 3** | riga alta = percorso del segnale da sinistra a destra: `1 SiPM` → `2 AMPLIFICATORE` → `3 COMPARATORE` → `4 USCITA` (LEMO sul bordo destro); riga bassa = circuiti di supporto sotto il blocco che servono: `A ALIMENTAZIONE SiPM ~38V` (V1), `B SOGLIA` (V2), `C LED` (555) |
 | **Coincidenza** (in basso) | schema a blocchi di un canale in serigrafia; jumper JP1–JP3 → AND a 3 (U10) → LEMO J5 |
 | **Lato saldature** | legenda "Come funziona" (testo specchiato, si legge girando la scheda) |
 
-- Ogni canale ha **lo stesso piazzamento**, spostato di 52 mm: trovato un punto sul
+- Ogni canale ha **lo stesso piazzamento**, spostato di 54 mm: trovato un punto sul
   canale 1, è nello stesso posto sugli altri due.
 - **Riferimenti**: R9 del canale 2 si chiama R209, U3 del canale 3 si chiama U303, ecc.
   Tutti i riferimenti sono stampati in serigrafia.
 - Il circuito di ogni canale è **identico** all'originale INFN; tolto solo il driver TTL
   a 5 V (MCP1402, J2): le uscite sono LEMO a 3,3 V.
+
+## Fori di fissaggio
+
+8 fori **M3** (foro 3,2 mm metallizzato, piazzola 6 mm collegata a massa): ai quattro
+angoli e sui due lati in corrispondenza del confine tra un canale e l'altro, a 4 mm dai
+bordi. Per il montaggio su pannello bastano distanziali M3 da 10 mm (il trimmer più alto
+è 10 mm). Le posizioni esatte sono in `hardware/generator/pcb_data3.py` (`MH_POS`) e si
+possono controllare sul PDF in scala 1:1 (`stampa_1a1_riv_cosmici_3ch.pdf`).
 
 ## Uscite LEMO (bordo destro, dall'alto)
 
@@ -98,9 +106,50 @@ Fori da 1 mm: ci va un **pin di strip header** (tagliato dalla stessa strip 1×4
 connettori, costa quasi niente) oppure un anello Keystone 5000 (rosso) / 5001 (nero, GND).
 Usa una sonda 10× con la molla di massa corta sul GND più vicino.
 
+## Monitor delle tensioni (blocco `MONITOR`)
+
+Un ADC **MCP3424** (U11, I²C, indirizzo 0x68) legge quattro tensioni e le passa al
+Raspberry Pi dal connettore **J6** (1 GND, 2 SDA, 3 SCL; le pull-up sono quelle del Pi):
+
+| Ingresso ADC | Cosa misura | Partitore |
+|---|---|---|
+| CH1, CH2, CH3 | uscita del regolatore del bias (VREG38) dei canali 1, 2, 3 | R150/R151, R250/R251, R350/R351 (1 MΩ / 43 kΩ) + C?50 100 nF |
+| CH4 | alta tensione (41 V) | R40/R41 (1 MΩ / 43 kΩ) + C40 100 nF |
+
+Lettura: `software/monitor_tensioni.py` (stampa e salva in CSV una volta al secondo).
+Risoluzione a 16 bit: 62,5 µV all'ADC = **1,5 mV sul bias**. Con resistenze all'1 % la
+lettura assoluta va tarata una volta col multimetro sul test point BIAS (fattore `CAL`
+nello script); dopo, si vedono bene anche le variazioni del bias con la temperatura
+(~28 mV/°C, la compensazione del diodo D1).
+
+### Perché non disturba le misure
+
+- **Si misura VREG38, non BIAS.** VREG38 è l'uscita dell'op-amp U?08, dentro il suo
+  anello di retroazione (R5/R4): i 37 µA del partitore non ne cambiano la tensione, e
+  quindi nemmeno quella del SiPM. Tra il partitore e il SiPM resta il filtro R8/C6.
+- **Nessun disturbo verso il SiPM.** Il partitore è da 1 MΩ e il punto di misura ha
+  100 nF verso massa: gli impulsi di campionamento dell'ADC finiscono nel condensatore,
+  e quello che risale fino a VREG38 è attenuato di oltre un milione di volte, prima
+  ancora del filtro R8/C6.
+- **Le piste verso l'ADC sono "ferme".** Portano una tensione continua di ~1,6 V con
+  100 nF all'estremo del canale: non fanno da antenna.
+- **Il digitale è lontano e lento.** ADC e connettore sono nella fascia alimentazione,
+  lontani dagli amplificatori; le resistenze da 100 Ω in serie su SDA/SCL addolciscono i
+  fronti. L'ADC lavora "one-shot": converte solo quando il Pi glielo chiede (una volta
+  al secondo) e per il resto è fermo.
+- **Carico trascurabile.** 4 × 37 µA in più sull'alta tensione (il survoltore ne dà
+  qualche mA).
+- **In caso di guasto** (alta tensione a 45 V) all'ADC arrivano 1,86 V, sotto il suo
+  fondo scala di 2,048 V e lontano dal limite di alimentazione.
+
+**Non misuriamo la corrente del SiPM.** Si potrebbe ricavare dalla caduta su R8 (1 kΩ),
+ma con 0,1–1 µA di corrente di buio sono 0,1–1 mV su 38 V: l'errore dei partitori (1 %
+di 38 V = 380 mV) la coprirebbe del tutto. Servirebbe un amplificatore dedicato vicino al
+SiPM, cioè proprio sul nodo più delicato: non ne vale la pena.
+
 ## Montaggio
 
-JLCPCB monta 131 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
+JLCPCB monta 147 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 
 | Rif. | Parte | Per scheda |
 |---|---|---|
@@ -109,7 +158,9 @@ JLCPCB monta 131 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | U108, U208, U308 | LT1636 | 3 |
 | U5, U7 | LP2985AIM5-3.6 | 2 |
 | D101, D201, D301 | 1N4148 | 3 |
-| J101, J201, J301, J3 | header 1×2 (SiPM, 5 V) | 4 |
+| J101, J201, J301 | Molex KK 254 22-27-2021 (cavo barra: 22-01-3027 + 2× 08-50-0114; pin 1 = centrale/segnale, pin 2 = calza/bias) | 3 |
+| J3 | header 1×2 (5 V) | 1 |
+| J6 | header 1×3 (I²C verso il Raspberry Pi) | 1 |
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
 | TP* | test point (pin di strip header) | 24 |

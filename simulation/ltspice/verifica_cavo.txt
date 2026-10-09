@@ -1,0 +1,8 @@
+misura                                                   0 m     0.5 m     1.0 m     2.0 m
+muone 250 p.e.: picco ingresso comparatore (V)         1.134     1.164     1.174     1.176
+muone 250 p.e.: uscita al Raspberry (V)                3.275     3.275     3.275     3.275
+muone 40 p.e.: picco (V)                              0.8414    0.7538    0.6834    0.5996
+muone 40 p.e.: uscita al Raspberry (V)                 3.275     3.275     3.275     3.275
+rumore 1 p.e.: picco (V)                             0.00695  0.005245  0.004124  0.002283
+rumore 1 p.e.: uscita comparatore (V), deve restare ~0 4.517e-08 7.175e-09 7.135e-09 7.116e-09
+soglia (V)                                            0.1041    0.1041    0.1041    0.1041

@@ -140,13 +140,40 @@ def near(cx, cy, w, h, step=0.5, rmax=6.0):
     return [(x, y, "c", "mid") for x, y in out]
 
 
+OUTLINES = []
+
+
 def outline(rect, layer=TOP):
     """rettangolo di blocco, interrotto sui pad"""
     x1, y1, x2, y2 = rect
     ring = LineString([(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)])
     g = ring.buffer(LINE_W / 2, cap_style=2, join_style=2).difference(PAD_KEEP)
     layer.add(g, ring.buffer(0.35))
+    OUTLINES.append(len(layer.items) - 1)
     return len(layer.items) - 1
+
+
+def place_text_cut(s, h, candidates, layer=TOP):
+    """come place_text, ma se serve interrompe il bordo di un riquadro sotto il testo"""
+    if place_text(s, h, candidates, layer):
+        return True
+    saved = {i: layer.free_check[i] for i in OUTLINES}
+    for i in OUTLINES:
+        layer.free_check[i] = Polygon()
+    try:
+        for (x, y, anc, va) in candidates:
+            g = text(s, x, y, h, anc, va)
+            if fits(g.envelope, layer):
+                cut = g.envelope.buffer(0.4, join_style=2)
+                for i in OUTLINES:
+                    layer.items[i] = layer.items[i].difference(cut)
+                layer.add(g, g.envelope.buffer(0.3))
+                return True
+    finally:
+        for i, k in saved.items():
+            layer.free_check[i] = k
+    print(f"!! non trovo spazio per '{s}'")
+    return False
 
 
 def hline(x1, x2, y, layer=TOP, dash=None):
@@ -248,7 +275,8 @@ def title_for(rect, title, sub, layer=TOP, idx=None):
         place_text(title, th, cands, layer, required=True)
     if sub:
         w, h = size_of(sub, sh)
-        cands = []
+        # prima scelta: subito sotto il riquadro, allineato al suo bordo sinistro
+        cands = [(x1 + 0.3, y2 + 0.35, "l", "top"), (x1 + 0.3, y2 + 0.7, "l", "top")]
         yy = y2 - 0.4 - h / 2
         while yy > y1 + h:
             for xx in [x1 + 0.6 + w / 2 + k for k in range(0, int(max(1, x2 - x1 - w - 1)), 1)]:
@@ -280,25 +308,41 @@ def build_top():
             blocks.append((t, s, ab))
     for (t, s, refs) in P3.COINC_BLOCKS:
         blocks.append((t, s, refs))
-    rects = []
-    for (t, s, ab) in blocks:
-        r = block_rect(None, ab)
-        rects.append((r, outline(r)))
+    raw = [block_rect(None, ab) for (t, s, ab) in blocks]
+    # riquadri della stessa riga: stesso bordo alto e basso (griglia ordinata)
+    groups = [list(range(len(P3.PWR_BLOCKS)))]
+    i = len(P3.PWR_BLOCKS)
+    for n in N.CHANNELS:
+        groups += [list(range(i, i + 4)), list(range(i + 4, i + len(P3.CH_BLOCKS)))]
+        i += len(P3.CH_BLOCKS)
+    for g in groups:
+        ya = min(raw[k][1] for k in g)
+        yb = max(raw[k][3] for k in g)
+        for k in g:
+            r = (raw[k][0], ya, raw[k][2], yb)
+            # non allargare un riquadro fin sopra un foro di fissaggio
+            if not any(box(*r).intersects(COURT[h].buffer(0.3)) for h in COURT if h.startswith("MH")):
+                raw[k] = r
+    rects = [(r, outline(r)) for r in raw]
     for (t, s, ab), (r, idx) in zip(blocks, rects):
         title_for(r, t, s, idx=idx)
+    # frecce del percorso del segnale: tra i riquadri 1 -> 2 -> 3 -> 4 -> LEMO
+    i = len(P3.PWR_BLOCKS)
+    for n in N.CHANNELS:
+        row = sorted(raw[i:i + 4], key=lambda r: r[0])
+        ym = (row[0][1] + row[0][3]) / 2
+        for a, b in zip(row, row[1:]):
+            if b[0] - a[2] > 1.4:
+                arrow(a[2] + 0.25, b[0] - 0.25, ym)
+        lemo = COURT[f"J{n}04"].bounds
+        arrow(row[-1][2] + 0.25, lemo[0] - 0.3, (lemo[1] + lemo[3]) / 2)
+        i += len(P3.CH_BLOCKS)
 
     # nome del canale in verticale sul bordo sinistro
     for n in N.CHANNELS:
         yc = P3.ch_y(n) + P3.STRIP / 2
         place_text(f"CANALE {n}", 1.6, [(X1 + 1.0 + k * 0.25, yc, "c", "top") for k in range(0, 8)],
                    rot=90, required=True)
-    # frecce del percorso del segnale (riga alta di ogni canale)
-    for n in N.CHANNELS:
-        yy = P3.ch_y(n)
-        for xa, xb in ((14.6, 16.0), (41.0, 42.5), (63.5, 66.0), (85.0, 87.0)):
-            for dy in (1.0, 0.6, 1.4, 25.6, 26.2):
-                if arrow(X1 + xa, X1 + xb, yy + dy):
-                    break
     # etichette dei connettori e dei trimmer
     for n in N.CHANNELS:
         x, y, _ = PD.PLACEMENT[f"J{n}04"]
@@ -310,11 +354,14 @@ def build_top():
         x, y, _ = PD.PLACEMENT[N.chref("D3", n)]
         place_text("LED", 0.9, near(x + 3.0, y, 0, 0, rmax=3), required=True)
         x, y, _ = PD.PLACEMENT[N.chref("J1", n)]
-        place_text("1", 0.9, near(x - 2.0, y, 0, 0, rmax=1.5), required=True)
-        place_text("2", 0.9, near(x - 2.0, y + 2.54, 0, 0, rmax=1.5), required=True)
+        place_text("1", 0.9, near(x - 4.0, y, 0, 0, rmax=1.5), required=True)
+        place_text("2", 0.9, near(x - 4.0, y + 2.54, 0, 0, rmax=1.5), required=True)
     x, y, _ = PD.PLACEMENT["J5"]
     place_text("AND", 1.25, near(x - 0.5, y - 5.5, 0, 0, rmax=2) + near(x - 0.5, y + 6.0, 0, 0, rmax=3),
                required=True)
+    x, y, _ = PD.PLACEMENT["J6"]
+    for k, lab in enumerate(("1", "2", "3")):        # nomi dei pin nel sottotitolo del blocco
+        place_text(lab, 0.9, [(x - 1.4 - d, y + k * 2.54, "r", "mid") for d in (0, 0.2, 0.4)], required=True)
     x, y, _ = PD.PLACEMENT["J3"]
     place_text("GND", 0.9, near(x + 3.5, y, 0, 0, rmax=2), required=True)
     place_text("+5V", 0.9, near(x + 3.5, y + 2.54, 0, 0, rmax=2), required=True)
@@ -324,10 +371,8 @@ def build_top():
                    required=True)
 
     # schema a blocchi nella fascia coincidenza (a sinistra)
-    diagram(X1 + 4.0, P3.COINC_Y + 2.5)
+    diagram(X1 + 10.0, P3.COINC_Y + 3.0)
 
-    hv = "ATTENZIONE: fino a 41 V"
-    place_text(hv, 0.9, near(X1 + 85.0, Y1 + 24.0, 0, 0, rmax=3), required=True)
 
     # etichette dei test point
     for ref in PD.PLACEMENT:
@@ -343,12 +388,12 @@ def build_top():
         cands += [(x - 1.6 - dx, y + dy, "r", "mid") for dx in (0, 0.5, 1) for dy in (-0.5, 0.5, -1, 1)]
         cands += [(x + dx, y + 1.6 + dy, "c", "top") for dy in (0.5, 1, 1.5, 2) for dx in (0, -1, 1, -2, 2)]
         cands += [(x + dx, y - 1.6 - dy, "c", "bot") for dy in (0.5, 1, 1.5, 2) for dx in (0, -1, 1, -2, 2)]
-        place_text(lab, 0.9, cands, required=True)
+        place_text_cut(lab, 0.9, cands)
 
     # riferimenti dei componenti
     miss = []
     for ref in sorted(PD.PLACEMENT, key=lambda r: (PD.PLACEMENT[r][1], PD.PLACEMENT[r][0])):
-        if ref.startswith("TP"):
+        if ref.startswith("TP") or ref.startswith("MH"):
             continue
         b = COURT[ref].bounds
         cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
@@ -370,6 +415,12 @@ def build_top():
             if place_text(ref, hh, vc, rot=90):
                 ok = True
                 break
+        if not ok:      # ultimo tentativo: un po' più lontano
+            D = (2.0, 2.5, 3.0)
+            cands = [(cx + dx, b[1] - 0.15 - d, "c", "bot") for d in D for dx in (0, -1.5, 1.5)]
+            cands += [(cx + dx, b[3] + 0.15 + d, "c", "top") for d in D for dx in (0, -1.5, 1.5)]
+            cands += [(cx + dx, b[3] + 0.15 + d, "c", "top") for d in (0, 0.3, 0.6) for dx in (0.3, 0.6)]
+            ok = place_text(ref, 0.8, cands) or place_text(ref, 0.7, cands)
         if not ok:
             miss.append(ref)
     return miss
@@ -396,7 +447,7 @@ LEGEND = [
     ("produce 41 V: non toccare", 1.0), ("la scheda accesa.", 1.0),
 ]
 # colonna senza fori passanti (tra i blocchi dei canali e i LEMO)
-LEG_X1, LEG_X2 = X1 + 63.8, X1 + 85.8
+LEG_X1, LEG_X2 = X1 + 68.5, X1 + 93.5
 THT_KEEP = unary_union([PD.pad_rect(p, 0.25) for p in PADS if p["kind"] != "smd"])
 
 

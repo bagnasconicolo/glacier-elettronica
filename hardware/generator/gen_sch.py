@@ -19,6 +19,7 @@ FP_MAP = {
     "SO8": "rivlib:SOIC8", "SOT223": "rivlib:SOT223",
     "3296W": "rivlib:TRIM_3296W", "HDR2": "rivlib:HDR1x02",
     "LEMO00": "rivlib:LEMO_EPL00", "TP": "rivlib:TP_THT",
+    "SO14": "rivlib:SOIC14", "HDR3": "rivlib:HDR1x03", "MH3": "rivlib:MH_M3", "KK2": "rivlib:MOLEX_KK_2",
 }
 SYM_MAP = {  # kind -> lib symbol
     "R": "R", "C": "C", "L": "L", "D": "D", "LED": "LED", "NPN": "NPN",
@@ -26,6 +27,7 @@ SYM_MAP = {  # kind -> lib symbol
     "TLC555": "TLC555", "MAX961": "MAX961", "MCP1402": "MCP1402",
     "LP2985": "LP2985", "MCP1825": "MCP1825", "LT1636": "LT1636",
     "LVC1G17": "LVC1G17", "LVC1G11": "LVC1G11", "TP": "TP",
+    "MCP3424": "MCP3424", "CONN3": "CONN3", "MH": "MH",
 }
 
 instances = []   # (ref, symname, x, y, rot, mirror, value, footprint)

@@ -159,6 +159,19 @@ add(Sym("CONN2", [P(1, -6.35, 1.27, 0, "1", ln=3.81),
          circ(-1.27, 1.27, 0.508), circ(-1.27, -1.27, 0.508)],
         "J", hide_pin_names=True))
 
+# ---------------- CONN3 -----------------
+add(Sym("CONN3", [P(1, -6.35, 2.54, 0, "1", ln=3.81),
+                  P(2, -6.35, 0, 0, "2", ln=3.81),
+                  P(3, -6.35, -2.54, 0, "3", ln=3.81)],
+        [rect(-2.54, -3.81, 2.54, 3.81),
+         circ(-1.27, 2.54, 0.508), circ(-1.27, 0, 0.508), circ(-1.27, -2.54, 0.508)],
+        "J", hide_pin_names=True))
+
+# ---------------- foro di fissaggio -----------------
+add(Sym("MH", [P(1, 0, -3.81, 90, "1", ln=1.27)],
+        [circ(0, 0, 1.27), circ(0, 0, 2.54)],
+        "H", hide_pin_names=True, hide_pin_numbers=True))
+
 # ---------------- test point -----------------
 add(Sym("TP", [P(1, 0, -2.54, 90, "1", ln=1.524)],
         [circ(0, 0, 0.762)],
@@ -224,6 +237,18 @@ add(icbox("LVC1G11", 10.16, 10.16,
           [("4", 0, "Y", "output")],
           [("5", 0, "VCC", "power_in")],
           [("2", 0, "GND", "power_in")]))
+
+# MCP3424 ADC delta-sigma 4 canali I2C (SOIC-14): 1 CH1+ 2 CH1- 3 CH2+ 4 CH2- 5 VSS
+# 6 VDD 7 SDA 8 SCL 9 Adr0 10 Adr1 11 CH3+ 12 CH3- 13 CH4+ 14 CH4-
+add(icbox("MCP3424", 15.24, 20.32,
+          [("1", 7.62, "CH1+", "input"), ("2", 5.08, "CH1-", "input"),
+           ("3", 2.54, "CH2+", "input"), ("4", 0, "CH2-", "input"),
+           ("11", -2.54, "CH3+", "input"), ("12", -5.08, "CH3-", "input"),
+           ("13", -7.62, "CH4+", "input"), ("14", -10.16, "CH4-", "input")],
+          [("7", 2.54, "SDA", "bidirectional"), ("8", 0, "SCL", "input"),
+           ("9", -5.08, "A0", "input"), ("10", -7.62, "A1", "input")],
+          [("6", 0, "VDD", "power_in")],
+          [("5", 0, "VSS", "power_in")]))
 
 # LP2985: left IN(1) EN(3) ; right OUT(5) BYP(4) ; bottom GND(2)
 add(icbox("LP2985", 12.7, 10.16,

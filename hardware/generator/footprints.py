@@ -92,6 +92,17 @@ add(FP("SOIC8", _soic, (-3.7, -2.7, 3.7, 2.7),
              (-1.95, -2.6, -1.95, -2.2)],  # tacca lato pin1
        desc="SOIC-8 3.9x4.9 P1.27"))
 
+# SOIC-14 (MCP3424): pin1 in alto a sinistra, colonna sx 1-7, dx 14-8
+_soic14 = []
+for i in range(7):
+    _soic14.append((str(i + 1), -2.475, -3.81 + i * 1.27, 1.95, 0.6, "smd", 0))
+for i in range(7):
+    _soic14.append((str(14 - i), 2.475, -3.81 + i * 1.27, 1.95, 0.6, "smd", 0))
+add(FP("SOIC14", _soic14, (-3.7, -4.6, 3.7, 4.6),
+       silk=[(-1.95, -4.45, 1.95, -4.45), (-1.95, 4.45, 1.95, 4.45),
+             (-1.95, -4.45, -1.95, -4.05)],
+       desc="SOIC-14 3.9x8.65 P1.27"))
+
 # SOT-223 (tab = pad 4): pin 1,2,3 sud, tab nord
 add(FP("SOT223",
        [(1, -2.3, 3.15, 1.5, 2.0, "smd", 0),
@@ -129,6 +140,33 @@ add(FP("HDR1x02",
        silk=[(-1.27, -1.27, 3.81, -1.27), (-1.27, 1.27, 3.81, 1.27),
              (-1.27, -1.27, -1.27, 1.27), (3.81, -1.27, 3.81, 1.27)],
        desc="Pin header 2.54 1x2"))
+
+# Molex KK 254 2 poli, header verticale con rampa di aggancio (22-27-2021):
+# stessi fori della strip 1x2, corpo piu' profondo (~6 mm) con la rampa sul lato y+
+add(FP("MOLEX_KK_2",
+       [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),
+        (2, 2.54, 0, 1.7, 1.7, "tht", 1.0)],
+       (-2.0, -3.2, 4.55, 3.2),
+       silk=[(-1.8, -2.95, 4.34, -2.95), (-1.8, 2.95, 4.34, 2.95),
+             (-1.8, -2.95, -1.8, 2.95), (4.34, -2.95, 4.34, 2.95),
+             (-1.3, 2.3, 3.84, 2.3)],                     # rampa di aggancio
+       desc="Molex KK 254 22-27-2021, 2 poli, verticale con aggancio"))
+
+# Header 2.54 1x3 verticale (connettore I2C verso il Raspberry Pi)
+add(FP("HDR1x03",
+       [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),
+        (2, 2.54, 0, 1.7, 1.7, "tht", 1.0),
+        (3, 5.08, 0, 1.7, 1.7, "tht", 1.0)],
+       (-1.3, -1.3, 6.4, 1.3),
+       silk=[(-1.27, -1.27, 6.35, -1.27), (-1.27, 1.27, 6.35, 1.27),
+             (-1.27, -1.27, -1.27, 1.27), (6.35, -1.27, 6.35, 1.27)],
+       desc="Pin header 2.54 1x3"))
+
+# Foro di fissaggio M3: foro 3,2 mm metallizzato, piazzola 6 mm (a massa)
+add(FP("MH_M3",
+       [(1, 0, 0, 6.0, 6.0, "tht", 3.2)],
+       (-3.5, -3.5, 3.5, 3.5),
+       desc="Foro di fissaggio M3 metallizzato"))
 
 # Test point per sonda d'oscilloscopio: foro 1,0 mm (anello Keystone 5001/5000
 # o un filo piegato ad anello), pad 2,0 mm

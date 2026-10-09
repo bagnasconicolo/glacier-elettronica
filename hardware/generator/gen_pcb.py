@@ -116,7 +116,8 @@ def add_escape_stubs():
         if (p["ref"], p["pin"]) in STUB_DIR_OVERRIDE:
             dloc = STUB_DIR_OVERRIDE[(p["ref"], p["pin"])]
             half = (w0 if dloc[0] else h0) / 2 + 0.6
-        elif abs(px) >= abs(py):
+        elif w0 > h0 + 0.2 or (abs(w0 - h0) <= 0.2 and abs(px) >= abs(py)):
+            # pad allungato in x (es. SOIC): esce di lato, anche per i pin d'angolo
             dloc = (1 if px > 0 else -1, 0); half = w0 / 2
         else:
             dloc = (0, 1 if py > 0 else -1); half = h0 / 2

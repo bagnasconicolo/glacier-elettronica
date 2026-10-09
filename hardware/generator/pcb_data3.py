@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Piazzamento PCB della VARIANTE A 3 CANALI - versione didattica.
 
-Scheda 95 x 205 mm organizzata a blocchi, leggibile dall'alto in basso:
+Scheda 103 x 215 mm organizzata a blocchi, leggibile dall'alto in basso:
 
   fascia ALIMENTAZIONE   ingresso 5 V -> 3,3 V -> alta tensione 41 V -> riferimenti 3,6 V
   CANALE 1               riga alta  = percorso del segnale, da sinistra a destra:
@@ -17,10 +17,10 @@ I blocchi (BLOCKS) e le scritte (NOTES) servono a silk3.py per la serigrafia.
 import netdata3 as N
 
 X0, Y0 = 20.0, 20.0
-W = 95.0
+W = 103.0
 PWR_H = 27.0              # fascia alimentazione
-STRIP = 52.0              # altezza di un canale
-COINC_H = 22.0            # fascia coincidenza
+STRIP = 54.0              # altezza di un canale
+COINC_H = 26.0            # fascia coincidenza
 BOARD = (X0, Y0, X0 + W, Y0 + PWR_H + 3 * STRIP + COINC_H)
 
 
@@ -72,6 +72,10 @@ CH = {
     "V1":   (19.0, 43.5, 0),
     "R7":   (12.0, 45.5, 0),
     "D1":   (26.5, 38.0, 0),
+    # monitor: partitore 1M/43k + 100n sull'uscita del regolatore (VREG38), verso l'ADC
+    "R50":  (21.0, 29.0, 0),
+    "R51":  (25.5, 31.5, 90),
+    "C50":  (29.0, 31.5, 90),
     # B soglia del comparatore
     "V2":   (46.0, 35.5, 0),
     "R18":  (39.0, 30.5, 0),
@@ -118,6 +122,16 @@ PWR = {
     "CF4": (67.0, 8.0, 90),
     "U7":  (62.0, 18.0, 0),
     "CF7": (67.0, 18.0, 90),
+    # partitore del monitor sull'alta tensione
+    "R40": (57.0, 5.0, 90),
+    "R41": (57.0, 10.5, 90),
+    "C40": (57.0, 15.5, 90),
+    # monitor tensioni: ADC MCP3424 + connettore I2C verso il Raspberry Pi
+    "U11":  (79.5, 11.0, 0),
+    "CF12": (77.0, 4.0, 0),
+    "R42":  (87.3, 10.0, 0),
+    "R43":  (87.3, 13.0, 0),
+    "J6":   (93.0, 8.0, 270),
 }
 PWR_TP = {
     "TP2": (9.0, 19.5),      # +5V
@@ -143,6 +157,37 @@ COINC = {
 }
 
 
+# spostamento orizzontale dei blocchi, per lasciare >= 2 mm tra i riquadri
+COL_SHIFT = {}
+for _r in ("C7", "R9", "Q1", "R11", "R12", "Q2", "R13", "R14", "CF1"):
+    COL_SHIFT[_r] = 1.905                                # 2 amplificatore (multipli della griglia del router)
+for _r in ("C11", "R15", "U3", "CF2", "R16", "C9", "R17", "V2", "R18", "R19",
+           "TP02", "TP03", "TP04"):
+    COL_SHIFT[_r] = 3.81                                 # 3 comparatore + B soglia
+for _r in ("U9", "CF10", "R23", "U2", "R20", "C21", "CF5", "CF6", "R21", "D3"):
+    COL_SHIFT[_r] = 6.35                                 # 4 uscita + C LED
+PWR_SHIFT = {}
+for _r in ("J3", "TP2", "TP6", "U6", "CF8", "CF9", "TP3"):
+    PWR_SHIFT[_r] = 6.35                                 # 5 V e 3,3 V (lontano dal foro d'angolo)
+for _r in ("C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1", "R40", "R41", "C40"):
+    PWR_SHIFT[_r] = 8.255                                # alta tensione
+for _r in ("U5", "CF4", "U7", "CF7", "TP4"):
+    PWR_SHIFT[_r] = 10.795                               # riferimenti
+for _r in ("U11", "CF12", "R42", "R43", "J6"):
+    PWR_SHIFT[_r] = 10.5                                 # monitor
+# monitor piu' in basso: l'angolo in alto a destra e' del foro di fissaggio
+PWR_OVERRIDE = {"U11": (89.535, 15.5, 0), "CF12": (89.535, 22.0, 0),
+                "R42": (96.6, 15.0, 0), "R43": (96.6, 18.0, 0), "J6": (W - 2.0, 14.5, 270)}
+COINC_SHIFT = 6.35
+COINC_OVERRIDE = {"J5": (W - 4.0, 12.0, 0), "TP5": (91.5, 21.0, 0)}
+
+# fori di fissaggio M3: angoli e lati, sul confine tra i canali
+MH_POS = [(4.0, 4.0), (W - 4.0, 4.0),
+          (4.0, PWR_H + 3 * STRIP + COINC_H - 4.0), (W - 4.0, PWR_H + 3 * STRIP + COINC_H - 4.0),
+          (4.0, PWR_H + STRIP), (W - 4.0, PWR_H + STRIP),
+          (4.0, PWR_H + 2 * STRIP), (W - 4.0, PWR_H + 2 * STRIP)]
+
+
 def row_y(y):
     """spazio per i titoli dei blocchi: riga alta giu' di 2,5 mm, riga bassa di 4"""
     return y + (2.5 if y < 26 else 4.0)
@@ -151,17 +196,23 @@ def row_y(y):
 def placement():
     out = {}
     for ref, (x, y, r) in PWR.items():
+        x, y, r = PWR_OVERRIDE.get(ref, (x + PWR_SHIFT.get(ref, 0.0), y, r))
         out[ref] = (X0 + x, Y0 + y, r)
     for ref, (x, y) in PWR_TP.items():
-        out[ref] = (X0 + x, Y0 + y, 0)
+        out[ref] = (X0 + x + PWR_SHIFT.get(ref, 0.0), Y0 + y, 0)
     for n in N.CHANNELS:
         yy = ch_y(n)
         for ref, (x, y, r) in CH.items():
-            out[N.chref(ref, n)] = (X0 + x, yy + row_y(y), r)
+            if ref == "J4":                  # LEMO sul bordo destro
+                x = W - 4.0
+            out[N.chref(ref, n)] = (X0 + x + COL_SHIFT.get(ref, 0.0), yy + row_y(y), r)
         for tp, (x, y) in CH_TP.items():
-            out[f"TP{n}{tp[2:]}"] = (X0 + x, yy + row_y(y), 0)
+            out[f"TP{n}{tp[2:]}"] = (X0 + x + COL_SHIFT.get(tp, 0.0), yy + row_y(y), 0)
     for ref, (x, y, r) in COINC.items():
+        x, y, r = COINC_OVERRIDE.get(ref, (x + COINC_SHIFT, y, r))
         out[ref] = (X0 + x, COINC_Y + y, r)
+    for k, (x, y) in enumerate(MH_POS, 1):
+        out[f"MH{k}"] = (X0 + x, Y0 + y, 0)
     missing = set(N.COMPONENTS) ^ set(out)
     assert not missing, f"piazzamento incompleto: {missing}"
     return out
@@ -171,11 +222,11 @@ PLACEMENT = placement()
 
 # ---------------------------------------------------------------- corridoio
 # Le uscite dei buffer (BUF_Y1..3) scendono alla coincidenza in un corridoio
-# riservato tra i blocchi e i LEMO (x locale 82,5 / 84 / 85,5), cosi' non
+# riservato tra i blocchi e i LEMO (x locale 88,5 / 90 / 91,5), cosi' non
 # attraversano i circuiti dei canali sottostanti. Ogni canale entra nel corridoio
 # passando sotto le linee dei canali superiori (tratto su B.Cu), e in basso le
 # linee piegano a sinistra in ordine verso JP1, JP2, JP3: nessun incrocio.
-CORRIDOR_X = {1: 82.5, 2: 84.0, 3: 85.5}
+CORRIDOR_X = {1: 88.85, 2: 90.35, 3: 91.85}
 JOG_Y = 15.5                       # y locale del tratto orizzontale di ingresso
 
 
@@ -216,15 +267,18 @@ CH_BLOCKS = [
     ("2 AMPLIFICATORE", "2 transistor", ["C7", "R9", "Q1", "R11", "R12", "Q2", "R13", "R14", "CF1"]),
     ("3 COMPARATORE", "segnale > soglia?", ["C11", "R15", "U3", "CF2", "R16", "C9", "R17", "TP02", "TP03", "TP04"]),
     ("4 USCITA", "buffer 3,3V -> LEMO", ["U9", "CF10", "R23"]),
-    ("A ALIMENTAZIONE SiPM ~38V", "V1 regola la tensione", ["U8", "R4", "R5", "R6", "C4", "V1", "R7", "D1"]),
+    ("A ALIMENTAZIONE SiPM ~38V", "V1 regola la tensione", ["U8", "R4", "R5", "R6", "C4", "V1", "R7", "D1",
+                                                            "R50", "R51", "C50"]),
     ("B SOGLIA", "V2 regola la soglia", ["V2", "R18", "R19"]),
     ("C LED", "lampeggia a ogni evento", ["U2", "R20", "C21", "CF5", "CF6", "R21", "D3"]),
 ]
 PWR_BLOCKS = [
     ("5V IN", None, ["J3", "TP2", "TP6"]),
     ("3,3V", None, ["U6", "CF8", "CF9", "TP3"]),
-    ("ALTA TENSIONE 41V", None, ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1"]),
-    ("RIFERIMENTI 3,6V", None, ["U5", "CF4", "U7", "CF7", "TP4"]),
+    ("ALTA TENSIONE 41V", "ATTENZIONE: fino a 41 V", ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1",
+                                  "R40", "R41", "C40"]),
+    ("RIFERIMENTI", "3,6 V stabili", ["U5", "CF4", "U7", "CF7", "TP4"]),
+    ("MONITOR", "J6: 1 GND  2 SDA  3 SCL", ["U11", "CF12", "R42", "R43", "J6"]),
 ]
 COINC_BLOCKS = [
     ("COINCIDENZA (AND)", "jumper chiuso = canale incluso",

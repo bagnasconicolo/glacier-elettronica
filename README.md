@@ -70,7 +70,7 @@ docs/              schemi in PDF (1 e 3 canali), RECAP_progetto.pdf, schema_orig
 | Uscite | LEMO/header 3,3 V + TTL 5 V | 3 LEMO 00 (canali) + 1 LEMO 00 (AND) |
 | Coincidenza | — | 74LVC1G11 con jumper di esclusione |
 | Test point | — | 6 per canale + 6 comuni |
-| PCB | 80 × 55 mm | 95 × 205 mm, serigrafia didattica |
+| PCB | 80 × 55 mm | 103 × 215 mm, serigrafia didattica, 8 fori M3 |
 | Schema PDF | `docs/schema_riv_cosmici_1canale.pdf` | `docs/schema_riv_cosmici_3canali.pdf` |
 
 Render 3D delle schede montate: `hardware/render3d/out/1ch/` e `out/3ch/`
@@ -194,3 +194,7 @@ materiale didattico: questo repository.
 Rilasciato sotto **CERN Open Hardware Licence Version 2 — Weakly Reciprocal**
 (CERN-OHL-W-2.0): vedi `LICENSE` e `LICENSE.CERN-OHL-W-2.0.txt`. Il software di
 supporto (script Python/JS, firmware) è distribuito con lo stesso spirito.
+
+## Monitor delle tensioni (scheda a 3 canali)
+
+Un ADC MCP3424 sulla scheda legge i tre bias dei SiPM e l'alta tensione; il Raspberry Pi li legge in I²C con `software/monitor_tensioni.py`. Dettagli e verifica che non disturbi le misure: `hardware/variante_3ch/LEGGIMI.md` e `simulation/ltspice/verifica_monitor.py`.
