@@ -5,8 +5,9 @@ Tre file da caricare su [jlcpcb.com](https://jlcpcb.com) → *Order now*:
 | File | A cosa serve |
 |---|---|
 | `riv_cosmici_gerber.zip` | Gerber + foratura: il circuito stampato |
-| `BOM_JLCPCB.csv` | distinta dei componenti da montare (36 righe, 60 componenti) |
-| `CPL_JLCPCB.csv` | posizione e rotazione di ogni componente |
+| `BOM_JLCPCB.xlsx` (o `.csv`) | distinta dei componenti da montare (36 righe, 60 componenti) |
+| `CPL_JLCPCB.xlsx` (o `.csv`) | posizione e rotazione di ogni componente |
+| `MPN_riferimento.csv` | solo per te: il codice del produttore delle righe da controllare |
 
 Generati da `hardware/generator/gen_jlcpcb.py` (stesso modello dati di schema e PCB).
 
@@ -33,17 +34,23 @@ Non sono nella BOM né nel CPL; le piazzole restano sulla scheda.
 Regole del progetto: piste ≥ 0,3 mm, isolamento ≥ 0,22 mm (0,4 mm attorno alle reti a
 40 V), fori ≥ 0,4 mm: tutto dentro le capacità standard di JLCPCB.
 
-## 2. Opzioni del montaggio (PCB Assembly: ON)
+## 2. Montaggio: dove si caricano BOM e CPL
 
-| Opzione | Valore |
-|---|---|
-| PCBA Type | Economic (se accetta i componenti a foro passante; altrimenti Standard) |
-| Assembly Side | Top Side |
-| PCBA Qty | 10 |
-| Tooling holes | Added by JLCPCB |
-| Confirm Parts Placement | **Yes** (fanno vedere le rotazioni prima di montare) |
+Il prezzo che compare dopo il Gerber (~$11) è **solo il PCB nudo**. Il montaggio si
+aggiunge così:
 
-Poi carica `BOM_JLCPCB.csv` e `CPL_JLCPCB.csv`.
+1. Nella stessa pagina scorri in fondo fino a **PCB Assembly** e attivalo.
+2. Imposta: PCBA Type **Economic** (se segnala i componenti a foro passante, passa a
+   **Standard**), Assembly Side **Top Side**, PCBA Qty **10**, Tooling holes
+   **Added by JLCPCB**, Confirm Parts Placement **Yes**.
+3. Premi **NEXT** (a destra): appare l'anteprima del PCB → di nuovo **NEXT**.
+4. Solo adesso compaiono i due pulsanti **Add BOM File** e **Add CPL File**: carica
+   `BOM_JLCPCB.xlsx` e `CPL_JLCPCB.xlsx` (vanno bene anche i `.csv`) → **Process BOM & CPL**.
+5. Pagina dei componenti (controlli al punto 3) → **NEXT** → anteprima del piazzamento →
+   **NEXT** → il prezzo totale con il montaggio.
+
+Se un caricamento dà errore, annota il messaggio esatto: di solito indica la colonna
+o la riga che non va.
 
 ## 3. Controlli nella pagina dei componenti
 

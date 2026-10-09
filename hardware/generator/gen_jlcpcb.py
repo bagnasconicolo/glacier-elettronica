@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """File per l'ordine di PCB + montaggio su JLCPCB, dal modello dati unico:
 
-  hardware/jlcpcb/BOM_JLCPCB.csv   Comment, Designator, Footprint, LCSC Part #, MPN
-  hardware/jlcpcb/CPL_JLCPCB.csv   Designator, Mid X, Mid Y, Layer, Rotation
+  hardware/jlcpcb/BOM_JLCPCB.csv/.xlsx  Comment, Designator, Footprint, LCSC Part #
+  hardware/jlcpcb/CPL_JLCPCB.csv/.xlsx  Designator, Mid X, Mid Y, Layer, Rotation
+  hardware/jlcpcb/MPN_riferimento.csv   codice del produttore per le righe da controllare
   hardware/jlcpcb/riv_cosmici_gerber.zip  (copia dei Gerber)
 
 DNP (non montati da JLCPCB, saldati a mano): U1 LT3461, U3 MAX961, U8 LT1636.
@@ -79,6 +80,20 @@ def centroids():
             for r, v in acc.items()}
 
 
+def write_xlsx(fn, hdr, rows):
+    try:
+        import openpyxl
+    except ImportError:
+        print("openpyxl assente: niente", os.path.basename(fn))
+        return
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(hdr)
+    for r in rows:
+        ws.append(r)
+    wb.save(fn)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     # ---- BOM
@@ -93,21 +108,33 @@ def main():
         refs.sort(key=ref_key)
         rows.append([com, ",".join(refs), pkg, lcsc, mpn])
     rows.sort(key=lambda r: ref_key(r[1].split(",")[0]))
+    # solo le 4 colonne del modello JLCPCB (l'MPN di riferimento e' in LEGGIMI.md)
+    bom_hdr = ["Comment", "Designator", "Footprint", "LCSC Part #"]
+    bom_rows = [r[:4] for r in rows]
     with open(os.path.join(OUT, "BOM_JLCPCB.csv"), "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #", "MPN (riferimento)"])
-        w.writerows(rows)
+        w.writerow(bom_hdr)
+        w.writerows(bom_rows)
+    write_xlsx(os.path.join(OUT, "BOM_JLCPCB.xlsx"), bom_hdr, bom_rows)
+    with open(os.path.join(OUT, "MPN_riferimento.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Designator", "Comment", "LCSC Part #", "MPN"])
+        w.writerows([[r[1], r[0], r[3], r[4]] for r in rows if r[4]])
     # ---- CPL (origine = angolo in basso a sinistra della scheda, Y verso l'alto)
     cen = centroids()
+    cpl_hdr = ["Designator", "Mid X", "Mid Y", "Layer", "Rotation"]
+    cpl_rows = []
+    for ref in sorted(PLACEMENT, key=ref_key):
+        if ref in DNP:
+            continue
+        x, y = cen[ref]
+        rot = PLACEMENT[ref][2] % 360
+        cpl_rows.append([ref, f"{x - X1:.3f}mm", f"{Y2 - y:.3f}mm", "Top", f"{rot:.0f}"])
     with open(os.path.join(OUT, "CPL_JLCPCB.csv"), "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
-        for ref in sorted(PLACEMENT, key=ref_key):
-            if ref in DNP:
-                continue
-            x, y = cen[ref]
-            rot = PLACEMENT[ref][2] % 360
-            w.writerow([ref, f"{x - X1:.3f}mm", f"{Y2 - y:.3f}mm", "Top", f"{rot:.0f}"])
+        w.writerow(cpl_hdr)
+        w.writerows(cpl_rows)
+    write_xlsx(os.path.join(OUT, "CPL_JLCPCB.xlsx"), cpl_hdr, cpl_rows)
     # ---- Gerber
     shutil.copy(os.path.join(HERE, "..", "riv_cosmici_gerber.zip"),
                 os.path.join(OUT, "riv_cosmici_gerber.zip"))
