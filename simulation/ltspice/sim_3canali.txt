@@ -1,0 +1,34 @@
+SCHEDA A 3 CANALI - simulazione ngspice (sim_3canali.py)
+
+1. Alimentazioni condivise a riposo (t = 9,9 ms)
+   +3V3 3.299 V   +3V6 3.600 V   VREF_B 3.600 V   VOUT40 41.62 V   corrente da 5 V 105.8 mA
+   canale 1: BIAS 38.441 V  soglia TH 104.1 mV  ondulazione del bias durante gli eventi 3.08 mV
+   canale 2: BIAS 38.441 V  soglia TH 104.1 mV  ondulazione del bias durante gli eventi 1.47 mV
+   canale 3: BIAS 38.441 V  soglia TH 104.1 mV  ondulazione del bias durante gli eventi 0.47 mV
+
+Evento 1: muone nelle 3 barre (250/150/80 p.e., 0/2/4 ns)
+   canale 1: ingresso comparatore    0.0 mV a riposo, max +1152.8 / min  -14.7 mV (soglia 104 mV sopra il riposo) -> uscita 3.29 V, al Raspberry 3.27 V
+   canale 2: ingresso comparatore    0.0 mV a riposo, max +1176.1 / min   -9.6 mV (soglia 104 mV sopra il riposo) -> uscita 3.28 V, al Raspberry 3.27 V
+   canale 3: ingresso comparatore    0.0 mV a riposo, max +1175.6 / min   -8.2 mV (soglia 104 mV sopra il riposo) -> uscita 3.28 V, al Raspberry 3.27 V
+   AND (J5, al Raspberry): 3.27 V, durata 221 ns, ritardo dal canale 1 16 ns
+
+Evento 2: muone SOLO nel canale 1 (250 p.e.)
+   canale 1: ingresso comparatore    0.0 mV a riposo, max +1134.0 / min  -18.1 mV (soglia 104 mV sopra il riposo) -> uscita 3.29 V, al Raspberry 3.27 V
+   canale 2: ingresso comparatore    0.0 mV a riposo, max    -2.7 / min   -3.5 mV (soglia 104 mV sopra il riposo) -> uscita 0.00 V, al Raspberry 0.01 V
+   canale 3: ingresso comparatore    0.0 mV a riposo, max    -2.4 / min   -3.1 mV (soglia 104 mV sopra il riposo) -> uscita 0.00 V, al Raspberry 0.01 V
+   AND (J5, al Raspberry): 0.00 V (non scatta)
+
+Evento 3: muone nei canali 1 e 2 (150/150 p.e.)
+   canale 1: ingresso comparatore    0.0 mV a riposo, max +1166.0 / min  -14.5 mV (soglia 104 mV sopra il riposo) -> uscita 3.28 V, al Raspberry 3.27 V
+   canale 2: ingresso comparatore    0.0 mV a riposo, max +1162.2 / min  -10.5 mV (soglia 104 mV sopra il riposo) -> uscita 3.28 V, al Raspberry 3.27 V
+   canale 3: ingresso comparatore    0.0 mV a riposo, max    -0.8 / min   -1.2 mV (soglia 104 mV sopra il riposo) -> uscita 0.00 V, al Raspberry 0.01 V
+   AND (J5, al Raspberry): 0.00 V (non scatta)
+
+Evento 4: 3 canali, impulsi piccoli (25 p.e.), 0/5/10 ns
+   canale 1: ingresso comparatore    0.0 mV a riposo, max  +463.9 / min   -7.2 mV (soglia 104 mV sopra il riposo) -> uscita 3.26 V, al Raspberry 3.27 V
+   canale 2: ingresso comparatore    0.0 mV a riposo, max  +467.3 / min   -6.3 mV (soglia 104 mV sopra il riposo) -> uscita 3.26 V, al Raspberry 3.27 V
+   canale 3: ingresso comparatore    0.0 mV a riposo, max  +472.3 / min   -3.2 mV (soglia 104 mV sopra il riposo) -> uscita 3.26 V, al Raspberry 3.27 V
+   AND (J5, al Raspberry): 3.27 V, durata 150 ns, ritardo dal canale 1 19 ns
+
+Diafonia: per i canali NON colpiti (evento 2: canali 2 e 3; evento 3: canale 3) il
+massimo sopra il riposo va confrontato con la soglia: deve restarne molto sotto.

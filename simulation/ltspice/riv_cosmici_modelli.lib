@@ -251,3 +251,20 @@ RQ VCC GND 330k
 RIN A GND 100Meg
 RNC NC GND 1G
 .ends LVC1G17
+
+* ---------------------------------------------------------------------
+* 74LVC1G11 - AND a 3 ingressi (coincidenza della scheda a 3 canali)
+* pin SOT-23-6: 1 A, 2 GND, 3 B, 4 Y, 5 VCC, 6 C ; soglia ~VCC/2,
+* uscita CMOS con ~3 ns di ritardo (rete RC interna) e 20 ohm d'uscita
+* ---------------------------------------------------------------------
+.subckt LVC1G11 A GND B Y VCC C
+BD d GND V=0.5*(1+tanh((V(A,GND)-0.5*V(VCC,GND))/0.05))*0.5*(1+tanh((V(B,GND)-0.5*V(VCC,GND))/0.05))*0.5*(1+tanh((V(C,GND)-0.5*V(VCC,GND))/0.05))
+RS d s 1k
+CS s GND 2.5p
+BO o GND V=V(VCC,GND)*V(s,GND)
+RO o Y 20
+RQ VCC GND 330k
+RINA A GND 100Meg
+RINB B GND 100Meg
+RINC C GND 100Meg
+.ends LVC1G11

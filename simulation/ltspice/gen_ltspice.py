@@ -69,12 +69,13 @@ BLOCKS = [
 def spice_value(v):
     """'1k2'->'1.2k', '560R'->'560', '100n 100V'->'100n', '22pF'->'22p'"""
     v = v.split()[0]
-    m = re.fullmatch(r"(\d+)([kKmMR])(\d+)", v)          # 1k2, 4R7
+    m = re.fullmatch(r"(\d+)([kKmMR])(\d+)", v)          # 1k2, 4R7, 2M2
     if m:
         a, u, b = m.groups()
-        u = "" if u == "R" else u
+        u = {"R": "", "M": "Meg"}.get(u, u)
         return f"{a}.{b}{u}"
     v = re.sub(r"R$", "", v)                              # 560R -> 560
+    v = re.sub(r"(?<=\d)M$", "Meg", v)                    # 1M -> 1Meg (in SPICE "M" = milli!)
     v = re.sub(r"(?<=[pnumkM])[FH]$", "", v)              # 22pF -> 22p, 47uH -> 47u
     return v
 
