@@ -1,12 +1,10 @@
 Riferimenti;Parte (MPN);Codice Farnell;Per scheda;Qta per 5 schede (con scorta);Note
-U1;LT3461ES6#TRMPBF (boost, SOT-23-6);4024725;1;6;codice dello schema INFN: verificare sul sito (alternativa a pezzo 1663821RL)
-U103 U203 U303;MAX961ESA+ (comparatore, SO-8);2519484;3;17;
-U108 U208 U308;LT1636CS8#PBF (op-amp, SO-8);4020771;3;17;codice dello schema INFN: verificare sul sito
-U5 U7;LP2985AIM5-3.6/NOPB (LDO 3.6 V, SOT-23-5);1685681;2;12;in alternativa 1685681RL (re-reel) o LP2985-36DBVR, stesso pinout
-D101 D201 D301;1N4148 (DO-35);3606680;3;20;qualsiasi 1N4148 assiale va bene
-TP101..TP305 + TP1..TP5;Keystone 5000 (test point ROSSO);2250281;20;110;
-TP106 TP206 TP306 TP6;Keystone 5001 (test point NERO, GND);2301278;4;25;
-J101 J201 J301 J3 JP1..JP3;strip pin header 1x40 passo 2.54 mm (da tagliare);(cercare su Farnell);14 pin;3 strip;nessun codice verificato: scegliere una strip maschio 1x40 dritta
-JP1..JP3;ponticello (jumper) 2.54 mm;2834673;3;20;Multicomp MC-2228CG (alternativa Molex 15-29-1026 = 1679273)
+U1;LT3461AES6#TRMPBF (alta tensione, SOT-23-6);4024725;1;6;codice dello schema INFN: Farnell lo abbina alla versione A
+U103 U203 U303;MAX961ESA+ (comparatore, SO-8);2519484;3;16;
+U108 U208 U308;LT1636CS8#PBF (op-amp, SO-8);(cerca per MPN);3;16;ATTENZIONE: il vecchio codice 4020771 e' la versione MSOP (CMS8), NON entra nel footprint
+U5 U7;LP2985AIM5-3.6/NOPB (LDO 3.6 V, SOT-23-5);(cerca per MPN);2;12;in alternativa RS 812-2417
+D101 D201 D301;1N4148-TAP (DO-35);2889103;3;20;il vecchio 3606680 era una bobina da 5000 pezzi con 24 settimane di attesa
+J101 J201 J301 J3 JP1-3 + tutti i TP;strip maschio 1x40 passo 2,54 (Wurth 61304011121);(cerca per MPN);38 pin;5;i test point diventano pin di strip: niente Keystone
+JP1-JP3;ponticello 2,54 mm (Multicomp MC-2228CG);2834673;3;20;
 SiPM;Broadcom AFBR-S4N22P014M;4351470;3;15;
-J104 J204 J304 J5;LEMO EPL.00.250.NTN;-;4;20;gia disponibili: non ordinare
+J104 J204 J304 J5;LEMO EPL.00.250.NTN;-;4;20;gia' disponibili: non ordinare

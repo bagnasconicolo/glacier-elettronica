@@ -94,7 +94,8 @@ sull'ingresso dell'amplificatore).
 | TP4 +3V6 | `3,6V` |
 | TP5 uscita AND | `AND` |
 
-Fori da 1 mm per anelli Keystone 5000 (rossi) / 5001 (neri, GND) o un filo piegato.
+Fori da 1 mm: ci va un **pin di strip header** (tagliato dalla stessa strip 1×40 dei
+connettori, costa quasi niente) oppure un anello Keystone 5000 (rosso) / 5001 (nero, GND).
 Usa una sonda 10× con la molla di massa corta sul GND più vicino.
 
 ## Montaggio
@@ -111,7 +112,7 @@ JLCPCB monta 131 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | J101, J201, J301, J3 | header 1×2 (SiPM, 5 V) | 4 |
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
-| TP* | test point | 24 |
+| TP* | test point (pin di strip header) | 24 |
 
 Ordine Farnell per 5 schede (con scorta): `ordine_farnell.csv`.
 

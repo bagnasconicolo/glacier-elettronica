@@ -1,9 +1,5 @@
-4024725, 6, U1 boost
-2519484, 17, U?03 comparatore
-4020771, 17, U?08 op-amp
-1685681, 12, U5 U7 LDO 3.6V
-3606680, 20, D?01
-2250281, 110, test point rosso
-2301278, 25, test point nero GND
+4024725, 6, U1 alta tensione (versione A, come INFN)
+2519484, 16, U?03 comparatore
+2889103, 20, D?01 (a pezzi, non bobina da 5000)
 2834673, 20, jumper JP1-3
 4351470, 15, SiPM
