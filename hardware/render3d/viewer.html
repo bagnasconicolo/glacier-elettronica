@@ -7,9 +7,12 @@
   html, body { margin: 0; height: 100%; background: #f2f2ef; overflow: hidden; }
   canvas { display: block; }
 </style>
-<script type="importmap">
-{ "imports": { "three": "./node_modules/three/build/three.module.js",
-               "three/addons/": "./node_modules/three/examples/jsm/" } }
+<script>
+// three.js dal CDN (basta un server statico); con ?local=1 da node_modules (render offline)
+const T = new URLSearchParams(location.search).has("local")
+  ? "./node_modules/three/" : "https://cdn.jsdelivr.net/npm/three@0.160.0/";
+document.write('<script type="importmap">' + JSON.stringify({ imports: {
+  "three": T + "build/three.module.js", "three/addons/": T + "examples/jsm/" } }) + '<\/script>');
 </script>
 </head>
 <body>

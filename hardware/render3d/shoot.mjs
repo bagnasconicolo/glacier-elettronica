@@ -22,7 +22,7 @@ for (const v of VIEWS) {
   const page = await browser.newPage({ viewport: { width: W, height: H } });
   page.on("console", m => { if (m.type() !== "log") console.log("[page]", m.text()); });
   const extra = (process.env.PCB ? `&pcb=${process.env.PCB}` : "") + (process.env.BG ? `&bg=${process.env.BG}` : "");
-  await page.goto(`http://localhost:${port}/viewer.html?v=${variant}&view=${v}&w=${W}&h=${H}${extra}`);
+  await page.goto(`http://localhost:${port}/viewer.html?local=1&v=${variant}&view=${v}&w=${W}&h=${H}${extra}`);
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
   await page.waitForTimeout(2500);
   const out = path.join(process.env.OUTDIR || path.join(root, "out", variant),
