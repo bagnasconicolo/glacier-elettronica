@@ -94,3 +94,16 @@ C9/R16 del MAX961), ~150–270 ns per un muone tipico. Va contato **sul fronte d
 salita, a interrupt** (rilevamento dei fronti in hardware del GPIO, es. `libgpiod` con
 eventi `RISING_EDGE`): leggere il pin in polling perderebbe impulsi così brevi.
 Il rate atteso su una paletta 10×10 cm è ~1,7 eventi/s.
+
+## Ordine su JLCPCB e prima accensione
+
+I file per JLCPCB (Gerber, BOM, CPL) e le opzioni del modulo d'ordine sono in
+[`hardware/jlcpcb/`](jlcpcb/LEGGIMI.md). U1 (LT3461), U3 (MAX961) e U8 (LT1636) sono
+esclusi dal montaggio e si saldano a mano, uno alla volta:
+
+1. **Senza i tre chip**, 5 V su J3: +3V3 ≈ 3,30 V, +3V6 ≈ 3,60 V, VREF_B ≈ 3,6 V,
+   assorbimento di pochi mA.
+2. **Salda U1**: VOUT40 ≈ 41,7 V (≈ 39,4 V con R3 = 255k).
+3. **Salda U8, senza SiPM**: regola V1 fino a BIAS = 38,4 V (campo ~28,6–41,5 V).
+4. **Salda U3**: regola TH con V2 (es. ~100 mV); CMP_Q deve restare a 0 V, LED spento.
+5. **Collega il SiPM**: impulsi su CMP_IN, LED che lampeggia al passaggio dei muoni.

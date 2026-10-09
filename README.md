@@ -40,6 +40,7 @@ hardware/          progetto KiCad (schema, PCB, librerie, Gerber, BOM)
   gerber/, riv_cosmici_gerber.zip      Gerber RS-274X + Excellon (pronti per il fab)
   bom/                                 distinta base (.xlsx e .csv) con codici Farnell/RS
   PRIMA_DI_ORDINARE.md                 cosa e' verificato e cosa decidere prima dell'ordine
+  jlcpcb/                              Gerber, BOM e CPL per PCB + montaggio su JLCPCB
   previews/                            anteprime PNG
   generator/                           script Python che GENERANO lo hardware (sorgente)
 simulation/        modelli circuitali non lineari + verifica dallo schema
@@ -80,6 +81,7 @@ Rigenerare tutto (schema, PCB, Gerber, BOM, anteprime) dal modello dati:
 ```bash
 cd hardware/generator
 python gen_sch.py && python gen_pcb.py && python gerber_out.py && python gen_bom.py
+python gen_jlcpcb.py   # dopo aver aggiornato hardware/gerber e lo zip
 python render_sch.py && python render_pcb.py
 # schema, PCB e Gerber escono in generator/riv_cosmici/: copiarli in hardware/
 ```
