@@ -74,13 +74,32 @@ Nessun valore del circuito originale INFN è stato cambiato.
    5,85 e 5,94 V. Con R3 = 255k (punto 1) a 50 °C il boost ha ancora 0,3 V di margine
    sopra il bias (39,4 V contro 39,1 V); a temperatura ambiente il margine è ~1 V.
 
-## Ultimi passi in KiCad (consigliati)
+## Verifica con KiCad (fatta)
 
-Aprire `hardware/riv_cosmici.kicad_pro` con KiCad ≥ 6, lanciare **ERC** sullo schema,
-**riempire le zone** (tasto B) e lanciare il **DRC** sul PCB. Il generatore ha già fatto
-un DRC geometrico e la verifica di connettività, ma il DRC ufficiale di KiCad è il
-controllo finale. I Gerber pronti sono in `hardware/gerber/` (anche come
-`riv_cosmici_gerber.zip`): 2 strati, 80 × 55 mm, foratura PTH in Excellon.
+`generator/verifica_kicad.py` controlla schema e PCB **con KiCad stesso** (KiCad 7,
+`pcbnew` + `kicad-cli`), indipendentemente dal generatore:
+
+```
+cd hardware/generator
+python3 verifica_kicad.py ../riv_cosmici
+python3 verifica_kicad.py ../variante_3ch/riv_cosmici_3ch
+```
+
+1. la netlist che KiCad estrae dallo schema coincide pin per pin con le reti del PCB;
+2. DRC di KiCad dopo il riempimento delle zone: nessun errore. Restano solo avvisi:
+   serigrafia vicino al bordo o sopra i pad (JLCPCB la ritaglia da sé) e le uscite
+   corte (~2 mm) dai pin degli integrati, collegate da un solo lato (innocue);
+3. connettività sul **rame reale** (forme vere dei pad, piano di massa riempito da
+   KiCad, ogni isola del piano contata a sé): 0 reti spezzate.
+
+Questa verifica ha trovato e fatto correggere tre difetti che il controllo interno del
+generatore non vedeva: piste che toccavano solo l'angolo del rettangolo d'ingombro
+di un pad tondo o arrotondato (ora ogni pista arriva al centro del pad), piccole isole
+del piano di massa staccate dal resto (ora ricollegate) e due giunzioni a T nello schema
+che KiCad non collegava (ora i fili sono spezzati in ogni giunzione).
+
+Per controllare a vista: aprire il `.kicad_pro` con KiCad ≥ 7, ERC sullo schema,
+tasto B per riempire le zone, DRC sul PCB.
 
 ## Collegamento al Raspberry Pi
 

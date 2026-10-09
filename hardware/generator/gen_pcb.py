@@ -9,7 +9,7 @@ from shapely.ops import unary_union
 from shapely.prepared import prep
 import shapely.affinity as aff
 
-from pcb_data import (BOARD, PLACEMENT, COMPONENTS, FP_OF, abs_pads, pad_rect,
+from pcb_data import (BOARD, PLACEMENT, COMPONENTS, FP_OF, abs_pads, pad_rect, pad_shape,
                       track_w, CLEARANCE, HV_NETS, HV_CLEAR)
 from footprints import FPS
 from netdata import NETS
@@ -283,6 +283,8 @@ def route_net(net):
     for t in tracks:
         if t["net"] == net and t.get("fixed"):
             conn[t["layer"]].append(LineString(t["pts"]).buffer(t["w"] / 2))
+    for L, g in EXTRA_CONN.get(net, {}).items():      # bersagli extra (isole di massa)
+        conn[L].append(g)
     for v in vias:
         if v["net"] == net and v.get("fixed"):
             vg = Point(v["x"], v["y"]).buffer(VIA_D / 2)
@@ -548,6 +550,9 @@ def gnd_pour():
             clr = HV_CLEAR if v["net"] in HV_NETS else 0.3
             obs.append(Point(v["x"], v["y"]).buffer(VIA_D / 2 + clr))
     pour = brd.difference(unary_union(obs)) if obs else brd
+    # niente colli piu' stretti di 0,3 mm (come il riempimento di KiCad, min_thickness):
+    # un collo sottile non e' un collegamento affidabile
+    pour = pour.buffer(-0.15).buffer(0.15)
     # tieni solo il componente connesso piu' grande + quelli che toccano GND
     parts = list(pour.geoms) if isinstance(pour, MultiPolygon) else [pour]
     gnd_items = [Point(v["x"], v["y"]) for v in vias if v["net"] == "GND"]
@@ -601,43 +606,118 @@ def drc(pour_parts):
     return err
 
 # ---------------- connettivita' ----------------
+def snap_to_pads():
+    """Il router arriva al rettangolo d'ingombro del pad: su un pad tondo, o su un angolo,
+    la pista puo' toccarlo appena (o per niente). Ogni estremo di pista che cade
+    sull'ingombro di un pad della stessa rete viene prolungato fino al centro del pad."""
+    add = []
+    have = {(t["net"], t["layer"], tuple(map(tuple, t["pts"]))) for t in tracks}
+    for t in tracks:
+        for pt in (t["pts"][0], t["pts"][-1]):
+            for p in pads:
+                if p["net"] != t["net"] or (p["kind"] == "smd" and t["layer"] != "F.Cu"):
+                    continue
+                c = (p["x"], p["y"])
+                if tuple(pt) != c and pad_rect(p, t["w"] / 2 + 0.05).contains(Point(pt)) \
+                        and (t["net"], t["layer"], (tuple(pt), c)) not in have:
+                    have.add((t["net"], t["layer"], (tuple(pt), c)))
+                    add.append(dict(net=t["net"], layer=t["layer"], pts=[tuple(pt), c], w=t["w"]))
+    tracks.extend(add)
+    return len(add)
+
+EXTRA_CONN = {}
+
+def net_groups(net, pour_parts):
+    """gruppi di pad della rete realmente connessi tra loro (rame reale; ogni pezzo
+    del piano di massa e' un'isola a se': due pezzi NON sono connessi tra loro)."""
+    ps = net_pads(net)
+    geos = []
+    for p in ps:
+        # rame reale, con almeno 0,03 mm di sovrapposizione richiesta
+        geos.append(("pad", pad_shape(p, -0.03), ["F.Cu"] if p["kind"] == "smd" else ["F.Cu", "B.Cu"]))
+    for t in tracks:
+        if t["net"] == net:
+            geos.append(("trk", LineString(t["pts"]).buffer(t["w"] / 2 + 0.01), [t["layer"]]))
+    for v in vias:
+        if v["net"] == net:
+            geos.append(("via", Point(v["x"], v["y"]).buffer(VIA_D / 2 + 0.01), ["F.Cu", "B.Cu"]))
+    if net == "GND":
+        for part in pour_parts or []:
+            geos.append(("pour", part.buffer(0.01), ["B.Cu"]))
+    n = len(geos)
+    parent = list(range(n))
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]; i = parent[i]
+        return i
+    for i in range(n):
+        for j in range(i + 1, n):
+            if set(geos[i][2]) & set(geos[j][2]) and geos[i][1].intersects(geos[j][1]):
+                ri, rj = find(i), find(j)
+                if ri != rj:
+                    parent[ri] = rj
+    roots = {}
+    for i in range(len(ps)):
+        roots.setdefault(find(i), []).append(ps[i])
+    return list(roots.values())
+
 def connectivity(pour_parts):
     err = []
-    pour = unary_union(pour_parts) if pour_parts else None
     for net in list(NETS):
-        ps = net_pads(net)
-        geos = []
-        for p in ps:
-            geos.append(("pad", pad_rect(p, 0.01), ["F.Cu"] if p["kind"] == "smd" else ["F.Cu", "B.Cu"]))
-        for t in tracks:
-            if t["net"] == net:
-                geos.append(("trk", LineString(t["pts"]).buffer(t["w"] / 2 + 0.01), [t["layer"]]))
-        for v in vias:
-            if v["net"] == net:
-                geos.append(("via", Point(v["x"], v["y"]).buffer(VIA_D / 2 + 0.01), ["F.Cu", "B.Cu"]))
-        if net == "GND" and pour is not None:
-            geos.append(("pour", pour.buffer(0.01), ["B.Cu"]))
-        n = len(geos)
-        parent = list(range(n))
-        def find(i):
-            while parent[i] != i:
-                parent[i] = parent[parent[i]]; i = parent[i]
-            return i
-        def union(i, j):
-            ri, rj = find(i), find(j)
-            if ri != rj:
-                parent[ri] = rj
-        for i in range(n):
-            for j in range(i + 1, n):
-                if set(geos[i][2]) & set(geos[j][2]) and geos[i][1].intersects(geos[j][1]):
-                    union(i, j)
-        roots = {}
-        for i in range(len(ps)):
-            roots.setdefault(find(i), []).append(f"{ps[i]['ref']}.{ps[i]['pin']}")
-        if len(roots) > 1:
-            det = " | ".join(",".join(v) for v in roots.values())
+        groups = net_groups(net, pour_parts)
+        if len(groups) > 1:
+            det = " | ".join(",".join(f"{p['ref']}.{p['pin']}" for p in g) for g in groups)
             err.append(f"rete {net} non connessa: {det}")
     return err
+
+def gnd_island_culprits(pour_parts):
+    """reti le cui piste corrono lungo il bordo delle isole di massa isolate"""
+    groups = net_groups("GND", pour_parts)
+    main = max(groups, key=len)
+    big = max(pour_parts, key=lambda g: g.area)
+    out = set()
+    for g in groups:
+        if g is main:
+            continue
+        pts = [Point(p["x"], p["y"]) for p in g]
+        pts += [Point(v["x"], v["y"]) for v in vias if v["net"] == "GND"
+                and any(Point(v["x"], v["y"]).distance(q) < 3 for q in pts)]
+        isl = [part for part in pour_parts if part is not big and any(part.distance(q) < 0.5 for q in pts)]
+        zone = unary_union(isl + [q.buffer(2.0) for q in pts]).buffer(1.0)
+        for t in tracks:
+            if t["net"] != "GND" and not t.get("fixed") and zone.intersects(LineString(t["pts"])):
+                out.add(t["net"])
+    return out
+
+def fix_gnd_islands(max_iter=4):
+    """pad GND finiti su un'isola del piano di massa chiusa da altre piste: una pista
+    di massa li collega al piano principale (o a una pista/pad GND gia' connessi)."""
+    global net_pads
+    added = 0
+    for _ in range(max_iter):
+        pk, _pa = gnd_pour()
+        groups = net_groups("GND", pk)
+        if len(groups) <= 1:
+            return added
+        main = max(groups, key=len)
+        big = max(pk, key=lambda g: g.area)
+        geoF = [pad_shape(p, -0.05) for p in main]
+        geoF += [Point(v["x"], v["y"]).buffer(VIA_D / 2) for v in vias
+                 if v["net"] == "GND" and big.intersects(Point(v["x"], v["y"]))]
+        EXTRA_CONN["GND"] = {"B.Cu": big.buffer(-0.3), "F.Cu": unary_union(geoF)}
+        orig = net_pads
+        for g in groups:
+            if g is main:
+                continue
+            # il primo pad (gia' nel gruppo principale) fa da seme, il secondo e' l'isola
+            net_pads = lambda n, a=main[0], b=g[0]: [a, b] if n == "GND" else orig(n)
+            try:
+                if route_net("GND"):
+                    added += 1
+            finally:
+                net_pads = orig
+        EXTRA_CONN.clear()
+    return added
 
 # ---------------- writer ----------------
 def U():
@@ -702,8 +782,8 @@ def write_pcb(fn, pour_parts):
             nets = f' (net {NETIDS[net]} "{net}")' if net else ''
             num = num.split("#")[0]          # pad multipli dello stesso pin
             if k == "smd":
-                o.append(f'    (pad "{num}" smd roundrect (at {px} {py} {rot}) (size {w} {h}) '
-                         f'(layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.2){nets} (tstamp {U()}))')
+                o.append(f'    (pad "{num}" smd rect (at {px} {py} {rot}) (size {w} {h}) '
+                         f'(layers "F.Cu" "F.Paste" "F.Mask"){nets} (tstamp {U()}))')
             else:
                 shape = "rect" if k == "tht_rect" else "circle"
                 o.append(f'    (pad "{num}" thru_hole {shape} (at {px} {py} {rot}) (size {w} {h}) '
@@ -762,6 +842,8 @@ def main(out_pcb="riv_cosmici/riv_cosmici.kicad_pcb", state="routing_state.json"
         add_escape_stubs()
         add_gnd_vias()
         fails = route_all()
+        snap_to_pads()
+        fix_gnd_islands()
         if not fails:
             # anche errori di DRC o reti aperte dopo il routing contano come falliti
             _pk, _pa = gnd_pour()
@@ -770,6 +852,9 @@ def main(out_pcb="riv_cosmici/riv_cosmici.kicad_pcb", state="routing_state.json"
                 for n in re.findall(r"[A-Z+][A-Z0-9_+]*", str(e)):
                     if n in NETS and n != "GND":
                         bad.add(n)
+            # isole del piano di massa: si rifanno per prime le reti che le chiudono
+            if len(net_groups("GND", _pk)) > 1:
+                bad |= gnd_island_culprits(_pk)
             fails = sorted(bad)
             if not fails:
                 break

@@ -140,6 +140,14 @@ def pad_rect(p, extra=0.0):
         b = aff.rotate(b, -p["rot"], origin=(p["x"], p["y"]))
     return b
 
+def pad_shape(p, extra=0.0):
+    """forma REALE del rame del pad (cerchio per i THT tondi, rettangolo per gli altri),
+    come nei Gerber e in KiCad. pad_rect resta l'ingombro (prudente) per gli ostacoli."""
+    if p["kind"] == "tht" and abs(p["w"] - p["h"]) < 1e-6:
+        from shapely.geometry import Point
+        return Point(p["x"], p["y"]).buffer(p["w"] / 2 + extra, 32)
+    return pad_rect(p, extra)
+
 if __name__ == "__main__":
     pads = abs_pads()
     print(len(pads), "pad")

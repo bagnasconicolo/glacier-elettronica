@@ -288,3 +288,10 @@ COINC_BLOCKS = [
 TP_LABEL = {"TP01": "SiPM", "TP06": "GND", "TP05": "BIAS", "TP02": "IN",
             "TP03": "SOGLIA", "TP04": "OUT",
             "TP1": "41V", "TP2": "5V", "TP3": "3,3V", "TP4": "3,6V", "TP5": "AND", "TP6": "GND"}
+
+
+# Isola del piano di massa sotto l'uscita del canale 2 (U209.3, CF205.2): sul retro e'
+# chiusa dalle piste delle uscite. Pista di massa sul lato componenti dalla via di CF205
+# verso destra + via nel piano principale (verificato: DRC 0, rete GND connessa).
+GND_PATCH_TRACKS = [dict(net="GND", layer="F.Cu", pts=[(104.4, 134.5), (107.6, 134.5)], w=0.5)]
+GND_PATCH_VIAS = [dict(net="GND", x=107.6, y=134.5)]

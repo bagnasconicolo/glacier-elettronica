@@ -107,7 +107,27 @@ def solo_serigrafia():
     st = json.load(open(STATE))
     GP.tracks[:] = st["tracks"]
     GP.vias[:] = st["vias"]
-    pour = [Polygon(e, h) for e, h in zip(st["pour"], st["pour_holes"])]
+    for t in P3.GND_PATCH_TRACKS:                   # isole di massa chiuse (vedi pcb_data3)
+        if not any(u["net"] == t["net"] and u["layer"] == t["layer"]
+                   and [tuple(p) for p in u["pts"]] == t["pts"] for u in GP.tracks):
+            GP.tracks.append(dict(t))
+    for v in P3.GND_PATCH_VIAS:
+        if not any((u["x"], u["y"]) == (v["x"], v["y"]) for u in GP.vias):
+            GP.vias.append(dict(v))
+    # piste prolungate fino al centro dei pad, poi DRC e connettivita' sul rame reale
+    print("agganci ai pad aggiunti:", GP.snap_to_pads())
+    print("isole di massa ricollegate:", GP.fix_gnd_islands())
+    pour_keep, _ = GP.gnd_pour()
+    errs = GP.drc(pour_keep) + GP.connectivity(pour_keep)
+    for e in errs:
+        print("ERRORE:", e)
+    if errs:
+        raise SystemExit("routing salvato non valido: rilanciare gen_pcb3.py senza opzioni")
+    st["tracks"], st["vias"] = GP.tracks, GP.vias
+    st["pour"] = [list(p.exterior.coords) for p in pour_keep]
+    st["pour_holes"] = [[list(h.coords) for h in p.interiors] for p in pour_keep]
+    json.dump(st, open(STATE, "w"))
+    pour = pour_keep
     GP.write_pcb(os.path.join(OUT, "riv_cosmici_3ch.kicad_pcb"), pour)
     runpy.run_path(os.path.join(HERE, "gerber_out.py"),
                    init_globals={"STATE": STATE, "OUT": os.path.join(OUT, "gerber"),

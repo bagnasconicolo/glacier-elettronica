@@ -176,9 +176,13 @@ CF7, CF9) valgono le stesse note della scheda singola.
 
 - Schema: netlist riletta dal `.kicad_sch` per geometria = modello dati (0 differenze).
 - PCB: autorouter + DRC geometrico + connettività: **0 errori**.
+- **Verifica con KiCad 7** (`generator/verifica_kicad.py`, vedi `../PRIMA_DI_ORDINARE.md`):
+  netlist dello schema estratta da KiCad = reti del PCB, DRC di KiCad senza errori
+  (solo avvisi di serigrafia e uscite corte dai pin), 0 reti spezzate sul rame reale.
 - Piste corte e uguali nei tre canali (mm): ingresso SiPM 9, ingresso comparatore 18,
   soglia 16–24, bias 9–11, uscita comparatore 26–28.
 - Serigrafia: testo alto almeno 0,9 mm (tratto ~0,17 mm), mai sopra i pad; generata da
   `silk3.py` e identica in KiCad (`gr_poly`) e nei Gerber.
 - Non ancora fatto: simulazione SPICE della scheda a 3 canali (il canale è identico a
-  quello simulato in `simulation/ltspice/`); ERC/DRC ufficiali in KiCad.
+  quello simulato in `simulation/ltspice/`); ERC di KiCad (la versione 7 non lo fa
+  da riga di comando: il confronto delle netlist sopra copre i collegamenti).

@@ -343,6 +343,31 @@ def all_pins():
                         etype, hide))
     return out
 
+def split_wires():
+    """fili spezzati in ogni punto di collegamento interno (estremi di altri fili, giunzioni,
+    pin, etichette): in KiCad un filo che arriva A META' di un altro non e' sempre
+    collegato, mentre due estremi coincidenti lo sono sempre."""
+    pts = set()
+    for a, b in wires:
+        pts.add(a); pts.add(b)
+    pts |= {(round(x, 3), round(y, 3)) for x, y in junctions}
+    pts |= {pos for _r, _p, pos, _et, hide in all_pins() if not hide}
+    pts |= {(round(x, 3), round(y, 3)) for _n, x, y in labels}
+    pts |= {(round(x, 3), round(y, 3)) for _n, x, y, _r in powers}
+    out = []
+    for a, b in wires:
+        if a[0] == b[0]:
+            mid = sorted(p for p in pts if p[0] == a[0] and min(a[1], b[1]) < p[1] < max(a[1], b[1]))
+            mid.sort(key=lambda p: abs(p[1] - a[1]))
+        elif a[1] == b[1]:
+            mid = sorted(p for p in pts if p[1] == a[1] and min(a[0], b[0]) < p[0] < max(a[0], b[0]))
+            mid.sort(key=lambda p: abs(p[0] - a[0]))
+        else:
+            mid = []
+        seq = [a] + mid + [b]
+        out += list(zip(seq, seq[1:]))
+    return out
+
 def check_connectivity():
     pins = [(r, p, pos) for r, p, pos, et, hide in all_pins() if not hide]
     hidden_nc = {(r, p) for r, p, pos, et, hide in all_pins() if hide}
@@ -482,7 +507,7 @@ def write_sch(fn, paper="A3", title="Riv. Cosmici 2024 - Amplif, alim, soglie"):
         out.append(f'  (junction (at {x} {y}) (diameter 0) (color 0 0 0 0) (uuid {U()}))')
     for x, y in noconn:
         out.append(f'  (no_connect (at {x} {y}) (uuid {U()}))')
-    for (a, b) in wires:
+    for (a, b) in split_wires():
         out.append(f'  (wire (pts (xy {a[0]} {a[1]}) (xy {b[0]} {b[1]})) '
                    f'(stroke (width 0) (type default) (color 0 0 0 0)) (uuid {U()}))')
     for name, x, y in labels:

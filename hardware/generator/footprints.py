@@ -28,8 +28,8 @@ class FP:
         for num, (x, y, w, h, kind, drill) in self.pads.items():
             num = num.split("#")[0]          # "2#3" = terzo pad del pin 2
             if kind == "smd":
-                o.append(f'  (pad "{num}" smd roundrect (at {x} {y}) (size {w} {h}) '
-                         f'(layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.2))')
+                o.append(f'  (pad "{num}" smd rect (at {x} {y}) (size {w} {h}) '
+                         f'(layers "F.Cu" "F.Paste" "F.Mask"))')
             else:
                 shape = "rect" if kind == "tht_rect" else "circle"
                 o.append(f'  (pad "{num}" thru_hole {shape} (at {x} {y}) (size {w} {h}) '
