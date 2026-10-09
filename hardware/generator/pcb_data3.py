@@ -3,7 +3,7 @@
 
 Scheda 95 x 205 mm organizzata a blocchi, leggibile dall'alto in basso:
 
-  fascia ALIMENTAZIONE   ingresso 5 V -> 3,3 V -> survoltore 41 V -> riferimenti 3,6 V
+  fascia ALIMENTAZIONE   ingresso 5 V -> 3,3 V -> alta tensione 41 V -> riferimenti 3,6 V
   CANALE 1               riga alta  = percorso del segnale, da sinistra a destra:
   CANALE 2                  1 SiPM -> 2 amplificatore -> 3 comparatore -> 4 uscita LEMO
   CANALE 3               riga bassa = circuiti di supporto sotto il blocco che servono:
@@ -102,7 +102,7 @@ PWR = {
     "U6":  (17.0, 12.0, 0),
     "CF8": (14.0, 20.0, 0),
     "CF9": (20.0, 20.0, 0),
-    # survoltore LT3461 5 V -> 41,7 V
+    # alta tensione: survoltore LT3461 5 V -> 41,7 V
     "C22": (29.0, 4.0, 90),
     "L1":  (31.0, 11.0, 90),
     "U1":  (39.0, 7.0, 0),
@@ -223,7 +223,7 @@ CH_BLOCKS = [
 PWR_BLOCKS = [
     ("5V IN", None, ["J3", "TP2", "TP6"]),
     ("3,3V", None, ["U6", "CF8", "CF9", "TP3"]),
-    ("SURVOLTORE 5V -> 41V", None, ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1"]),
+    ("ALTA TENSIONE 41V", None, ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1"]),
     ("RIFERIMENTI 3,6V", None, ["U5", "CF4", "U7", "CF7", "TP4"]),
 ]
 COINC_BLOCKS = [

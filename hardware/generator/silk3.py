@@ -326,14 +326,6 @@ def build_top():
     # schema a blocchi nella fascia coincidenza (a sinistra)
     diagram(X1 + 4.0, P3.COINC_Y + 2.5)
 
-    # cartiglio nella fascia alimentazione (a destra)
-    tx = X1 + 80.0
-    ty = Y1 + 1.6
-    for s, h in (("RIVELATORE DI", 1.2), ("RAGGI COSMICI", 1.2), ("3 canali + AND", 0.95),
-                 ("INFN Torino 2024", 0.9), ("CERN-OHL-W-2.0", 0.9)):
-        place_text(s, h, [(tx + k * 0.5, ty + j * 0.5, "l", "top") for j in range(0, 6) for k in range(-2, 6)],
-                   required=True)
-        ty += h + 1.0
     hv = "ATTENZIONE: fino a 41 V"
     place_text(hv, 0.9, near(X1 + 85.0, Y1 + 24.0, 0, 0, rmax=3), required=True)
 
@@ -400,8 +392,8 @@ LEGEND = [
     ("COINCIDENZA: l'uscita AND", 1.0), ("va a 1 solo se tutti i", 1.0),
     ("canali inclusi (jumper", 1.0), ("chiusi) vedono un evento", 1.0),
     ("nello stesso istante:", 1.0), ("un muone che attraversa", 1.0), ("piu' barre.", 1.0), ("", 0.8),
-    ("ALIMENTAZIONE: 5 V su J3.", 1.0), ("Il survoltore produce", 1.0),
-    ("41 V: non toccare la", 1.0), ("scheda accesa.", 1.0),
+    ("ALIMENTAZIONE: 5 V su J3.", 1.0), ("Il blocco ALTA TENSIONE", 1.0),
+    ("produce 41 V: non toccare", 1.0), ("la scheda accesa.", 1.0),
 ]
 # colonna senza fori passanti (tra i blocchi dei canali e i LEMO)
 LEG_X1, LEG_X2 = X1 + 63.8, X1 + 85.8
@@ -425,9 +417,6 @@ def build_bottom():
             assert not g.intersects(THT_KEEP), f"legenda su un foro: {s_}"
             BOT.add(g)
         y += h + 0.9
-    g = text("Riv. Cosmici 2024 - 3 canali - INFN Torino", 0, 0, 1.0, "l", "top")
-    g = aff.translate(aff.scale(g, xfact=-1, yfact=1, origin=(0, 0)), X2 - 6.0, Y2 - 4.0)
-    BOT.add(g.difference(THT_KEEP))
 
 
 # ------------------------------------------------------------- uscita

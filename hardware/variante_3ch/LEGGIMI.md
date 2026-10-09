@@ -25,7 +25,7 @@ circuito di ogni canale è **identico** all'originale INFN.
 
 | Fascia | Cosa c'è |
 |---|---|
-| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `SURVOLTORE 5V -> 41V` (U1, LT3461) → `RIFERIMENTI 3,6V` (U5 soglie, U7 bias); cartiglio |
+| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `ALTA TENSIONE 41V` (U1, LT3461) → `RIFERIMENTI 3,6V` (U5 soglie, U7 bias) |
 | **Canale 1, 2, 3** | riga alta = percorso del segnale da sinistra a destra: `1 SiPM` → `2 AMPLIFICATORE` → `3 COMPARATORE` → `4 USCITA` (LEMO sul bordo destro); riga bassa = circuiti di supporto sotto il blocco che servono: `A ALIMENTAZIONE SiPM ~38V` (V1), `B SOGLIA` (V2), `C LED` (555) |
 | **Coincidenza** (in basso) | schema a blocchi di un canale in serigrafia; jumper JP1–JP3 → AND a 3 (U10) → LEMO J5 |
 | **Lato saldature** | legenda "Come funziona" (testo specchiato, si legge girando la scheda) |
