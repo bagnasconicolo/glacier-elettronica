@@ -2,7 +2,7 @@ Riferimenti;Parte (MPN);Codice Farnell;Per scheda;Qta per 5 schede (con scorta);
 U1;LT3461ES6#TRMPBF (boost, SOT-23-6);4024725;1;6;codice dello schema INFN: verificare sul sito (alternativa a pezzo 1663821RL)
 U103 U203 U303;MAX961ESA+ (comparatore, SO-8);2519484;3;17;
 U108 U208 U308;LT1636CS8#PBF (op-amp, SO-8);4020771;3;17;codice dello schema INFN: verificare sul sito
-U5 U7;LP2985AIM5-3.6/NOPB (LDO 3.6 V, SOT-23-5);3007624;2;12;codice trovato via Octopart: verificare
+U5 U7;LP2985AIM5-3.6/NOPB (LDO 3.6 V, SOT-23-5);1685681;2;12;in alternativa 1685681RL (re-reel) o LP2985-36DBVR, stesso pinout
 D101 D201 D301;1N4148 (DO-35);3606680;3;20;qualsiasi 1N4148 assiale va bene
 TP101..TP305 + TP1..TP5;Keystone 5000 (test point ROSSO);2250281;20;110;
 TP106 TP206 TP306 TP6;Keystone 5001 (test point NERO, GND);2301278;4;25;
