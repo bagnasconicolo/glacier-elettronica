@@ -30,7 +30,7 @@ PKG = {
     "SOT23": "SOT-23", "SOT23-5": "SOT-23-5", "SOT23-6": "SOT-23-6",
     "SO8": "SOIC-8", "SOT223": "SOT-223", "3296W": "3296W",
     "HDR2": "Header 2.54mm 1x2",
-    "SO14": "SOIC-14", "HDR3": "Header 2.54mm 1x3",
+    "SO14": "SOIC-14", "HDR3": "Header 2.54mm 1x3", "KK2": "Molex KK 254 1x2",
 }
 
 # (valore, footprint) -> (Comment, JLCPCB Part #, MPN). I codici sono quelli che il

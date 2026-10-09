@@ -48,8 +48,9 @@ for ref, (kind, value, fpk, extra) in C1.items():
         if ref == "J4":
             COMPONENTS[chref(ref, n)] = ("CONN2", f"LEMO_CH{n}", "LEMO00",
                                          {"note": f"uscita canale {n}, LEMO EPL.00.250.NTN"})
-        elif ref == "J1":
-            COMPONENTS[chref(ref, n)] = ("CONN2", f"SiPM_CH{n}", fpk, extra)
+        elif ref == "J1":       # cavo della barra: Molex KK 254 (calza = bias, non LEMO)
+            COMPONENTS[chref(ref, n)] = ("CONN2", f"SiPM_CH{n}", "KK2",
+                                         {"note": "Molex KK 254 22-27-2021; cavo: 1=centrale/segnale 2=calza/bias"})
         else:
             COMPONENTS[chref(ref, n)] = (kind, value, fpk, extra)
 

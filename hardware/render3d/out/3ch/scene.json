@@ -291,7 +291,7 @@
    "ref": "J101",
    "kind": "CONN2",
    "value": "SiPM_CH1",
-   "fp": "HDR1x02",
+   "fp": "MOLEX_KK_2",
    "x": 27.0,
    "y": 61.0,
    "rot": 4.71238898038469
@@ -750,7 +750,7 @@
    "ref": "J201",
    "kind": "CONN2",
    "value": "SiPM_CH2",
-   "fp": "HDR1x02",
+   "fp": "MOLEX_KK_2",
    "x": 27.0,
    "y": 115.0,
    "rot": 4.71238898038469
@@ -1209,7 +1209,7 @@
    "ref": "J301",
    "kind": "CONN2",
    "value": "SiPM_CH3",
-   "fp": "HDR1x02",
+   "fp": "MOLEX_KK_2",
    "x": 27.0,
    "y": 169.0,
    "rot": 4.71238898038469

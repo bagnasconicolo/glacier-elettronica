@@ -19,7 +19,7 @@ FP_MAP = {
     "SO8": "rivlib:SOIC8", "SOT223": "rivlib:SOT223",
     "3296W": "rivlib:TRIM_3296W", "HDR2": "rivlib:HDR1x02",
     "LEMO00": "rivlib:LEMO_EPL00", "TP": "rivlib:TP_THT",
-    "SO14": "rivlib:SOIC14", "HDR3": "rivlib:HDR1x03", "MH3": "rivlib:MH_M3",
+    "SO14": "rivlib:SOIC14", "HDR3": "rivlib:HDR1x03", "MH3": "rivlib:MH_M3", "KK2": "rivlib:MOLEX_KK_2",
 }
 SYM_MAP = {  # kind -> lib symbol
     "R": "R", "C": "C", "L": "L", "D": "D", "LED": "LED", "NPN": "NPN",

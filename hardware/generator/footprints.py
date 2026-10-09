@@ -141,6 +141,17 @@ add(FP("HDR1x02",
              (-1.27, -1.27, -1.27, 1.27), (3.81, -1.27, 3.81, 1.27)],
        desc="Pin header 2.54 1x2"))
 
+# Molex KK 254 2 poli, header verticale con rampa di aggancio (22-27-2021):
+# stessi fori della strip 1x2, corpo piu' profondo (~6 mm) con la rampa sul lato y+
+add(FP("MOLEX_KK_2",
+       [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),
+        (2, 2.54, 0, 1.7, 1.7, "tht", 1.0)],
+       (-2.0, -3.2, 4.55, 3.2),
+       silk=[(-1.8, -2.95, 4.34, -2.95), (-1.8, 2.95, 4.34, 2.95),
+             (-1.8, -2.95, -1.8, 2.95), (4.34, -2.95, 4.34, 2.95),
+             (-1.3, 2.3, 3.84, 2.3)],                     # rampa di aggancio
+       desc="Molex KK 254 22-27-2021, 2 poli, verticale con aggancio"))
+
 # Header 2.54 1x3 verticale (connettore I2C verso il Raspberry Pi)
 add(FP("HDR1x03",
        [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),

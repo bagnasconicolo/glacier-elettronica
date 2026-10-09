@@ -354,8 +354,8 @@ def build_top():
         x, y, _ = PD.PLACEMENT[N.chref("D3", n)]
         place_text("LED", 0.9, near(x + 3.0, y, 0, 0, rmax=3), required=True)
         x, y, _ = PD.PLACEMENT[N.chref("J1", n)]
-        place_text("1", 0.9, near(x - 2.0, y, 0, 0, rmax=1.5), required=True)
-        place_text("2", 0.9, near(x - 2.0, y + 2.54, 0, 0, rmax=1.5), required=True)
+        place_text("1", 0.9, near(x - 4.0, y, 0, 0, rmax=1.5), required=True)
+        place_text("2", 0.9, near(x - 4.0, y + 2.54, 0, 0, rmax=1.5), required=True)
     x, y, _ = PD.PLACEMENT["J5"]
     place_text("AND", 1.25, near(x - 0.5, y - 5.5, 0, 0, rmax=2) + near(x - 0.5, y + 6.0, 0, 0, rmax=3),
                required=True)
@@ -415,6 +415,12 @@ def build_top():
             if place_text(ref, hh, vc, rot=90):
                 ok = True
                 break
+        if not ok:      # ultimo tentativo: un po' più lontano
+            D = (2.0, 2.5, 3.0)
+            cands = [(cx + dx, b[1] - 0.15 - d, "c", "bot") for d in D for dx in (0, -1.5, 1.5)]
+            cands += [(cx + dx, b[3] + 0.15 + d, "c", "top") for d in D for dx in (0, -1.5, 1.5)]
+            cands += [(cx + dx, b[3] + 0.15 + d, "c", "top") for d in (0, 0.3, 0.6) for dx in (0.3, 0.6)]
+            ok = place_text(ref, 0.8, cands) or place_text(ref, 0.7, cands)
         if not ok:
             miss.append(ref)
     return miss

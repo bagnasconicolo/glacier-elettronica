@@ -47,7 +47,7 @@ cairosvg.svg2png(url=os.path.join(SRC, "pcb3_render.svg"),
 import gen_bom                                     # noqa: E402
 gen_bom.COMPONENTS = netdata3.COMPONENTS
 gen_bom.PKG.update({"LEMO00": "LEMO 00 (EPL.00.250.NTN)", "TP": "test point THT",
-                    "SO14": "SOIC-14", "HDR3": "header 1x3 2,54"})
+                    "SO14": "SOIC-14", "HDR3": "header 1x3 2,54", "KK2": "Molex KK 254 2 poli (22-27-2021)"})
 gen_bom.NOTE.update({"74LVC1G11": "SN74LVC1G11DBVR, AND a 3 ingressi (coincidenza)",
                      "MCP3424": "MCP3424-E/SL, ADC I2C del monitor tensioni (LCSC C640884)",
                      "1M": "partitore monitor (alto)", "43k": "partitore monitor (basso)",
