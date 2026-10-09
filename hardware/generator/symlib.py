@@ -159,6 +159,11 @@ add(Sym("CONN2", [P(1, -6.35, 1.27, 0, "1", ln=3.81),
          circ(-1.27, 1.27, 0.508), circ(-1.27, -1.27, 0.508)],
         "J", hide_pin_names=True))
 
+# ---------------- test point -----------------
+add(Sym("TP", [P(1, 0, -2.54, 90, "1", ln=1.524)],
+        [circ(0, 0, 0.762)],
+        "TP", hide_pin_names=True, hide_pin_numbers=True))
+
 # ---------------- IC helper -----------------
 def icbox(name, w, h, left, right, top, bottom, ref="U", label_extra=None):
     """left/right/top/bottom: list of (num, offset_from_center, pname, etype)."""
@@ -212,6 +217,13 @@ add(icbox("LVC1G17", 10.16, 7.62,
           [("4", 0, "Y", "output")],
           [("5", 0, "VCC", "power_in")],
           [("3", 0, "GND", "power_in")]))
+
+# 74LVC1G11 AND a 3 ingressi (SOT-23-6 DBV): 1 A, 2 GND, 3 B, 4 Y, 5 VCC, 6 C
+add(icbox("LVC1G11", 10.16, 10.16,
+          [("1", 2.54, "A", "input"), ("3", 0, "B", "input"), ("6", -2.54, "C", "input")],
+          [("4", 0, "Y", "output")],
+          [("5", 0, "VCC", "power_in")],
+          [("2", 0, "GND", "power_in")]))
 
 # LP2985: left IN(1) EN(3) ; right OUT(5) BYP(4) ; bottom GND(2)
 add(icbox("LP2985", 12.7, 10.16,

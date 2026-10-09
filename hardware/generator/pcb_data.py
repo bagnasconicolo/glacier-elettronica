@@ -9,6 +9,7 @@ FP_OF = {
     "L_PWR": "L_PWR_5050", "DO35": "D_DO35", "LED0805": "LED_0805",
     "SOT23": "SOT23", "SOT23-5": "SOT23-5", "SOT23-6": "SOT23-6",
     "SO8": "SOIC8", "SOT223": "SOT223", "3296W": "TRIM_3296W", "HDR2": "HDR1x02",
+    "LEMO00": "LEMO_EPL00", "TP": "TP_THT",
 }
 
 BOARD = (20.0, 20.0, 100.0, 75.0)  # x1 y1 x2 y2
@@ -123,7 +124,7 @@ def abs_pads():
         fp = FPS[FP_OF[fpk]]
         for num, (px, py, w, h, k, drill) in fp.pads.items():
             dx, dy = rot_delta(px, py, rot)
-            out.append(dict(ref=ref, pin=num, net=pn.get((ref, num)),
+            out.append(dict(ref=ref, pin=num, net=pn.get((ref, num.split("#")[0])),
                             x=round(x + dx, 4), y=round(y + dy, 4),
                             w=w, h=h, kind=k, drill=drill, rot=rot % 360))
     return out

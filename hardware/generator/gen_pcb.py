@@ -3,7 +3,7 @@
 autorouter a griglia (F.Cu preferito, B.Cu con via), pour GND su B.Cu,
 DRC geometrico e verifica connettivita'.
 """
-import math, heapq, uuid
+import math, heapq, re, uuid
 from shapely.geometry import box, Point, LineString, MultiPolygon, Polygon
 from shapely.ops import unary_union
 from shapely.prepared import prep
@@ -240,6 +240,11 @@ def route_net(net):
     ps = net_pads(net)
     if len(ps) < 2:
         return True
+    # con piste fisse: si parte da un pad che le tocca (cosi' sono davvero connesse)
+    fixed = [LineString(t["pts"]).buffer(t["w"] / 2) for t in tracks if t["net"] == net and t.get("fixed")]
+    if fixed:
+        fg = unary_union(fixed)
+        ps.sort(key=lambda p: 0 if pad_rect(p, 0.01).intersects(fg) else 1)
     w = track_w(net)
     obs = build_obstacles(net, w)
     robs = build_real_obstacles(net, w)
@@ -273,6 +278,14 @@ def route_net(net):
     conn = {"F.Cu": [], "B.Cu": []}
     for L in pad_layers(ps[0]):
         conn[L].append(pad_rect(ps[0], 0.05))
+    # piste pre-instradate a mano ("fixed") della stessa rete: gia' parte della rete
+    for t in tracks:
+        if t["net"] == net and t.get("fixed"):
+            conn[t["layer"]].append(LineString(t["pts"]).buffer(t["w"] / 2))
+    for v in vias:
+        if v["net"] == net and v.get("fixed"):
+            vg = Point(v["x"], v["y"]).buffer(VIA_D / 2)
+            conn["F.Cu"].append(vg); conn["B.Cu"].append(vg)
     st = STUBS.get((ps[0]["ref"], ps[0]["pin"]))
     if st:
         conn["F.Cu"].append(LineString([(ps[0]["x"], ps[0]["y"]), st]).buffer(0.15))
@@ -629,6 +642,12 @@ def connectivity(pour_parts):
 def U():
     return str(uuid.uuid4())
 
+
+# serigrafia aggiuntiva (variante didattica): {"F.SilkS": [anelli], "B.SilkS": [...]}.
+# Se presente, i riferimenti dei footprint vanno su F.Fab (sono gia' nei poligoni)
+# e non si scrive il titolo di default.
+SILK_POLYS = None
+
 def write_pcb(fn, pour_parts):
     NETIDS = {"": 0}
     for i, net in enumerate(sorted(NETS), 1):
@@ -662,7 +681,8 @@ def write_pcb(fn, pour_parts):
         o.append(f'  (footprint "rivlib:{fp.name}" (layer "F.Cu") (tstamp {U()}) (at {x} {y} {rot})')
         o.append(f'    (descr "{fp.desc}")')
         o.append(f'    (attr {"smd" if all(pp[4]=="smd" for pp in fp.pads.values()) else "through_hole"})')
-        o.append(f'    (fp_text reference "{ref}" (at 0 {fp.courtyard[1] - 0.8} {-rot}) (layer "F.SilkS") '
+        o.append(f'    (fp_text reference "{ref}" (at 0 {fp.courtyard[1] - 0.8} {-rot}) '
+                 f'(layer "{"F.Fab" if SILK_POLYS else "F.SilkS"}") '
                  '(effects (font (size 0.8 0.8) (thickness 0.13))) (tstamp %s))' % U())
         o.append(f'    (fp_text value "{value}" (at 0 {fp.courtyard[3] + 0.8} {-rot}) (layer "F.Fab") '
                  '(effects (font (size 0.7 0.7) (thickness 0.11))) (tstamp %s))' % U())
@@ -679,6 +699,7 @@ def write_pcb(fn, pour_parts):
         for num, (px, py, w, h, k, drill) in fp.pads.items():
             net = pnmap.get(num)
             nets = f' (net {NETIDS[net]} "{net}")' if net else ''
+            num = num.split("#")[0]          # pad multipli dello stesso pin
             if k == "smd":
                 o.append(f'    (pad "{num}" smd roundrect (at {px} {py} {rot}) (size {w} {h}) '
                          f'(layers "F.Cu" "F.Paste" "F.Mask") (roundrect_rratio 0.2){nets} (tstamp {U()}))')
@@ -698,8 +719,14 @@ def write_pcb(fn, pour_parts):
                  f'(layers "F.Cu" "B.Cu") (net {NETIDS[v["net"]]}) (tstamp {U()}))')
     # edge
     o.append(f'  (gr_rect (start {X1} {Y1}) (end {X2} {Y2}) (layer "Edge.Cuts") (width 0.1) (tstamp {U()}))')
-    o.append(f'  (gr_text "Riv.Cosmici 2024 - Amplif alim soglie - ricostruzione" (at {(X1+X2)/2} {Y2 - 2}) '
-             f'(layer "F.SilkS") (tstamp {U()}) (effects (font (size 1 1) (thickness 0.15))))')
+    if SILK_POLYS:
+        for layer, rings in SILK_POLYS.items():
+            for ring in rings:
+                pts = " ".join(f"(xy {x} {y})" for x, y in ring[:-1])
+                o.append(f'  (gr_poly (pts {pts}) (layer "{layer}") (width 0) (fill solid) (tstamp {U()}))')
+    else:
+        o.append(f'  (gr_text "Riv.Cosmici 2024 - Amplif alim soglie - ricostruzione" (at {(X1+X2)/2} {Y2 - 2}) '
+                 f'(layer "F.SilkS") (tstamp {U()}) (effects (font (size 1 1) (thickness 0.15))))')
     # zona GND
     def fmt_poly(poly):
         pts = " ".join(f"(xy {round(x,3)} {round(y,3)})" for x, y in poly.exterior.coords)
@@ -720,7 +747,7 @@ def write_pcb(fn, pour_parts):
     print("scritto", fn, f"({len(tracks)} tracce, {len(vias)} via)")
 
 # ---------------- main ----------------
-if __name__ == "__main__":
+def main(out_pcb="riv_cosmici/riv_cosmici.kicad_pcb", state="routing_state.json"):
     bad = check_courtyards()
     if bad:
         print("COURTYARD:", bad)
@@ -735,7 +762,17 @@ if __name__ == "__main__":
         add_gnd_vias()
         fails = route_all()
         if not fails:
-            break
+            # anche errori di DRC o reti aperte dopo il routing contano come falliti
+            _pk, _pa = gnd_pour()
+            bad = set()
+            for e in drc(_pk) + connectivity(_pk):
+                for n in re.findall(r"[A-Z+][A-Z0-9_+]*", str(e)):
+                    if n in NETS and n != "GND":
+                        bad.add(n)
+            fails = sorted(bad)
+            if not fails:
+                break
+            print(f"tentativo {attempt + 1}: errori DRC/connettivita' su {fails}")
         print(f"tentativo {attempt + 1}: falliti {fails} -> riprovo con queste reti per prime")
         first = fails + [n for n in first if n not in fails]
     # dedupe (il retry puo' duplicare percorsi identici)
@@ -762,7 +799,12 @@ if __name__ == "__main__":
     json.dump({"tracks": tracks, "vias": vias,
                "pour": [list(p.exterior.coords) for p in pour_keep],
                "pour_holes": [[list(h.coords) for h in p.interiors] for p in pour_keep]},
-              open("routing_state.json", "w"))
-    write_pcb("riv_cosmici/riv_cosmici.kicad_pcb", pour_keep)
+              open(state, "w"))
+    write_pcb(out_pcb, pour_keep)
     print("routing falliti:", fails)
     print("DRC err:", len(errs), " CONN err:", len(cerr))
+    return fails, errs, cerr
+
+
+if __name__ == "__main__":
+    main()

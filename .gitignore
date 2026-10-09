@@ -27,3 +27,9 @@ hardware/generator/*.svg
 # output di simulazione ngspice
 simulation/ltspice/*.raw
 simulation/ltspice/*.log
+hardware/generator/riv_cosmici_3ch/
+
+# render 3D: dipendenze npm e file intermedi
+hardware/render3d/node_modules
+hardware/render3d/package-lock.json
+hardware/render3d/out/*/top.svg

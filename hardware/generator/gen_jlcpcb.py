@@ -55,6 +55,7 @@ PART = {
     ("MCP1825S-3302", "SOT223"): ("MCP1825S-3302E/DB", "C148031", "Microchip MCP1825S-3302E/DB"),
     ("TLC555/LMC555", "SO8"): ("TLC555CDR", "C6986", "TI TLC555CDR"),
     ("10k", "3296W"):       ("3296W-1-103LF", "C34846", "Bourns 3296W-1-103LF"),
+    ("74LVC1G11", "SOT23-6"): ("SN74LVC1G11DBVR", "C22046", "TI SN74LVC1G11DBVR (AND a 3)"),
 }
 for _v in ("SiPM", "TTL_OUT", "PWR_5V", "LEMO_OUT"):
     PART[(_v, "HDR2")] = ("Header 1x2 2.54mm", "", "pin header maschio 1x2 (a mano)")
@@ -162,8 +163,8 @@ def main():
         w.writerows(cpl_rows)
     write_xlsx(os.path.join(OUT, "CPL_JLCPCB.xlsx"), cpl_hdr, cpl_rows)
     # ---- Gerber
-    shutil.copy(os.path.join(HERE, "..", "riv_cosmici_gerber.zip"),
-                os.path.join(OUT, "riv_cosmici_gerber.zip"))
+    src = globals().get("ZIP_SRC", os.path.join(HERE, "..", "riv_cosmici_gerber.zip"))
+    shutil.copy(src, os.path.join(OUT, os.path.basename(src)))
     n = sum(len(r[1].split(",")) for r in rows)
     print(f"BOM: {len(rows)} righe, {n} componenti montati; DNP: {sorted(DNP)}")
     print(f"CPL: {n} posizioni")

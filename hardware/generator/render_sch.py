@@ -69,17 +69,25 @@ for ref, symname, x, y, rot, mirror, value, fp in G.instances:
         if hide:
             continue
         p = tf(x, y, rot, mirror, px, py)
-        # direzione verso il corpo
-        dd = {0: (1, 0), 90: (0, -1), 180: (-1, 0), 270: (0, 1)}[ang]
+        # direzione verso il corpo, in coordinate libreria (Y verso l'alto)
+        dd = {0: (1, 0), 90: (0, 1), 180: (-1, 0), 270: (0, -1)}[ang]
         q_lib = (px + dd[0] * ln, py + dd[1] * ln)
         q = tf(x, y, rot, mirror, q_lib[0], q_lib[1])
-        line(p, q, col="#a00000")
-        circle(p, 0.3, col="#0000ff")
-        text(num, (p[0] + q[0]) / 2 + 0.3, (p[1] + q[1]) / 2 - 0.3, size=1.0, col="#0000ff")
+        line(p, q, col="#800000")
+        text(num, (p[0] + q[0]) / 2 + 0.3, (p[1] + q[1]) / 2 - 0.3, size=0.9, col="#4060a0")
     text(ref, x - 1, y - 1.2, size=1.6, col="#000080", anchor="middle")
     text(value, x - 1, y + 2.2, size=1.3, col="#000080", anchor="middle")
 
-hdr = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 340 200" '
-       'width="2720" height="1600"><rect x="0" y="0" width="440" height="300" fill="white"/>')
-open("sch_render.svg", "w").write(hdr + "\n".join(svg) + "</svg>")
-print("sch_render.svg scritto")
+# area e file d'uscita sovrascrivibili (la variante a 3 canali usa un foglio A1)
+VIEW = globals().get("VIEW", (10, 10, 340, 200))
+OUTSVG = globals().get("OUTSVG", "sch_render.svg")
+_W = 2720
+# MM=True: dimensioni in millimetri (per il PDF a grandezza reale del foglio)
+_size = (f'width="{VIEW[2]}mm" height="{VIEW[3]}mm"' if globals().get("MM")
+         else f'width="{_W}" height="{int(_W * VIEW[3] / VIEW[2])}"')
+hdr = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{VIEW[0]} {VIEW[1]} {VIEW[2]} {VIEW[3]}" '
+       f'{_size}>'
+       f'<rect x="{VIEW[0]}" y="{VIEW[1]}" width="{VIEW[2]}" height="{VIEW[3]}" fill="white"/>')
+EXTRA = globals().get("EXTRA", [])          # elementi aggiuntivi (cornice, cartiglio)
+open(OUTSVG, "w").write(hdr + "\n".join(svg + EXTRA) + "</svg>")
+print(OUTSVG, "scritto")

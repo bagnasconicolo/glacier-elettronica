@@ -41,6 +41,8 @@ hardware/          progetto KiCad (schema, PCB, librerie, Gerber, BOM)
   bom/                                 distinta base (.xlsx e .csv) con codici Farnell/RS
   PRIMA_DI_ORDINARE.md                 cosa e' verificato e cosa decidere prima dell'ordine
   jlcpcb/                              Gerber, BOM e CPL per PCB + montaggio su JLCPCB
+  variante_3ch/                        VARIANTE A 3 CANALI + coincidenza AND, uscite LEMO
+  render3d/                            render 3D delle schede montate (three.js)
   previews/                            anteprime PNG
   generator/                           script Python che GENERANO lo hardware (sorgente)
 simulation/        modelli circuitali non lineari + verifica dallo schema
@@ -56,8 +58,23 @@ simulation/        modelli circuitali non lineari + verifica dallo schema
   figures/             grafici generati
 web/               sito didattico interattivo (single-file, offline)
 firmware/          (variante superata) sketch Arduino
-docs/              RECAP_progetto.pdf  +  schema_originale_INFN.pdf (scansione di partenza)
+docs/              schemi in PDF (1 e 3 canali), RECAP_progetto.pdf, schema_originale_INFN.pdf
 ```
+
+## Due versioni
+
+| | Scheda a 1 canale | Variante a 3 canali |
+|---|---|---|
+| Dove | `hardware/` | `hardware/variante_3ch/` |
+| Barre / SiPM | 1 | 3 (bias e soglia regolabili per canale) |
+| Uscite | LEMO/header 3,3 V + TTL 5 V | 3 LEMO 00 (canali) + 1 LEMO 00 (AND) |
+| Coincidenza | — | 74LVC1G11 con jumper di esclusione |
+| Test point | — | 6 per canale + 6 comuni |
+| PCB | 80 × 55 mm | 95 × 205 mm, serigrafia didattica |
+| Schema PDF | `docs/schema_riv_cosmici_1canale.pdf` | `docs/schema_riv_cosmici_3canali.pdf` |
+
+Render 3D delle schede montate: `hardware/render3d/out/1ch/` e `out/3ch/`
+(rigenerabili con `python scene.py 3ch && node shoot.mjs 3ch`).
 
 ## Hardware (KiCad)
 
