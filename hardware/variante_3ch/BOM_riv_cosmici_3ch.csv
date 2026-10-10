@@ -13,7 +13,7 @@ D101 D201 D301,3,1N4148,DO-35,,assiale DO-35 (o 1N4148W SOD-123 adattando il foo
 D103 D203 D303,3,LED rosso,0805,,LED rosso 0805 (pin 1 = catodo)
 J3,1,PWR_5V,Header 2.54 1x2,,"pin 1 = GND, pin 2 = +5V"
 J5 J104 J204 J304,4,LEMO EPL.00.250.NTN,LEMO 00 (EPL.00.250.NTN),,presa a gomito da circuito stampato (gia' disponibili)
-J6,1,I2C_RPI,"header 1x3 2,54",,
+J6,1,I2C_RPI,Molex KK 254 3 poli (22-27-2031),,
 J101,1,SiPM_CH1,Molex KK 254 2 poli (22-27-2021),,
 J201,1,SiPM_CH2,Molex KK 254 2 poli (22-27-2021),,
 J301,1,SiPM_CH3,Molex KK 254 2 poli (22-27-2021),,

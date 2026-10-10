@@ -177,7 +177,7 @@ for _r in ("U11", "CF12", "R42", "R43", "J6"):
     PWR_SHIFT[_r] = 10.5                                 # monitor
 # monitor piu' in basso: l'angolo in alto a destra e' del foro di fissaggio
 PWR_OVERRIDE = {"U11": (89.535, 15.5, 0), "CF12": (89.535, 22.0, 0),
-                "R42": (96.6, 15.0, 0), "R43": (96.6, 18.0, 0), "J6": (W - 2.0, 14.5, 270)}
+                "R42": (96.6, 15.0, 0), "R43": (96.6, 18.0, 0), "J6": (94.5, 23.7, 0)}   # J6 Molex KK 3 poli, in orizzontale
 COINC_SHIFT = 6.35
 COINC_OVERRIDE = {"J5": (W - 4.0, 12.0, 0), "TP5": (91.5, 21.0, 0)}
 

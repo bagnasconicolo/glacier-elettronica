@@ -4,9 +4,11 @@ MAX961ESA+,Analog Devices,7,comparatori (6 + 1 scorta)
 LT1636CS8#PBF,Analog Devices,7,op-amp bias SO-8 (6 + 1 scorta)
 LP2985AIM5-3.6/NOPB,Texas Instruments,5,U5 U7 (4 + 1)
 1N4148-TAP,Vishay,10,D101-D301 (6 + scorta)
-61304011121,Wurth Elektronik,3,"strip 1x40: header, J6, test point"
+61304011121,Wurth Elektronik,3,"strip 1x40: header, test point"
 M7566-05,Harwin,10,ponticelli JP1-JP3
 AFBR-S4N22P014M,Broadcom,6,SiPM (3 per scheda) - togliere se gia' disponibili
 22-27-2021,Molex,7,"header KK 254 2 poli con rampa di aggancio, al posto della strip su J101 J201 J301 (6 + 1)"
 22-01-3027,Molex,8,connettore KK 254 2 poli lato cavo (6 + 2)
-08-50-0114,Molex,20,"contatti a crimpare KK 254, 22-30 AWG (12 + scorta)"
+08-50-0114,Molex,30,"contatti a crimpare KK 254, 22-30 AWG (12 barre + 6 monitor + scorta)"
+22-27-2031,Molex,3,"header KK 254 3 poli con rampa di aggancio, J6 monitor I2C verso il Raspberry (2 + 1)"
+22-01-3037,Molex,3,"connettore KK 254 3 poli lato cavo, J6 monitor (2 + 1)"

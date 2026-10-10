@@ -129,7 +129,7 @@ COMPONENTS.update({
     "CF12": ("C", "100n", "C0805", {"note": "decoupling MCP3424"}),
     "R42":  ("R", "100R", "R0805", {"note": "serie SDA: fronti piu' lenti, meno disturbi"}),
     "R43":  ("R", "100R", "R0805", {"note": "serie SCL: fronti piu' lenti, meno disturbi"}),
-    "J6":   ("CONN3", "I2C_RPI", "HDR3", {"note": "verso Raspberry Pi: 1=GND 2=SDA 3=SCL (pull-up sul Pi)"}),
+    "J6":   ("CONN3", "I2C_RPI", "KK3", {"note": "Molex KK 254 22-27-2031 verso Raspberry Pi: 1=GND 2=SDA 3=SCL (pull-up sul Pi)"}),
 })
 NETS["VOUT40"].append(("R40", "1"))
 NETS["MON4"] = [("R40", "2"), ("R41", "1"), ("C40", "1"), ("U11", ADC_CH[4][0])]

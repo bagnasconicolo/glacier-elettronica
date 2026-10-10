@@ -10,7 +10,7 @@ FP_OF = {
     "SOT23": "SOT23", "SOT23-5": "SOT23-5", "SOT23-6": "SOT23-6",
     "SO8": "SOIC8", "SOT223": "SOT223", "3296W": "TRIM_3296W", "HDR2": "HDR1x02",
     "LEMO00": "LEMO_EPL00", "TP": "TP_THT",
-    "SO14": "SOIC14", "HDR3": "HDR1x03", "MH3": "MH_M3", "KK2": "MOLEX_KK_2",
+    "SO14": "SOIC14", "HDR3": "HDR1x03", "MH3": "MH_M3", "KK2": "MOLEX_KK_2", "KK3": "MOLEX_KK_3",
 }
 
 BOARD = (20.0, 20.0, 100.0, 75.0)  # x1 y1 x2 y2

@@ -109,7 +109,7 @@ Usa una sonda 10× con la molla di massa corta sul GND più vicino.
 ## Monitor delle tensioni (blocco `MONITOR`)
 
 Un ADC **MCP3424** (U11, I²C, indirizzo 0x68) legge quattro tensioni e le passa al
-Raspberry Pi dal connettore **J6** (1 GND, 2 SDA, 3 SCL; le pull-up sono quelle del Pi):
+Raspberry Pi dal connettore **J6**, Molex KK 254 a 3 poli con aggancio (1 GND, 2 SDA, 3 SCL; le pull-up sono quelle del Pi):
 
 | Ingresso ADC | Cosa misura | Partitore |
 |---|---|---|
@@ -160,7 +160,7 @@ JLCPCB monta 147 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | D101, D201, D301 | 1N4148 | 3 |
 | J101, J201, J301 | Molex KK 254 22-27-2021 (cavo barra: 22-01-3027 + 2× 08-50-0114; pin 1 = centrale/segnale, pin 2 = calza/bias) | 3 |
 | J3 | header 1×2 (5 V) | 1 |
-| J6 | header 1×3 (I²C verso il Raspberry Pi) | 1 |
+| J6 | Molex KK 254 3 poli 22-27-2031 (I²C verso il Raspberry Pi; cavo: 22-01-3037 + 3 contatti 08-50-0114) | 1 |
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
 | TP* | test point (pin di strip header) | 24 |

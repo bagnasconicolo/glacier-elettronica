@@ -152,6 +152,17 @@ add(FP("MOLEX_KK_2",
              (-1.3, 2.3, 3.84, 2.3)],                     # rampa di aggancio
        desc="Molex KK 254 22-27-2021, 2 poli, verticale con aggancio"))
 
+# Molex KK 254 3 poli (22-27-2031): connettore I2C del monitor verso il Raspberry Pi
+add(FP("MOLEX_KK_3",
+       [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),
+        (2, 2.54, 0, 1.7, 1.7, "tht", 1.0),
+        (3, 5.08, 0, 1.7, 1.7, "tht", 1.0)],
+       (-2.0, -3.2, 7.09, 3.2),
+       silk=[(-1.8, -2.95, 6.88, -2.95), (-1.8, 2.95, 6.88, 2.95),
+             (-1.8, -2.95, -1.8, 2.95), (6.88, -2.95, 6.88, 2.95),
+             (-1.3, 2.3, 6.38, 2.3)],                     # rampa di aggancio
+       desc="Molex KK 254 22-27-2031, 3 poli, verticale con aggancio"))
+
 # Header 2.54 1x3 verticale (connettore I2C verso il Raspberry Pi)
 add(FP("HDR1x03",
        [(1, 0, 0, 1.7, 1.7, "tht_rect", 1.0),

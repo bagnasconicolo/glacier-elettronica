@@ -48,8 +48,9 @@ Note sui prezzi:
 - **Alimentazione:** due alimentatori separati, uno per la scheda (5 V su J3) e uno per il
   Pi. Costa pochi euro in più e toglie un dubbio: se poi le misure sono pulite, si
   prova con un alimentatore unico.
-- **Collegamenti al Pi:** uscite dei canali e AND verso 4 GPIO con cavetti Dupont, J6 (I²C)
-  ai pin 3/5/6 per il monitor delle tensioni.
+- **Collegamenti al Pi:** uscite dei canali e AND verso 4 GPIO con cavetti Dupont, J6 (I²C,
+  **Molex KK 254 a 3 poli** come i connettori delle barre: header 22-27-2031 sulla scheda,
+  connettore 22-01-3037 sul cavo; 1 = GND, 2 = SDA, 3 = SCL) verso i pin 6/3/5 del Pi.
 
 ## Software
 

@@ -72,6 +72,7 @@ Per completezza: le altre differenze rispetto alla scheda INFN
  - Connettore della barra: Molex KK 254 a 2 poli (1 = anodo/segnale, conduttore
    centrale; 2 = catodo/bias +38 V, calza del coassiale), non LEMO, per non
    confonderlo con le uscite LEMO che hanno la carcassa a massa.
+ - Connettore I2C del monitor (J6): Molex KK 254 a 3 poli (1 GND, 2 SDA, 3 SCL).
  - Test point su ogni nodo utile e 8 fori di fissaggio M3.
 
 Verifiche gia' fatte sul progetto:
