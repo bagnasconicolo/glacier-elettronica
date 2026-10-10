@@ -42,10 +42,14 @@ def add(fp):
     FPS[fp.name] = fp
 
 def chip2(name, px, w, h, cw, ch, desc):
+    sx = max(0.2, px - w / 2 - 0.2)
+    sy = h / 2 + 0.15
     add(FP(name,
            [(1, -px, 0, w, h, "smd", 0), (2, px, 0, w, h, "smd", 0)],
            (-cw, -ch, cw, ch),
-           silk=[(-cw, -ch, cw, -ch), (-cw, ch, cw, ch)],
+           # due trattini tra i pad (come le librerie KiCad): dentro l'ingombro, cosi'
+           # due componenti affiancati al minimo non hanno serigrafie che si toccano
+           silk=[(-sx, -sy, sx, -sy), (-sx, sy, sx, sy)],
            desc=desc))
 
 chip2("R_0805", 0.95, 1.15, 1.45, 1.85, 1.0, "R 0805 (2012)")

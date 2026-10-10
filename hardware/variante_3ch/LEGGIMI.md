@@ -1,11 +1,5 @@
 # Variante a 3 canali + coincidenza
 
-> **LAVORO IN CORSO (10/10/2026): non ordinare ancora.** Sono stati aggiunti al progetto il
-> secondo ADC del monitor (soglie e temperatura) e la scheda si allunga a 103 × 223,9 mm, ma
-> PCB, Gerber e file JLCPCB in questa cartella sono ancora quelli della versione precedente
-> (103 × 215 mm): il nuovo routing e la verifica con KiCad sono in corso.
-
-
 Una sola scheda (103 × 223,9 mm, 2 strati, 8 fori di fissaggio M3) con **tre front-end completi** del rivelatore
 INFN — uno per barra di scintillatore — e la **coincidenza AND** già a bordo.
 Il PCB è pensato anche per **attività didattiche (STEM)**: è diviso in blocchi
@@ -203,8 +197,13 @@ CF7, CF9) valgono le stesse note della scheda singola.
 - **Verifica con KiCad 7** (`generator/verifica_kicad.py`, vedi `../PRIMA_DI_ORDINARE.md`):
   netlist dello schema estratta da KiCad = reti del PCB, DRC di KiCad senza errori
   (solo avvisi di serigrafia e uscite corte dai pin), 0 reti spezzate sul rame reale.
-- Piste corte e uguali nei tre canali (mm): ingresso SiPM 9, ingresso comparatore 18,
-  soglia 16–24, bias 9–11, uscita comparatore 26–28.
+- Piste dei nodi sensibili uguali nei tre canali (mm, compresi i rami verso i test point):
+  ingresso SiPM 15–18, ingresso comparatore 20,6–20,9 (senza vie), soglia 21–27, bias 14,
+  uscita comparatore 30.
+- Le piste del monitor (letture di bias e soglie, in continua e filtrate) stanno ad almeno
+  1,2 mm da tutti i nodi sensibili, sullo stesso strato e su quello opposto (niente
+  incroci sotto amplificatori e comparatori, niente tagli del piano di massa sotto di
+  loro); fanno eccezione, per costruzione, i 2 mm attorno ai filtri R?52/C?52.
 - Serigrafia: testo alto almeno 0,9 mm (tratto ~0,17 mm), mai sopra i pad; generata da
   `silk3.py` e identica in KiCad (`gr_poly`) e nei Gerber.
 - Non ancora fatto: simulazione SPICE della scheda a 3 canali (il canale è identico a

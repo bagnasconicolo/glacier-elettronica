@@ -115,6 +115,9 @@ def fits(g, layer, avoid_courtyards=True, own=None):
     return True
 
 
+# coppie di componenti affiancati (filtro della soglia): nome sopra, spostato in x (mm)
+PREF_ABOVE = {"C52": -0.85, "R52": 0.3}
+
 # riferimenti scritti sul corpo del componente (spostamento dal centro, mm)
 BODY_REFS = {"U11": (0.0, 0.0, 0.9), "U12": (0.0, 0.0, 0.9)}
 
@@ -407,6 +410,10 @@ def build_top():
         b = COURT[ref].bounds
         cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
         ok = False
+        sh = PREF_ABOVE.get(ref[0] + ref[2:] if len(ref) == 4 and ref[1].isdigit() else ref)
+        if sh is not None:                   # coppie affiancate: nomi sopra, spostati
+            if place_text(ref, 0.8, [(cx + sh, b[1] - 0.15 - d, "c", "bot") for d in (0, 0.3, 0.6)]):
+                continue
         for hh in (0.9, 0.8):
             D = (0, 0.3, 0.6, 1.0, 1.5)
             cands = [(cx, b[1] - 0.15 - d, "c", "bot") for d in D]

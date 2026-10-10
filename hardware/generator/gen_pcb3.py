@@ -84,6 +84,22 @@ def _build_obstacles_mon(net, w):
             extra = [g for g in extra if not g.is_empty]
         for L in ("F.Cu", "B.Cu"):
             obs[L] = obs[L] + extra
+    elif any(net == f"{b}{n}" for b in SENSITIVE for n in netdata3.CHANNELS):
+        # simmetrico: i nodi sensibili non passano vicino (ne' sopra ne' sotto) alle piste
+        # del monitor gia' instradate, tranne accanto ai componenti della rete stessa
+        from shapely.geometry import LineString
+        from shapely.ops import unary_union
+        mon = [LineString(t["pts"]).buffer(t["w"] / 2 + KEEP_MON + w / 2)
+               for t in GP.tracks if t["net"].startswith("MON")]
+        if mon:
+            own = {p["ref"] for p in GP.pads if p["net"] == net}
+            near = unary_union([GP.pad_rect(p, 2.0) for p in GP.pads if p["ref"] in own and p["kind"] == "smd"
+                                and p["ref"][0] in "RC" and any(q["ref"] == p["ref"] and q["net"].startswith("MON")
+                                                              for q in GP.pads)])
+            mon = [g.difference(near) for g in mon] if not near.is_empty else mon
+            mon = [g for g in mon if not g.is_empty]
+            for L in ("F.Cu", "B.Cu"):
+                obs[L] = obs[L] + mon
     return obs
 
 
