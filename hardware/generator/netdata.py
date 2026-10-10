@@ -11,7 +11,7 @@ COMPONENTS = {
     # Resistori 0805
     "R1":  ("R", "10k",   "R0805", {}),
     "R2":  ("R", "68k",   "R0805", {}),
-    "R3":  ("R", "270k",  "R0805", {}),
+    "R3":  ("R", "255k",  "R0805", {"note": "INFN: 270k; 255k -> VOUT40 39,4 V (LT3461: max assoluto 40 V)"}),
     "R4":  ("R", "1k2",   "R0805", {}),
     "R5":  ("R", "15k",   "R0805", {}),
     "R6":  ("R", "100k",  "R0805", {}),
@@ -46,12 +46,12 @@ COMPONENTS = {
     "CF1": ("C", "100n", "C0805", {"note": "decoupling +3V3 amp"}),
     "CF2": ("C", "100n", "C0805", {"note": "decoupling MAX961 VCC"}),
     "CF3": ("C", "100n", "C0805", {"note": "decoupling MCP1402 VDD"}),
-    "CF4": ("C", "100n", "C0805", {"note": "out LP2985 +3V6"}),
+    "CF4": ("C", "2.2uF", "C0805", {"note": "out LP2985 +3V6; INFN: 100n; datasheet LP2985: >= 2,2 uF X7R"}),
     "CF5": ("C", "100n", "C0805", {"note": "decoupling TLC555 VCC"}),
     "CF6": ("C", "100n", "C0805", {"note": "TLC555 CTRL"}),
-    "CF7": ("C", "100n", "C0805", {"note": "out LP2985 rif. 3V6 (B)"}),
+    "CF7": ("C", "2.2uF", "C0805", {"note": "out LP2985 rif. 3V6 (B); INFN: 100n; datasheet LP2985: >= 2,2 uF X7R"}),
     "CF8": ("C", "100n", "C0805", {"note": "in MCP1825"}),
-    "CF9": ("C", "100n", "C0805", {"note": "out MCP1825"}),
+    "CF9": ("C", "2.2uF", "C0805", {"note": "out MCP1825; INFN: 100n; datasheet MCP1825: >= 1 uF"}),
     # Induttore
     "L1":  ("L", "47uH", "L_PWR", {"order": "RS 6934344"}),
     # Diodi

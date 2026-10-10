@@ -27,6 +27,8 @@ ORDER = {
     "LT1636": "Farnell 4020771",
 }
 NOTE = {
+    "2.2uF": "X7R 0805 >= 10 V, es. Samsung CL21B225KAFNNNE (uscite regolatori; INFN: 100n)",
+    "255k": "1% (INFN: 270k): VOUT40 39,4 V, sotto i 40 V max del LT3461",
     "1uF 100V": "dielettrico X7R, 100V (nodo VOUT40 ~41 V)",
     "100n 100V": "X7R 100V (nodi 40V/38,4V)",
     "47uH": "verificare l'ingombro della parte RS effettiva contro il footprint 5x5",

@@ -1,0 +1,86 @@
+RIVELATORE DI MUONI A 3 CANALI - NOTA PER LA VERIFICA (INFN Torino)
+Riferimento: scheda "Riv. Cosmici 2024 - Amplif, alim, soglie" (S. Gallian, rev. A)
+Data: 10/10/2026 - progetto: github.com/bagnasconicolo/glacier-elettronica
+(branch claude/gallant-feynman-h18ciy, cartella hardware/variante_3ch)
+
+Gentile tecnico,
+la scheda a 3 canali riprende il circuito INFN senza modificarne il funzionamento.
+Prima di ordinare i due prototipi abbiamo cambiato DUE VALORI rispetto all'originale,
+perche' fuori dai limiti dei datasheet. Le chiediamo di confermarli (o di dirci di
+tornare ai valori originali). Il circuito stampato non cambia: stessi footprint.
+
+
+=====================================================================
+1) R3 (partitore di retroazione del boost LT3461): 270k -> 255k 1%
+=====================================================================
+Calcolo (VFB = 1,255 V; R1 || R2 || R22 = 8,39 kohm verso massa):
+   originale  R3 = 270k : VOUT40 = 1,255 x (1 + 270/8,39) = 41,6-41,7 V
+   modificato R3 = 255k : VOUT40 = 1,255 x (1 + 255/8,39) = 39,4 V
+Motivo: secondo il datasheet LT3461 il massimo assoluto su SW e VOUT e' 40 V
+(uscita massima dichiarata 38 V). La nota INFN riporta 40,2 V misurati: la scheda
+originale funziona, ma e' al limite. 255k e' il valore E96 piu' alto che resta sotto 40 V.
+Con le tolleranze (VFB 1,235-1,275 V, resistori 1%) VOUT40 sta tra circa 38,8 e 40,0 V.
+
+Conseguenze (simulazione ngspice della scheda intera, modelli comportamentali):
+ - BIAS del SiPM regolato con V1 come prima: 38,44 V con V1 a 0,76 della corsa.
+ - Margine tra VOUT40 e l'uscita dell'LT1636 (VREG38):
+       25 C : 1,0 V
+       50 C : 0,3 V   (il bias sale di ~28 mV/C per la compensazione con D1)
+ - Valore massimo di bias regolabile con V1: circa 39,2 V (prima ~41,5 V).
+   Per l'AFBR-S4N22P014M (VBD 32,5 V, sovratensione ~6 V) servono ~38,4 V: va bene.
+DA VERIFICARE: che l'escursione d'uscita dell'LT1636 verso V+ (con ~2,4 mA di
+carico per canale) stia nel margine di 0,3 V a 50 C. In laboratorio (20-25 C) il
+margine e' 1 V. Se serve piu' bias si torna a 270k accettando il limite dei 40 V.
+
+
+=====================================================================
+2) CF4, CF7, CF9 (uscite dei regolatori): 100 nF -> 2,2 uF X7R 0805 (>= 10 V)
+=====================================================================
+   CF4 = uscita U5 LP2985-3.6 (+3V6, soglie)
+   CF7 = uscita U7 LP2985-3.6 (riferimento 3,6 V del bias, VREF_B)
+   CF9 = uscita U6 MCP1825S-3.3 (+3V3)
+Motivo: il datasheet LP2985 richiede in uscita almeno 2,2 uF (ceramico X7R, con ESR
+nei limiti indicati) per la stabilita'; il datasheet MCP1825 almeno 1 uF.
+Con 100 nF il regolatore puo' oscillare o avere molto rumore, che finirebbe sulla
+soglia del comparatore e sul riferimento del bias.
+Parte proposta: Samsung CL21B225KAFNNNE (2,2 uF 25 V X7R 0805).
+In simulazione tensioni e risposta agli impulsi sono identiche a prima
+(i modelli dei regolatori non riproducono l'instabilita': per questo chiediamo
+conferma a chi conosce la scheda).
+DA VERIFICARE: che 2,2 uF X7R sia adatto anche per l'ESR richiesta dall'LP2985
+(il datasheet indica un intervallo di ESR per la stabilita').
+
+
+=====================================================================
+Per completezza: le altre differenze rispetto alla scheda INFN
+(nessuna cambia i valori del canale analogico)
+=====================================================================
+ - Tre canali completi (SiPM, amplificatore Q1 BFR93A / Q2 MMBTH81, soglia V2,
+   comparatore MAX961 con latch C9/R16, monostabile TLC555 + LED), con in comune:
+   boost LT3461 (VOUT40), 3,3 V (MCP1825), +3V6 e riferimento 3,6 V (LP2985).
+   Ogni canale ha il suo LT1636 per il bias.
+ - Uscita di ogni canale verso Raspberry Pi: 74LVC1G17 (buffer Schmitt a 3,3 V)
+   + 33 ohm serie su LEMO, al posto del buffer a 2 transistor a 5 V
+   (i GPIO del Pi non tollerano 5 V). Non c'e' l'uscita TTL 5 V (MCP1402, J2).
+ - Coincidenza: 74LVC1G11 (AND a 3) sulle uscite, ponticelli JP1-JP3 per
+   escludere un canale (pull-down 10k), uscita AND su LEMO con 33 ohm serie.
+ - Monitor delle tensioni (MCP3424, I2C verso il Pi): partitore 1M/43k + 100 nF
+   su VREG38 di ogni canale (dentro l'anello dell'LT1636, quindi non sposta il bias)
+   e su VOUT40. Verificato in simulazione: nessun effetto sul bias e sugli impulsi.
+ - V2 (soglia) collegato come potenziometro come nell'originale (in una prima
+   ricostruzione era stato collegato per errore come reostato; ora e' corretto).
+ - Connettore della barra: Molex KK 254 a 2 poli (1 = anodo/segnale, conduttore
+   centrale; 2 = catodo/bias +38 V, calza del coassiale), non LEMO, per non
+   confonderlo con le uscite LEMO che hanno la carcassa a massa.
+ - Test point su ogni nodo utile e 8 fori di fissaggio M3.
+
+Verifiche gia' fatte sul progetto:
+ - schema confrontato pin per pin con il PDF originale INFN;
+ - KiCad 7 e 10: netlist dello schema = PCB, DRC senza errori elettrici (restano
+   avvisi di serigrafia), 0 collegamenti mancanti;
+ - simulazione ngspice della scheda a 1 canale (21 controlli) e della scheda a 3
+   canali intera (alimentazioni condivise, diafonia < 4 mV contro soglia 104 mV,
+   coincidenza solo con 3 canali).
+
+Grazie per la verifica. Qualunque osservazione, anche sui punti non elencati,
+ci e' molto utile prima dell'ordine.

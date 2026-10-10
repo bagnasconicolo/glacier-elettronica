@@ -34,7 +34,11 @@ contro lo schema originale** e simulata per intero. In più c'è uno stadio d'us
 
 Nessun valore del circuito originale INFN è stato cambiato.
 
-## Punti da decidere prima del montaggio (non richiedono modifiche al PCB)
+## Punti decisi prima del montaggio (non richiedono modifiche al PCB)
+
+**Applicati il 10/10/2026** (BOM, file JLCPCB e simulazioni aggiornati; nota per la
+verifica INFN in `variante_3ch/NOTA_PER_TECNICO_INFN.txt`): R3 = 255k e 2,2 µF X7R su
+CF4, CF7, CF9. I punti 1 e 2 qui sotto spiegano il perché.
 
 1. **LT3461 (U1): uscita del boost oltre il limite assoluto.** Con R3 = 270k e
    R1‖R2‖R22 = 8,39k, VOUT40 = 1,255 V × (1 + 270/8,39) = **41,7 V nominali**.
@@ -129,7 +133,7 @@ montati **per primi**, prima del passo 1.
 
 1. **Senza i tre chip**, 5 V su J3: +3V3 ≈ 3,30 V, +3V6 ≈ 3,60 V, VREF_B ≈ 3,6 V,
    assorbimento di pochi mA.
-2. **Salda U1**: VOUT40 ≈ 41,7 V (≈ 39,4 V con R3 = 255k).
+2. **Salda U1**: VOUT40 ≈ 39,4 V (R3 = 255k; con il valore INFN 270k sarebbe 41,7 V).
 3. **Salda U8, senza SiPM**: regola V1 fino a BIAS = 38,4 V (campo ~28,6–41,5 V).
 4. **Salda U3**: regola TH con V2 (es. ~100 mV); CMP_Q deve restare a 0 V, LED spento.
 5. **Collega il SiPM**: impulsi su CMP_IN, LED che lampeggia al passaggio dei muoni.

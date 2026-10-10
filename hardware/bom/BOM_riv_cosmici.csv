@@ -2,12 +2,13 @@ Rif.,Qta,Valore/Parte,Package,Codice ordine,Note
 C1,1,22pF,0805,,
 C2,1,1uF 100V,1210,,"dielettrico X7R, 100V (nodo VOUT40 ~41 V)"
 C3 C6,2,100n 100V,1206,,"X7R 100V (nodi 40V/38,4V)"
-C4 CF1 CF2 CF3 CF4 CF5 CF6 CF7 CF8 CF9 CF10,11,100n,0805,,X7R 50V (CF = disaccoppiamento)
+C4 CF1 CF2 CF3 CF5 CF6 CF8 CF10,8,100n,0805,,X7R 50V (CF = disaccoppiamento)
 C7,1,10nF,0805,,
 C9,1,100pF,0805,,
 C11,1,10n,0805,,
 C21,1,100nF,0805,,
 C22,1,1uF,0805,,
+CF4 CF7 CF9,3,2.2uF,0805,,"X7R 0805 >= 10 V, es. Samsung CL21B225KAFNNNE (uscite regolatori; INFN: 100n)"
 D1,1,1N4148,DO-35,,assiale DO-35 (o 1N4148W SOD-123 adattando il footprint)
 D3,1,LED rosso,0805,,LED rosso 0805 (pin 1 = catodo)
 J1,1,SiPM,Header 2.54 1x2,,"verso scintillatore, cavo Fileca schermato; calza = bias 38,4V"
@@ -19,7 +20,7 @@ Q1,1,BFR93A,SOT-23,RS 892-2365,
 Q2,1,MMBTH81,SOT-23,RS 104-1196,
 R1 R10,2,10k,0805,,
 R2,1,68k,0805,,
-R3,1,270k,0805,,
+R3,1,255k,0805,,"1% (INFN: 270k): VOUT40 39,4 V, sotto i 40 V max del LT3461"
 R4,1,1k2,0805,,
 R5,1,15k,0805,,
 R6 R20,2,100k,0805,,
