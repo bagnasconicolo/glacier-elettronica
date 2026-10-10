@@ -69,10 +69,19 @@ def _build_obstacles_mon(net, w):
     obs = _build_obstacles(net, w)
     if net.startswith("MON"):
         from shapely.geometry import LineString
+        from shapely.ops import unary_union
         sens = {f"{b}{n}" for b in SENSITIVE for n in netdata3.CHANNELS}
-        extra = [GP.pad_rect(p, KEEP_MON + w / 2) for p in GP.pads if p["net"] in sens]
+        # i componenti della rete stessa (es. R152 della lettura soglia, con un pad
+        # sulla soglia TH1) non contano: la pista deve poter uscire dal loro pad
+        own = {p["ref"] for p in GP.pads if p["net"] == net}
+        extra = [GP.pad_rect(p, KEEP_MON + w / 2) for p in GP.pads if p["net"] in sens and p["ref"] not in own]
         extra += [LineString(t["pts"]).buffer(t["w"] / 2 + KEEP_MON + w / 2)
                   for t in GP.tracks if t["net"] in sens]
+        if extra and own:
+            near = unary_union([GP.pad_rect(p, 2.0) for p in GP.pads if p["ref"] in own and p["kind"] == "smd"
+                                and p["ref"][0] in "RC"])
+            extra = [g.difference(near) for g in extra]
+            extra = [g for g in extra if not g.is_empty]
         for L in ("F.Cu", "B.Cu"):
             obs[L] = obs[L] + extra
     return obs

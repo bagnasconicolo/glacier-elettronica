@@ -1,6 +1,12 @@
 # Variante a 3 canali + coincidenza
 
-Una sola scheda (103 × 215 mm, 2 strati, 8 fori di fissaggio M3) con **tre front-end completi** del rivelatore
+> **LAVORO IN CORSO (10/10/2026): non ordinare ancora.** Sono stati aggiunti al progetto il
+> secondo ADC del monitor (soglie e temperatura) e la scheda si allunga a 103 × 223,9 mm, ma
+> PCB, Gerber e file JLCPCB in questa cartella sono ancora quelli della versione precedente
+> (103 × 215 mm): il nuovo routing e la verifica con KiCad sono in corso.
+
+
+Una sola scheda (103 × 223,9 mm, 2 strati, 8 fori di fissaggio M3) con **tre front-end completi** del rivelatore
 INFN — uno per barra di scintillatore — e la **coincidenza AND** già a bordo.
 Il PCB è pensato anche per **attività didattiche (STEM)**: è diviso in blocchi
 funzionali con il nome scritto in serigrafia, e i test point sono accanto ai punti che
@@ -114,7 +120,25 @@ Raspberry Pi dal connettore **J6**, Molex KK 254 a 3 poli con aggancio (1 GND, 2
 | Ingresso ADC | Cosa misura | Partitore |
 |---|---|---|
 | CH1, CH2, CH3 | uscita del regolatore del bias (VREG38) dei canali 1, 2, 3 | R150/R151, R250/R251, R350/R351 (1 MΩ / 43 kΩ) + C?50 100 nF |
-| CH4 | alta tensione (41 V) | R40/R41 (1 MΩ / 43 kΩ) + C40 100 nF |
+| CH4 | alta tensione (39,4 V) | R40/R41 (1 MΩ / 43 kΩ) + C40 100 nF |
+
+Un secondo **MCP3424** (U12, stesso bus I²C; Adr0 = VDD, Adr1 = GND, il programma ne
+cerca l'indirizzo) legge le **soglie** dei tre canali e la **temperatura** della scheda:
+
+| Ingresso ADC | Cosa misura | Circuito |
+|---|---|---|
+| CH1, CH2, CH3 | soglia TH dei canali 1, 2, 3 (ingresso − del MAX961) | R152/R252/R352 10 kΩ subito accanto al pin 2 del comparatore + C152/C252/C352 100 nF |
+| CH4 | temperatura della scheda | NTC 10 kΩ (RT1, B ≈ 3900) verso massa + 22 kΩ (R44) verso 3,3 V + C41 100 nF |
+
+La soglia non ha condensatori ed è l'ingresso del comparatore: collegarla direttamente
+all'ADC la farebbe saltare di ~0,5 V a ogni conversione (falsi conteggi, simulato). Con
+10 kΩ + 100 nF i prelievi di carica dell'ADC finiscono sul condensatore: soglia ferma
+entro 18 µV, nessun falso conteggio, impulsi identici
+(`simulation/ltspice/verifica_soglia_monitor.py`). La lettura risulta più bassa dello
+0,44 % (10 kΩ contro i 2,25 MΩ d'ingresso dell'ADC): il programma la corregge.
+Termistore: 1,03 V a 25 °C, 1,98 V a 0 °C, 0,47 V a 50 °C (fondo scala 2,048 V, lettura
+valida da circa −1 °C); è sulla scheda, quindi misura la temperatura dell'elettronica,
+vicina a quella della stanza.
 
 Lettura: `software/monitor_tensioni.py` (stampa e salva in CSV una volta al secondo).
 Risoluzione a 16 bit: 62,5 µV all'ADC = **1,5 mV sul bias**. Con resistenze all'1 % la

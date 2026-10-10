@@ -115,6 +115,10 @@ def fits(g, layer, avoid_courtyards=True, own=None):
     return True
 
 
+# riferimenti scritti sul corpo del componente (spostamento dal centro, mm)
+BODY_REFS = {"U11": (0.0, 0.0, 0.9), "U12": (0.0, 0.0, 0.9)}
+
+
 def place_text(s, h, candidates, layer=TOP, avoid_courtyards=True, required=False, rot=0):
     """prova le posizioni (x, y, anchor, valign) in ordine; ritorna True se piazzato"""
     for (x, y, anc, va) in candidates:
@@ -360,7 +364,7 @@ def build_top():
     place_text("AND", 1.25, near(x - 0.5, y - 5.5, 0, 0, rmax=2) + near(x - 0.5, y + 6.0, 0, 0, rmax=3),
                required=True)
     x, y, _ = PD.PLACEMENT["J6"]
-    for k, lab in enumerate(("1", "2", "3")):        # nomi dei pin nel sottotitolo del blocco
+    for k, lab in enumerate(("1", "2", "3")):        # numeri dei pin (funzioni nel sottotitolo)
         place_text(lab, 0.9, [(x + k * 2.54, y - 3.3 - d, "c", "bot") for d in (0, 0.2, 0.4)], required=True)
     x, y, _ = PD.PLACEMENT["J3"]
     place_text("GND", 0.9, near(x + 3.5, y, 0, 0, rmax=2), required=True)
@@ -393,8 +397,13 @@ def build_top():
     # riferimenti dei componenti
     miss = []
     for ref in sorted(PD.PLACEMENT, key=lambda r: (PD.PLACEMENT[r][1], PD.PLACEMENT[r][0])):
-        if ref.startswith("TP") or ref.startswith("MH"):
+        if ref.startswith("TP") or ref.startswith("MH") or ref == "J6":   # J6: nel sottotitolo
             continue
+        if ref in BODY_REFS:                 # nel blocco MONITOR non c'e' spazio attorno:
+            x, y, _ = PD.PLACEMENT[ref]      # nome sul corpo, tra le file di pad
+            dx, dy, hh = BODY_REFS[ref]
+            if place_text(ref, hh, [(x + dx, y + dy, "c", "mid")], avoid_courtyards=False):
+                continue
         b = COURT[ref].bounds
         cx, cy = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
         ok = False

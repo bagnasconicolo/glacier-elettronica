@@ -117,7 +117,7 @@ def build():
                  nets={"1": net if net == "GND" else f"{net}{n}"})
         G.T(f"Test point canale {n}", 48, 142 + dy)
     run(SHARED_SRC, SX, SY)
-    G.T("PARTI COMUNI: boost 41,7 V, 3,3 V, riferimenti 3,6 V", 340, 128)
+    G.T("PARTI COMUNI: boost 39,4 V, 3,3 V, riferimenti 3,6 V", 340, 128)
     # ---- coincidenza AND a 3
     cx, cy = 420.0, 260.0
     G.T("COINCIDENZA: AND a 3 canali (jumper aperto = canale escluso)", 360, cy - 30)
@@ -157,10 +157,30 @@ def build():
     stub("R43", ux + 28, uy + 5.08, rot=90, nets={"1": "SCL_ADC", "2": "I2C_SCL"})
     stub("J6", ux + 55, uy + 2.54, nets={"1": "GND", "2": "I2C_SDA", "3": "I2C_SCL"})
     G.T("verso Raspberry Pi (pull-up sul Pi)", ux + 42, uy - 6)
+    # ---- monitor delle soglie e della temperatura: secondo MCP3424 sullo stesso bus I2C
+    sx2, sy2 = 360.0, 460.0
+    G.T("MONITOR SOGLIE E TEMPERATURA: TH -> 10k + 100n (accanto al comparatore) -> ADC MCP3424 U12 (I2C)",
+        sx2 - 2, sy2 - 22)
+    for k, n in enumerate(netdata3.CHANNELS):
+        x = sx2 + k * 25.4
+        stub(netdata3.chref("R52", n), x, sy2, nets={"1": f"TH{n}", "2": f"MONTH{n}"})
+        stub(netdata3.chref("C52", n), x + 7.62, sy2 + 15.24, nets={"1": f"MONTH{n}", "2": "GND"})
+    x = sx2 + 3 * 25.4
+    stub("R44", x, sy2, nets={"1": "+3V3", "2": "MONT"})
+    stub("RT1", x, sy2 + 15.24, nets={"1": "MONT", "2": "GND"})
+    stub("C41", x + 7.62, sy2 + 15.24, nets={"1": "MONT", "2": "GND"})
+    G.T("NTC 10k: temperatura", x - 4, sy2 + 27)
+    ux2, uy2 = sx2 + 140, sy2 + 10
+    stub("U12", ux2, uy2, nets={"1": "MONTH1", "2": "GND", "3": "MONTH2", "4": "GND",
+                                "11": "MONTH3", "12": "GND", "13": "MONT", "14": "GND",
+                                "5": "GND", "6": "+3V3", "7": "SDA_ADC", "8": "SCL_ADC",
+                                "9": "+3V3", "10": "GND"})
+    stub("CF13", ux2 + 22, uy2 - 20, nets={"1": "+3V3", "2": "GND"})
+    G.T("Adr0 = VDD, Adr1 = GND: indirizzo diverso da U11", ux2 + 18, uy2 + 6)
     # ---- fori di fissaggio (a massa)
-    G.T("Fori di fissaggio M3 (a massa)", 360, 470)
+    G.T("Fori di fissaggio M3 (a massa)", 360, 520)
     for k in range(1, 9):
-        stub(f"MH{k}", 365 + (k - 1) * 10.16, 480, nets={"1": "GND"})
+        stub(f"MH{k}", 365 + (k - 1) * 10.16, 530, nets={"1": "GND"})
     G.T("Riv. Cosmici 2024 - VARIANTE 3 CANALI + coincidenza - da INFN sez. Torino (S. Gallian, rev. A)",
         200, 12)
 

@@ -60,6 +60,8 @@ PART = {
     ("10k", "3296W"):       ("3296W-1-103LF", "C34846", "Bourns 3296W-1-103LF"),
     ("74LVC1G11", "SOT23-6"): ("SN74LVC1G11DBVR", "C22046", "TI SN74LVC1G11DBVR (AND a 3)"),
     ("MCP3424", "SO14"):    ("MCP3424-E/SL", "C640884", "Microchip MCP3424-E/SL (ADC monitor tensioni)"),
+    # termistore della scheda: codice JLCPCB da confermare nel BOM Tool
+    ("10k NTC", "R0805"):   ("NCP21XV103J03RA", "", "Murata NCP21XV103J03RA NTC 10k 5% B=3900 0805"),
     ("I2C_RPI", "HDR3"):    ("Header 1x3 2.54mm", "", "pin header maschio 1x3 (a mano)"),
     ("I2C_RPI", "KK3"):     ("Molex 22-27-2031", "", "Molex KK 254 3 poli 22-27-2031 (a mano)"),
 }

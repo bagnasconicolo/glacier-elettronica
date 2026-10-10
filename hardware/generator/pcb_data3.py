@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Piazzamento PCB della VARIANTE A 3 CANALI - versione didattica.
 
-Scheda 103 x 215 mm organizzata a blocchi, leggibile dall'alto in basso:
+Scheda 103 x 223,9 mm organizzata a blocchi, leggibile dall'alto in basso:
 
-  fascia ALIMENTAZIONE   ingresso 5 V -> 3,3 V -> alta tensione 41 V -> riferimenti 3,6 V
+  fascia ALIMENTAZIONE   ingresso 5 V -> 3,3 V -> alta tensione 39,4 V -> riferimenti 3,6 V -> monitor
   CANALE 1               riga alta  = percorso del segnale, da sinistra a destra:
   CANALE 2                  1 SiPM -> 2 amplificatore -> 3 comparatore -> 4 uscita LEMO
   CANALE 3               riga bassa = circuiti di supporto sotto il blocco che servono:
@@ -18,7 +18,8 @@ import netdata3 as N
 
 X0, Y0 = 20.0, 20.0
 W = 103.0
-PWR_H = 27.0              # fascia alimentazione
+PWR_H = 27.0 + 8.89       # fascia alimentazione (+14 passi della griglia del router per il
+                          # secondo ADC del monitor: i canali restano allineati alla griglia)
 STRIP = 54.0              # altezza di un canale
 COINC_H = 26.0            # fascia coincidenza
 BOARD = (X0, Y0, X0 + W, Y0 + PWR_H + 3 * STRIP + COINC_H)
@@ -58,6 +59,9 @@ CH = {
     "R16":  (49.5, 19.0, 90),
     "C9":   (54.5, 19.0, 0),
     "R17":  (49.0, 23.5, 0),
+    # lettura della soglia per il monitor: 10k subito accanto al pin 2 di U3 + 100n
+    "R52":  (48.895, 12.0, 90),     # fuori dalle uscite dei pin di U3 (escape stub)
+    "C52":  (46.355, 12.0, 90),
     # 4 uscita: buffer 3,3 V + LEMO sul bordo destro
     "U9":   (73.0, 10.0, 0),
     "CF10": (73.0, 5.5, 0),
@@ -132,6 +136,11 @@ PWR = {
     "R42":  (87.3, 10.0, 0),
     "R43":  (87.3, 13.0, 0),
     "J6":   (93.0, 8.0, 270),
+    "U12":  (80.0, 11.0, 0),
+    "CF13": (80.0, 4.0, 0),
+    "R44":  (80.0, 20.0, 90),
+    "RT1":  (82.0, 20.0, 90),
+    "C41":  (84.0, 20.0, 90),
 }
 PWR_TP = {
     "TP2": (9.0, 19.5),      # +5V
@@ -161,7 +170,7 @@ COINC = {
 COL_SHIFT = {}
 for _r in ("C7", "R9", "Q1", "R11", "R12", "Q2", "R13", "R14", "CF1"):
     COL_SHIFT[_r] = 1.905                                # 2 amplificatore (multipli della griglia del router)
-for _r in ("C11", "R15", "U3", "CF2", "R16", "C9", "R17", "V2", "R18", "R19",
+for _r in ("C11", "R15", "U3", "CF2", "R16", "C9", "R17", "R52", "C52", "V2", "R18", "R19",
            "TP02", "TP03", "TP04"):
     COL_SHIFT[_r] = 3.81                                 # 3 comparatore + B soglia
 for _r in ("U9", "CF10", "R23", "U2", "R20", "C21", "CF5", "CF6", "R21", "D3"):
@@ -172,12 +181,17 @@ for _r in ("J3", "TP2", "TP6", "U6", "CF8", "CF9", "TP3"):
 for _r in ("C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1", "R40", "R41", "C40"):
     PWR_SHIFT[_r] = 8.255                                # alta tensione
 for _r in ("U5", "CF4", "U7", "CF7", "TP4"):
-    PWR_SHIFT[_r] = 10.795                               # riferimenti
-for _r in ("U11", "CF12", "R42", "R43", "J6"):
-    PWR_SHIFT[_r] = 10.5                                 # monitor
-# monitor piu' in basso: l'angolo in alto a destra e' del foro di fissaggio
-PWR_OVERRIDE = {"U11": (89.535, 15.5, 0), "CF12": (89.535, 22.0, 0),
-                "R42": (96.6, 15.0, 0), "R43": (96.6, 18.0, 0), "J6": (94.5, 23.7, 0)}   # J6 Molex KK 3 poli, in orizzontale
+    PWR_SHIFT[_r] = 8.89                                 # riferimenti (spazio per i due ADC del monitor)
+# monitor: i due ADC affiancati sotto il foro d'angolo; sotto, condensatori di
+# disaccoppiamento e resistenze serie I2C; in fondo termistore e J6 (Molex KK 3 poli).
+# Coordinate x multiple del passo della griglia del router (0,635 mm).
+# Tra le file di pad affacciate di U11 e U12 resta un passo di griglia tra le uscite
+# dei pin (escape stub, ~1,8 mm oltre il centro del pad).
+PWR_OVERRIDE = {"U11": (86.995, 15.5, 0), "U12": (96.52, 15.5, 0),
+                "CF12": (86.36, 22.0, 0), "R42": (90.17, 22.0, 0),
+                "CF13": (93.98, 22.0, 0), "R43": (97.79, 22.0, 0),
+                "R44": (85.09, 29.5, 90), "RT1": (87.63, 29.5, 90), "C41": (90.17, 29.5, 90),
+                "J6": (93.98, 29.5, 0)}
 COINC_SHIFT = 6.35
 COINC_OVERRIDE = {"J5": (W - 4.0, 12.0, 0), "TP5": (91.5, 21.0, 0)}
 
@@ -265,7 +279,8 @@ for n in N.CHANNELS:
 CH_BLOCKS = [
     ("1 SiPM", "J1: 1=segnale 2=bias", ["J1", "R10", "R8", "C6", "TP01", "TP05", "TP06"]),
     ("2 AMPLIFICATORE", "2 transistor", ["C7", "R9", "Q1", "R11", "R12", "Q2", "R13", "R14", "CF1"]),
-    ("3 COMPARATORE", "segnale > soglia?", ["C11", "R15", "U3", "CF2", "R16", "C9", "R17", "TP02", "TP03", "TP04"]),
+    ("3 COMPARATORE", "segnale > soglia?", ["C11", "R15", "U3", "CF2", "R16", "C9", "R17", "R52", "C52",
+                                            "TP02", "TP03", "TP04"]),
     ("4 USCITA", "buffer 3,3V -> LEMO", ["U9", "CF10", "R23"]),
     ("A ALIMENTAZIONE SiPM ~38V", "V1 regola la tensione", ["U8", "R4", "R5", "R6", "C4", "V1", "R7", "D1",
                                                             "R50", "R51", "C50"]),
@@ -275,10 +290,11 @@ CH_BLOCKS = [
 PWR_BLOCKS = [
     ("5V IN", None, ["J3", "TP2", "TP6"]),
     ("3,3V", None, ["U6", "CF8", "CF9", "TP3"]),
-    ("ALTA TENSIONE 41V", "ATTENZIONE: fino a 41 V", ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1",
+    ("ALTA TENSIONE 40V", "ATTENZIONE: fino a 40 V", ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1",
                                   "R40", "R41", "C40"]),
     ("RIFERIMENTI", "3,6 V stabili", ["U5", "CF4", "U7", "CF7", "TP4"]),
-    ("MONITOR", "J6: 1 GND  2 SDA  3 SCL", ["U11", "CF12", "R42", "R43", "J6"]),
+    ("MONITOR", "J6: 1 GND  2 SDA  3 SCL", ["U11", "U12", "CF12", "CF13", "R42", "R43",
+                                            "R44", "RT1", "C41", "J6"]),
 ]
 COINC_BLOCKS = [
     ("COINCIDENZA (AND)", "jumper chiuso = canale incluso",
@@ -287,11 +303,10 @@ COINC_BLOCKS = [
 # etichette dei test point (testo accanto al foro)
 TP_LABEL = {"TP01": "SiPM", "TP06": "GND", "TP05": "BIAS", "TP02": "IN",
             "TP03": "SOGLIA", "TP04": "OUT",
-            "TP1": "41V", "TP2": "5V", "TP3": "3,3V", "TP4": "3,6V", "TP5": "AND", "TP6": "GND"}
+            "TP1": "40V", "TP2": "5V", "TP3": "3,3V", "TP4": "3,6V", "TP5": "AND", "TP6": "GND"}
 
 
-# Isola del piano di massa sotto l'uscita del canale 2 (U209.3, CF205.2): sul retro e'
-# chiusa dalle piste delle uscite. Pista di massa sul lato componenti dalla via di CF205
-# verso destra + via nel piano principale (verificato: DRC 0, rete GND connessa).
-GND_PATCH_TRACKS = [dict(net="GND", layer="F.Cu", pts=[(104.4, 134.5), (107.6, 134.5)], w=0.5)]
-GND_PATCH_VIAS = [dict(net="GND", x=107.6, y=134.5)]
+# Toppe di massa per isole del piano chiuse da altre piste (dipendono dal routing):
+# il nuovo routing ricollega le isole da solo (gen_pcb.fix_gnd_islands), qui nessuna.
+GND_PATCH_TRACKS = []
+GND_PATCH_VIAS = []

@@ -27,6 +27,7 @@ ORDER = {
     "LT1636": "Farnell 4020771",
 }
 NOTE = {
+    "10k NTC": "termistore NTC 0805, B~3900, es. Murata NCP21XV103J03RA (temperatura scheda)",
     "2.2uF": "X7R 0805 >= 10 V, es. Samsung CL21B225KAFNNNE (uscite regolatori; INFN: 100n)",
     "255k": "1% (INFN: 270k): VOUT40 39,4 V, sotto i 40 V max del LT3461",
     "1uF 100V": "dielettrico X7R, 100V (nodo VOUT40 ~41 V)",

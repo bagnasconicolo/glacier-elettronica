@@ -63,10 +63,20 @@ Per completezza: le altre differenze rispetto alla scheda INFN
    + 33 ohm serie su LEMO, al posto del buffer a 2 transistor a 5 V
    (i GPIO del Pi non tollerano 5 V). Non c'e' l'uscita TTL 5 V (MCP1402, J2).
  - Coincidenza: 74LVC1G11 (AND a 3) sulle uscite, ponticelli JP1-JP3 per
-   escludere un canale (pull-down 10k), uscita AND su LEMO con 33 ohm serie.
+   escludere un canale (pull-up 10k verso +3,3 V: ponticello aperto = ingresso
+   dell'AND fisso a 1 = canale escluso), uscita AND su LEMO con 33 ohm serie.
  - Monitor delle tensioni (MCP3424, I2C verso il Pi): partitore 1M/43k + 100 nF
    su VREG38 di ogni canale (dentro l'anello dell'LT1636, quindi non sposta il bias)
    e su VOUT40. Verificato in simulazione: nessun effetto sul bias e sugli impulsi.
+ - Lettura delle soglie e della temperatura (secondo MCP3424, U12): dal nodo TH di
+   ogni canale (ingresso - del MAX961, senza condensatori nell'originale) parte
+   R?52 = 10k, montata accanto al pin 2 del comparatore, con C?52 = 100 nF verso massa;
+   l'ADC legge sul condensatore. Carico in continua sulla soglia ~0,05 uA (spostamento
+   simulato: -60 uV su 104 mV); ondulazione della soglia con le conversioni 18 uV;
+   nessun falso conteggio. Senza il filtro la soglia salterebbe di ~0,5 V (simulato).
+   Temperatura: NTC 10k + 22k verso 3,3 V.
+   DA VERIFICARE: che il carico RC aggiunto sul nodo TH non vi crei problemi
+   (es. con il latch C9/R16 o con l'isteresi del MAX961).
  - V2 (soglia) collegato come potenziometro come nell'originale (in una prima
    ricostruzione era stato collegato per errore come reostato; ora e' corretto).
  - Connettore della barra: Molex KK 254 a 2 poli (1 = anodo/segnale, conduttore

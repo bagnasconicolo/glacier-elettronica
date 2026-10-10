@@ -10,7 +10,7 @@ dopo, se e quando servirà.
 
 | Voce | Dove | Quantità | Costo (IVA incl.) |
 |---|---|---|---|
-| PCB 103 × 215 mm + montaggio SMD | JLCPCB (`jlcpcb/`) | **5 PCB, montaggio su 2** | ~110–140 € (stima: rifare il preventivo) |
+| PCB 103 × 223,9 mm + montaggio SMD | JLCPCB (`jlcpcb/`) | **5 PCB, montaggio su 2** | ~110–140 € (stima: rifare il preventivo) |
 | Chip da saldare a mano, strip, ponticelli, connettori KK | Mouser (`BOM_mouser_2prototipi.csv`) | per 2 schede + 1 chip di scorta | ~127 € |
 | SiPM AFBR-S4N22P014M | Mouser (stesso file) | 6 | 125 € (togliere se già disponibili) |
 | Raspberry Pi Zero 2 W + scheda SD 16–32 GB | qualsiasi rivenditore | 2 | ~50 € (o Pi già in laboratorio) |

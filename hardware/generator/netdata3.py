@@ -141,6 +141,36 @@ NETS["SCL_ADC"] = [("U11", "8"), ("R43", "1")]
 NETS["I2C_SDA"] = [("R42", "2"), ("J6", "2")]
 NETS["I2C_SCL"] = [("R43", "2"), ("J6", "3")]
 
+# ---- monitor delle SOGLIE e della temperatura: secondo MCP3424 (U12, stesso bus I2C)
+# La soglia TH di ogni canale va all'ingresso invertente del MAX961 e non ha
+# condensatori: per non disturbarla la lettura passa da R?52 = 10k (subito accanto al
+# pin 2 del comparatore) e C?52 = 100n verso massa, che assorbe i prelievi di carica
+# dell'ADC. Carico in continua sulla soglia: ~0,05 uA (10k + 2,25 Mohm d'ingresso),
+# cioe' ~0,1 mV su ~104 mV; la lettura risulta piu' bassa dello 0,44 % (correggibile).
+# Temperatura della scheda: NTC 10k (RT1) verso massa, 22k (R44) verso +3V3, 100n (C41):
+# 1,03 V a 25 C, 1,98 V a 0 C, 0,47 V a 50 C (fondo scala ADC 2,048 V: lettura valida
+# da circa -1 C in su, che basta per un laboratorio).
+for n in CHANNELS:
+    rf, cf = chref("R52", n), chref("C52", n)
+    COMPONENTS[rf] = ("R", "10k", "R0805", {"note": f"isolamento lettura soglia canale {n}"})
+    COMPONENTS[cf] = ("C", "100n", "C0805", {"note": f"filtro lettura soglia canale {n}"})
+    NETS[f"TH{n}"].append((rf, "1"))
+    NETS[f"MONTH{n}"] = [(rf, "2"), (cf, "1"), ("U12", ADC_CH[n][0])]
+    NETS["GND"] += [(cf, "2"), ("U12", ADC_CH[n][1])]
+COMPONENTS.update({
+    "U12":  ("MCP3424", "MCP3424", "SO14", {"note": "ADC soglie + temperatura; Adr0=VDD Adr1=GND (indirizzo != 0x68, il software lo cerca)"}),
+    "CF13": ("C", "100n", "C0805", {"note": "decoupling MCP3424 (U12)"}),
+    "R44":  ("R", "22k", "R0805", {"note": "partitore termistore (verso +3V3)"}),
+    "RT1":  ("R", "10k NTC", "R0805", {"note": "termistore NTC 10k B~3900 (temperatura della scheda)"}),
+    "C41":  ("C", "100n", "C0805", {"note": "filtro lettura temperatura"}),
+})
+NETS["MONT"] = [("R44", "2"), ("RT1", "1"), ("C41", "1"), ("U12", ADC_CH[4][0])]
+NETS["GND"] += [("RT1", "2"), ("C41", "2"), ("U12", ADC_CH[4][1]),
+                ("U12", "5"), ("U12", "10"), ("CF13", "2")]
+NETS["+3V3"] += [("U12", "6"), ("U12", "9"), ("CF13", "1"), ("R44", "1")]
+NETS["SDA_ADC"].append(("U12", "7"))
+NETS["SCL_ADC"].append(("U12", "8"))
+
 # ---- fori di fissaggio M3 (piazzola a massa)
 for k in range(1, 9):
     COMPONENTS[f"MH{k}"] = ("MH", "M3", "MH3", {"note": "foro di fissaggio M3, a massa"})
