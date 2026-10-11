@@ -57,7 +57,7 @@
     (fill (thermal_gap 0.508) (thermal_bridge_width 0.508))
     (polygon (pts (xy -0.4 -0.75) (xy 0.4 -0.75) (xy 0.4 0.75) (xy -0.4 0.75)))
   )
-  (model "${KICAD6_3DMODEL_DIR}/Sensor_Humidity.3dshapes/Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_NoCentralPad.wrl"
+  (model "${KIPRJMOD}/../librerie/3d/glacier.3dshapes/Sensirion_SHT4x_DFN-4.step"
     (offset (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

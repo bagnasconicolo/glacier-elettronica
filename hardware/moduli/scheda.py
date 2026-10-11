@@ -36,6 +36,9 @@ VIA_D, VIA_DRILL = 0.6, 0.3
 EDGE = 0.3
 
 
+NON_MONTATI = ("MH", "SJ2", "SJ3")          # fori e ponticelli a stagno: solo rame, niente da montare
+
+
 def V(x, y):
     return pcbnew.VECTOR2I(mm(x), mm(y))
 
@@ -292,6 +295,8 @@ def costruisci(D, outdir, instrada=True, passate=30):
             n = pin_net.get((ref, p.GetNumber()))
             if n:
                 p.SetNet(nets[n])
+                if ref in getattr(D, "PAD_PIENI", ()) and n == "GND":
+                    p.SetZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
         rt = fp.Reference()
         rt.SetVisible(getattr(D, "RIF_VISIBILI", {}).get(ref, True))
         rt.SetTextSize(pcbnew.VECTOR2I(mm(0.8), mm(0.8)))
@@ -405,7 +410,7 @@ def fabbricazione(D, outdir):
     os.makedirs(jd, exist_ok=True)
     groups = {}
     for ref, (kind, value, fpk, extra) in D.COMPONENTS.items():
-        if ref in D.DNP or kind == "MH":
+        if ref in D.DNP or kind in NON_MONTATI:
             continue
         mpn, lcsc = D.CODICI.get((value, fpk), ("", ""))
         groups.setdefault((value, D.FP[fpk], mpn, lcsc), []).append(ref)
@@ -421,7 +426,7 @@ def fabbricazione(D, outdir):
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for fp in sorted(b.GetFootprints(), key=lambda fp: fp.GetReference()):
             ref = fp.GetReference()
-            if ref in D.DNP or D.COMPONENTS[ref][0] == "MH":
+            if ref in D.DNP or D.COMPONENTS[ref][0] in NON_MONTATI:
                 continue
             p = fp.GetPosition()
             w.writerow([ref, f"{pcbnew.ToMM(p.x) - x0:.3f}mm", f"{y1 - pcbnew.ToMM(p.y):.3f}mm",

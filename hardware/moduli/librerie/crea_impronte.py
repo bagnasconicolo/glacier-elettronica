@@ -10,6 +10,7 @@ USB in alto (Y negativa). Contorno del modulo 21 x 51 mm.
 """
 import os
 HERE = os.path.dirname(os.path.abspath(__file__))
+MOD3D = "${KIPRJMOD}/../librerie/3d/glacier.3dshapes"     # modelli fatti da crea_modelli3d.py
 
 
 def pico():
@@ -30,6 +31,12 @@ def pico():
             shape = "rect" if num == 1 else "oval"
             o.append(f'  (pad "{num}" thru_hole {shape} (at {x} {round(y, 3)}) (size 1.7 1.7) (drill 1.0) '
                      f'(layers "*.Cu" "*.Mask"))')
+    # modelli 3D: le due strip (libreria ufficiale) e il Pico (librerie/3d, crea_modelli3d.py).
+    # Nell'offset dei modelli KiCad la Y e' rovesciata rispetto all'impronta
+    for x in (-8.89, 8.89):
+        o.append(f'  (model "${{KICAD7_3DMODEL_DIR}}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x20_P2.54mm_Vertical.wrl"'
+                 f' (offset (xyz {x} 24.13 0)) (scale (xyz 1 1 1)) (rotate (xyz 0 0 0)))')
+    o.append(f'  (model "{MOD3D}/RPi_Pico2.step" (offset (xyz 0 0 0)) (scale (xyz 1 1 1)) (rotate (xyz 0 0 0)))')
     o.append(')')
     open(os.path.join(HERE, "moduli.pretty", "RPi_Pico2_Socket.kicad_mod"), "w").write("\n".join(o) + "\n")
 
@@ -46,10 +53,22 @@ def sht4x_instradabile():
                   '(footprint "Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_KeepoutCentro"', 1)
     s = re.sub(r"\(polygon\s*\(pts.*?\)\s*\)\s*\)", "(polygon (pts (xy -0.4 -0.75) (xy 0.4 -0.75) (xy 0.4 0.75) (xy -0.4 0.75)))",
                s, count=1, flags=re.S)
+    s = re.sub(r'\(model "[^"]*"', f'(model "{MOD3D}/Sensirion_SHT4x_DFN-4.step"', s)
     open(os.path.join(HERE, "moduli.pretty", "Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_KeepoutCentro.kicad_mod"), "w").write(s)
+
+
+def modello_lemo():
+    """aggiunge all'impronta della presa LEMO a gomito il suo modello 3D (frontale verso +X)"""
+    p = os.path.join(HERE, "moduli.pretty", "LEMO_EPL00.kicad_mod")
+    s = open(p).read()
+    if "(model" not in s:
+        s = s.rstrip().rstrip(")") + (f'  (model "{MOD3D}/LEMO_EPL.00.250.NTN.step" (offset (xyz 0 0 0)) '
+                                      '(scale (xyz 1 1 1)) (rotate (xyz 0 0 0)))\n)\n')
+        open(p, "w").write(s)
 
 
 if __name__ == "__main__":
     pico()
     sht4x_instradabile()
+    modello_lemo()
     print("scritte: RPi_Pico2_Socket, Sensirion_DFN-4_..._SHT4x_KeepoutCentro")
