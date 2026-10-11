@@ -12,3 +12,5 @@ AFBR-S4N22P014M,Broadcom,6,SiPM (3 per scheda) - togliere se gia' disponibili
 08-50-0114,Molex,30,"contatti a crimpare KK 254, 22-30 AWG (12 barre + 6 monitor + scorta)"
 22-27-2031,Molex,3,"header KK 254 3 poli con rampa di aggancio, J6 monitor I2C verso il Raspberry (2 + 1)"
 22-01-3037,Molex,3,"connettore KK 254 3 poli lato cavo, J6 monitor (2 + 1)"
+SN74LVC1G17DBVR,Texas Instruments,10,"buffer di protezione degli ingressi del Pico, 4 per rivelatore (8 + 2), vedi firmware/pico_acquisizione"
+1230,Adafruit,2,"adattatori SOT-23 -> passo 2,54 mm (confezione da 6) per montare i buffer su millefori"

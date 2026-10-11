@@ -14,10 +14,11 @@ dopo, se e quando servirà.
 | Chip da saldare a mano, strip, ponticelli, connettori KK | Mouser (`BOM_mouser_2prototipi.csv`) | per 2 schede + 1 chip di scorta | ~127 € |
 | SiPM AFBR-S4N22P014M | Mouser (stesso file) | 6 | 125 € (togliere se già disponibili) |
 | Raspberry Pi Zero 2 W + scheda SD 16–32 GB | qualsiasi rivenditore | 2 | ~50 € (o Pi già in laboratorio) |
+| Raspberry Pi Pico (o Pico 2) + adattatore USB OTG, millefori, 4 buffer per rivelatore | qualsiasi rivenditore; buffer e adattatori nel file Mouser | 2 (+1 di scorta) | ~25 € |
 | Alimentatori 5 V | qualsiasi rivenditore | 4 (2 per la scheda, 2 per il Pi) | ~30 € |
 | Base in plexiglass, distanziali M3, staffe stampate per le barre | laboratorio | 2 | ~20–40 € |
 | LEMO | — | — | già disponibili |
-| **Totale** | | | **~460–510 €** (≈ 335–385 € senza SiPM) |
+| **Totale** | | | **~490–540 €** (≈ 360–410 € senza SiPM) |
 
 Note sui prezzi:
 - **JLCPCB:** il minimo è 5 PCB, ma il montaggio si può chiedere solo su 2 (campo
@@ -26,8 +27,12 @@ Note sui prezzi:
 - **Mouser:** sopra 75 € la spedizione è gratuita, con dazi inclusi. MAX961, LT1636 e
   LT3461A sono fine vita e non restituibili: la scorta di un pezzo per tipo serve anche
   a riparare un prototipo.
-- **Pi Zero 2 W** al posto del Pi 5: costa circa un quarto, consuma poco e per contare
-  impulsi e leggere l'ADC basta. Va benissimo anche un Pi 3/4 già presente in laboratorio.
+- **Pico + Zero 2 W.** Il Pico cattura gli impulsi senza perderne e ne annota l'istante
+  (16 ns); lo Zero salva, legge l'I²C e fa girare la dashboard. Il Pico costa ~5 € e toglie
+  l'unico rischio non verificabile prima dell'ordine: le uscite verso il Raspberry durano
+  150–220 ns e non c'è una misura pubblicata che garantisca che il GPIO sotto Linux le
+  prenda tutte. È la scelta dei progetti simili (CosmicWatch v3X usa un Pico). Va bene
+  anche un Pi 3/4 già presente in laboratorio al posto dello Zero.
 
 ## Come montarlo (senza scatola)
 
@@ -48,14 +53,16 @@ Note sui prezzi:
 - **Alimentazione:** due alimentatori separati, uno per la scheda (5 V su J3) e uno per il
   Pi. Costa pochi euro in più e toglie un dubbio: se poi le misure sono pulite, si
   prova con un alimentatore unico.
-- **Collegamenti al Pi:** uscite dei canali e AND verso 4 GPIO con cavetti Dupont, J6 (I²C,
-  **Molex KK 254 a 3 poli** come i connettori delle barre: header 22-27-2031 sulla scheda,
-  connettore 22-01-3037 sul cavo; 1 = GND, 2 = SDA, 3 = SCL) verso i pin 6/3/5 del Pi.
+- **Collegamenti:** uscite dei canali e AND (LEMO) verso il Pico, attraverso 4 buffer di
+  protezione su millefori (`firmware/pico_acquisizione/LEGGIMI.md`); Pico allo Zero via USB.
+  J6 (I²C, **Molex KK 254 a 3 poli** come i connettori delle barre: header 22-27-2031 sulla
+  scheda, connettore 22-01-3037 sul cavo; 1 = GND, 2 = SDA, 3 = SCL) verso i pin 6/3/5 dello Zero.
 
 ## Software
 
-- Conteggio e tempi degli impulsi con libgpiod (timestamp del kernel), salvataggio in CSV
-  sulla SD.
+- Pico: `firmware/pico_acquisizione/main.py` (MicroPython). Zero:
+  `software/acquisizione_pico.py`, salva gli eventi in CSV sulla SD e confronta le triple
+  calcolate dai tempi con l'AND hardware.
 - `software/monitor_tensioni.py` per i bias e l'alta tensione.
 - Ora di rete (NTP): basta per i conteggi.
 - Accesso remoto, se serve: Raspberry Pi Connect (gratuito per uso individuale).
@@ -65,9 +72,10 @@ Note sui prezzi:
 
 1. Alimentazioni e alta tensione **senza SiPM** (`../PRIMA_DI_ORDINARE.md`); regolare il
    bias con V1 e verificarlo con il monitor delle tensioni.
-2. **Larghezza degli impulsi al GPIO:** in simulazione sono circa 0,3 µs. Verificare che
-   il Pi li conti tutti confrontando il suo conteggio con quello di un oscilloscopio o di
-   un contatore. Se ne perde, la correzione è allungare l'impulso (un condensatore).
+2. **Conteggio degli impulsi:** in simulazione durano 150–220 ns. Contare gli stessi impulsi
+   con il Pico, con i GPIO dello Zero (libgpiod) e con un oscilloscopio o un contatore, anche
+   con lo Zero sotto carico. Il Pico deve contarli tutti; il confronto dice se per le
+   versioni successive lo Zero da solo basterebbe.
 3. **Tenuta alla luce di ogni barra:** conteggio di un singolo canale a luce accesa e
    spenta, torcia lungo il rivestimento.
 4. **Disturbi:** con l'oscilloscopio sull'ingresso del comparatore, cercare i picchi del
