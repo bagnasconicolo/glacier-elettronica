@@ -1,0 +1,112 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard rivelatore</title><link rel="stylesheet" href="comune.css">
+<style>
+.top{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr 1.35fr;gap:18px}
+.mid{display:grid;grid-template-columns:2.1fr 1fr;gap:18px}
+.bot{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:18px}
+.chrow{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px}
+.mon{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:6px 14px;font-size:13px;align-items:center}
+.mon .h{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.mon .v{font-family:'JetBrains Mono',monospace;font-weight:600}
+.ok{color:var(--good);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--grid);text-align:left}
+th{color:var(--muted);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+.hit{display:inline-block;width:22px;height:9px;border-radius:3px;margin-right:3px;background:#e4e6e3}
+</style></head><body>
+<header>
+  <div class="logo"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="4" rx="1.5" fill="var(--c1)"/><rect x="3" y="12" width="22" height="4" rx="1.5" fill="var(--c2)"/><rect x="3" y="19" width="22" height="4" rx="1.5" fill="var(--c3)"/><line x1="17" y1="1" x2="11" y2="27" stroke="var(--and)" stroke-width="2"/></svg>Rivelatore di muoni</div>
+  <nav><a class="on">Dati in diretta</a><a>Esperienze</a><a>Lezioni</a><a>Archivio misure</a><a>Taratura</a></nav>
+  <div class="right"><span>Lab. di Fisica · classe 4ªB</span><span class="pill"><span class="dot"></span>In acquisizione · <span class="mono">00:42:17</span></span><span class="btn">⏸ Pausa</span><span class="btn pri">Salva misura</span></div>
+</header>
+<main>
+ <section class="top">
+  <div class="card" style="border-color:#d8c3d4">
+   <div class="lbl"><span class="sw" style="background:var(--and)"></span>Muoni (coincidenza triple)</div>
+   <div class="kpi" style="margin-top:8px">0,41<small>al secondo</small></div>
+   <div class="chrow"><span style="color:var(--ink2)">contati: <b class="mono">1 043</b></span><span style="color:var(--ink2)">≈ <b>24,6</b> al minuto</span></div>
+   <div style="margin-top:10px;color:var(--muted);font-size:12.5px">Flusso stimato: <b style="color:var(--ink)">0,97 ± 0,03</b> muoni / cm² / min · atteso ≈ 1</div>
+  </div>
+  <div class="card"><div class="lbl"><span class="sw" style="background:var(--c1)"></span>Barra 1 (in alto)</div><div class="kpi" style="margin-top:8px">2,9<small>conteggi/s</small></div><div class="chrow"><span style="color:var(--muted)">totale 7 361</span><span class="ok">● LED attivo</span></div><svg id="sp1" width="250" height="44"></svg></div>
+  <div class="card"><div class="lbl"><span class="sw" style="background:var(--c2)"></span>Barra 2 (in mezzo)</div><div class="kpi" style="margin-top:8px">3,1<small>conteggi/s</small></div><div class="chrow"><span style="color:var(--muted)">totale 7 812</span><span class="ok">● LED attivo</span></div><svg id="sp2" width="250" height="44"></svg></div>
+  <div class="card"><div class="lbl"><span class="sw" style="background:var(--c3)"></span>Barra 3 (in basso)</div><div class="kpi" style="margin-top:8px">2,7<small>conteggi/s</small></div><div class="chrow"><span style="color:var(--muted)">totale 6 905</span><span class="ok">● LED attivo</span></div><svg id="sp3" width="250" height="44"></svg></div>
+  <div class="card">
+   <div style="display:flex;justify-content:space-between"><div class="lbl">Stato della scheda</div><span class="pill" style="font-size:12px;padding:3px 10px"><span class="dot"></span>tutto nei limiti</span></div>
+   <div class="mon" style="margin-top:12px">
+    <span></span><span class="h">Barra 1</span><span class="h">Barra 2</span><span class="h">Barra 3</span>
+    <span class="h">Bias SiPM</span><span class="v">38,44 V</span><span class="v">38,43 V</span><span class="v">38,45 V</span>
+    <span class="h">Soglia</span><span class="v">104 mV</span><span class="v">103 mV</span><span class="v">105 mV</span>
+   </div>
+   <div style="display:flex;gap:22px;margin-top:12px;font-size:13px"><span><span class="h lbl" style="font-size:11.5px">Alta tensione</span> <b class="mono">39,4 V</b></span><span><span class="lbl" style="font-size:11.5px">Temperatura</span> <b class="mono">23,4 °C</b></span></div>
+  </div>
+ </section>
+ <section class="mid">
+  <div class="card">
+   <div style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div><h2>Conteggi al minuto</h2><div class="sub">ultimi 60 minuti · ogni punto = 1 minuto · le barre singole contano anche radioattività naturale e rumore</div></div>
+    <div class="legend"><span><span class="sw" style="background:var(--c1)"></span>Barra 1</span><span><span class="sw" style="background:var(--c2)"></span>Barra 2</span><span><span class="sw" style="background:var(--c3)"></span>Barra 3</span><span><span class="sw" style="background:var(--and)"></span>Muoni (triple)</span></div>
+   </div>
+   <svg id="live" width="1000" height="420"></svg>
+  </div>
+  <div class="card">
+   <h2>Ultimi eventi</h2><div class="sub">un muone accende tutte e tre le barre insieme (entro ~100 ns)</div>
+   <table id="ev"><tr><th>Ora</th><th>Barre colpite</th><th>Tipo</th></tr></table>
+  </div>
+ </section>
+ <section class="bot">
+  <div class="card"><h2>Tempo tra due muoni</h2><div class="sub">istogramma degli intervalli: decresce come un esponenziale (eventi casuali)</div><svg id="dt" width="540" height="200"></svg></div>
+  <div class="card"><h2>Muoni ogni 10 secondi</h2><div class="sub">quante volte ho contato 0, 1, 2, … muoni · linea = previsione di Poisson (media 4,1)</div><svg id="po" width="540" height="200"></svg></div>
+  <div class="card"><h2>Dove arrivano i segnali</h2><div class="sub">la pila di barre, vista di lato: l'ultimo muone è passato alle <span class="mono">10:42:16.873</span></div><svg id="stack" width="580" height="200" viewBox="0 0 580 200"></svg></div>
+ </section>
+</main>
+<script src="grafici.js"></script>
+<script>
+const r=rng(7);
+// sparklines delle singole
+[[1,2.9],[2,3.1],[3,2.7]].forEach(([c,f])=>{const s=document.getElementById("sp"+c);const pts=[];for(let i=0;i<60;i++)pts.push([i,poisson(r,f*20)/20]);
+ const sc=assi(s,{x0:0,x1:59,y0:1.5,y1:4.5,m:{l:0,r:0,t:6,b:4}});linea(s,pts,sc,`var(--c${c})`,1.6)});
+// grafico principale
+const svg=document.getElementById("live");
+const sc=assi(svg,{x0:-60,x1:0,y0:0,y1:220,yt:[0,50,100,150,200],xt:[-60,-50,-40,-30,-20,-10,0],xf:v=>v?v+" min":"ora",yl:"conteggi al minuto"});
+const ser={1:2.9,2:3.1,3:2.7,and:0.41},data={};
+for(const k in ser){data[k]=[];for(let i=-60;i<=0;i++)data[k].push([i,poisson(r,ser[k]*60)])}
+for(const k of [1,2,3,"and"]){const col=k=="and"?"var(--and)":`var(--c${k})`;linea(svg,data[k],sc,col,k=="and"?2.4:2);
+ const last=data[k][60];el("circle",{cx:sc.fx(0),cy:sc.fy(last[1]),r:4.5,fill:col,stroke:"var(--surface)","stroke-width":2},svg)}
+// etichette dirette
+el("text",{x:sc.fx(-59),y:sc.fy(55),"font-size":12,fill:"var(--ink2)","font-weight":600},svg,"Muoni (triple) ≈ 25/min");
+el("text",{x:sc.fx(-59),y:sc.fy(205),"font-size":12,fill:"var(--ink2)","font-weight":600},svg,"Barre singole ≈ 160–190/min");
+// tooltip finto fisso
+const tx=sc.fx(-17);el("line",{x1:tx,x2:tx,y1:sc.m.t,y2:sc.m.t+sc.ph,stroke:"#9aa0a6","stroke-dasharray":"3 3"},svg);
+const g=el("g",{transform:`translate(${tx+10},${sc.m.t+40})`},svg);el("rect",{width:168,height:96,rx:8,fill:"#1b1d1f",opacity:.94},g);
+el("text",{x:12,y:20,fill:"#fff","font-size":12,"font-weight":600},g,"10:25 (−17 min)");
+[["Barra 1",data[1][43][1],"--c1"],["Barra 2",data[2][43][1],"--c2"],["Barra 3",data[3][43][1],"--c3"],["Muoni",data.and[43][1],"--and"]].forEach(([n,v,c],i)=>{
+ el("rect",{x:12,y:31+i*16,width:9,height:9,rx:2,fill:`var(${c})`},g);el("text",{x:27,y:40+i*16,fill:"#e6e6e6","font-size":11.5},g,n);el("text",{x:156,y:40+i*16,fill:"#fff","font-size":11.5,"text-anchor":"end","font-weight":600},g,v+"/min")});
+// tabella eventi
+const ev=document.getElementById("ev");let t=16.873;
+const tipi=[[1,1,1],[1,1,1],[1,0,0],[0,1,0],[1,1,1],[0,0,1],[1,1,0],[1,1,1],[0,1,0],[1,0,0],[1,1,1],[0,0,1],[1,1,1]];
+tipi.forEach((h,i)=>{const tr=document.createElement("tr");const s=Math.floor(t),ms=Math.round((t-s)*1000);
+ const tri=h[0]&&h[1]&&h[2];
+ tr.innerHTML=`<td class="mono" style="color:var(--ink2)">10:42:${String(s).padStart(2,"0")}.${String(ms).padStart(3,"0")}</td><td>${h.map((x,j)=>`<span class="hit" style="${x?`background:var(--c${j+1})`:""}"></span>`).join("")}</td><td>${tri?'<b style="color:var(--and)">● muone</b>':h.reduce((a,b)=>a+b)==2?'<span style="color:var(--ink2)">doppia</span>':'<span style="color:var(--muted)">singola</span>'}</td>`;
+ ev.appendChild(tr);t-=r()*1.4+0.1;if(t<0)t+=60});
+// tempi tra muoni
+const sd=document.getElementById("dt");const sdc=assi(sd,{x0:0,x1:12,y0:0,y1:420,yt:[0,100,200,300,400],xt:[0,2,4,6,8,10,12],xf:v=>v+" s",m:{b:30}});
+const bw=0.5;for(let i=0;i<24;i++){const x=i*bw;const exp=1043*(Math.exp(-0.41*x)-Math.exp(-0.41*(x+bw)));const n=Math.max(0,Math.round(exp+gauss(r)*Math.sqrt(exp)));
+ el("rect",{x:sdc.fx(x)+1,y:sdc.fy(n),width:sdc.fx(bw)-sdc.fx(0)-2,height:sdc.fy(0)-sdc.fy(n),rx:2,fill:"var(--and)",opacity:.85},sd)}
+const ex=[];for(let x=0;x<=12;x+=0.1)ex.push([x,1043*bw*0.41*Math.exp(-0.41*(x+bw/2))]);linea(sd,ex,sdc,"var(--ink)",1.5).setAttribute("stroke-dasharray","4 3");
+el("text",{x:sdc.fx(5),y:sdc.fy(200),"font-size":12,fill:"var(--ink2)"},sd,"tempo medio 2,4 s  →  1/0,41 Hz");
+// poisson
+const sp=document.getElementById("po");const spc=assi(sp,{x0:-0.5,x1:12.5,y0:0,y1:60,yt:[0,20,40,60],xt:[0,2,4,6,8,10,12],m:{b:30}});
+const lam=4.1,N=255;let pk=Math.exp(-lam);const pe=[];
+for(let k=0;k<=12;k++){if(k>0)pk*=lam/k;const e=N*pk;const n=Math.max(0,Math.round(e+gauss(r)*Math.sqrt(e)));pe.push([k,e]);
+ el("rect",{x:spc.fx(k-0.42),y:spc.fy(n),width:spc.fx(0.84)-spc.fx(0),height:spc.fy(0)-spc.fy(n),rx:2,fill:"var(--c1)",opacity:.85},sp)}
+linea(sp,pe,spc,"var(--ink)",1.5);pe.forEach(p=>el("circle",{cx:spc.fx(p[0]),cy:spc.fy(p[1]),r:3,fill:"var(--ink)"},sp));
+// pila di barre
+const st=document.getElementById("stack");
+[[1,40],[2,95],[3,150]].forEach(([c,y])=>{el("rect",{x:70,y,width:420,height:22,rx:4,fill:`var(--c${c})`,opacity:.18},st);el("rect",{x:70,y,width:420,height:22,rx:4,fill:"none",stroke:`var(--c${c})`,"stroke-width":1.5},st);
+ el("text",{x:60,y:y+15,"text-anchor":"end","font-size":12,fill:"var(--ink2)"},st,"Barra "+c);
+ el("circle",{x:0,cx:500+0,cy:y+11,r:0},st);
+ el("circle",{cx:290-130*(y+11-5)/190,cy:y+11,r:7,fill:`var(--c${c})`,stroke:"var(--surface)","stroke-width":2},st);
+ el("text",{x:505,y:y+15,"font-size":12,fill:"var(--ink2)"},st,["t = 0 ns","t = 2,1 ns","t = 4,3 ns"][c-1])});
+el("line",{x1:290,y1:5,x2:160,y2:195,stroke:"var(--and)","stroke-width":2,"stroke-dasharray":"6 4"},st);
+el("text",{x:296,y:18,"font-size":12,fill:"var(--and)","font-weight":600},st,"μ  traccia ricostruita");
+</script></body></html>

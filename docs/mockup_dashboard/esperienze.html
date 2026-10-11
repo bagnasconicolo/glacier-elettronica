@@ -1,0 +1,51 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Esperienze rivelatore</title><link rel="stylesheet" href="comune.css">
+<style>
+.intro{display:flex;justify-content:space-between;align-items:flex-end}
+.intro h1{margin:0;font-size:26px;letter-spacing:-.01em}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.exp{display:flex;flex-direction:column;gap:10px;padding:0;overflow:hidden}
+.exp .thumb{height:170px;background:#f6f7f5;border-bottom:1px solid var(--line)}
+.exp .body{padding:4px 20px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.exp h3{margin:0;font-size:17px}
+.exp p{margin:0;color:var(--ink2)}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.prog{height:6px;border-radius:3px;background:#e8eae7;overflow:hidden}.prog i{display:block;height:100%;background:var(--ink)}
+.step{font-size:12.5px;color:var(--muted)}
+</style></head><body>
+<header>
+  <div class="logo"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="4" rx="1.5" fill="var(--c1)"/><rect x="3" y="12" width="22" height="4" rx="1.5" fill="var(--c2)"/><rect x="3" y="19" width="22" height="4" rx="1.5" fill="var(--c3)"/><line x1="17" y1="1" x2="11" y2="27" stroke="var(--and)" stroke-width="2"/></svg>Rivelatore di muoni</div>
+  <nav><a>Dati in diretta</a><a class="on">Esperienze</a><a>Lezioni</a><a>Archivio misure</a><a>Taratura</a></nav>
+  <div class="right"><span>Lab. di Fisica · classe 4ªB</span><span class="pill"><span class="dot"></span>Scheda collegata</span></div>
+</header>
+<main>
+ <div class="intro"><div><div class="lbl">Percorso · Raggi cosmici in classe</div><h1>Esperienze con il rivelatore</h1>
+  <div style="color:var(--ink2);margin-top:4px">Ogni esperienza guida passo passo: cosa regolare sulla scheda, quanto misurare, come leggere i grafici. I dati si salvano e si confrontano tra classi.</div></div>
+  <div style="display:flex;gap:10px"><span class="btn">Tutti i livelli ▾</span><span class="btn">Durata ▾</span></div></div>
+ <div class="grid" id="g"></div>
+</main>
+<script src="grafici.js"></script>
+<script>
+const E=[
+ {t:"1 · Quanti muoni ci attraversano?",d:"Contiamo i muoni per 10 minuti e ricaviamo il flusso per cm² al minuto. Lo confrontiamo con il valore atteso al livello del mare.",lv:"Biennio",dur:"30 min",done:1,th:"conta"},
+ {t:"2 · Il caso ha delle regole: Poisson",d:"Contiamo i muoni ogni 10 s. Perché a volte 0 e a volte 9? L'istogramma segue la distribuzione di Poisson.",lv:"Triennio",dur:"45 min",done:.6,th:"poisson"},
+ {t:"3 · Plateau di efficienza",d:"Giriamo il trimmer del bias (V1) e misuriamo quanti muoni vede la barra di mezzo rispetto alle altre due. Troviamo il punto di lavoro.",lv:"Triennio",dur:"60 min",done:.35,th:"plateau"},
+ {t:"4 · Soglia: segnale o rumore?",d:"Con il trimmer V2 cambiamo la soglia del comparatore. A soglia bassa contiamo rumore, a soglia alta perdiamo muoni.",lv:"Triennio",dur:"45 min",done:0,th:"soglia"},
+ {t:"5 · Da dove arrivano? Cos²θ",d:"Inclinando la pila di barre misuriamo il numero di muoni in funzione dell'angolo dallo zenit.",lv:"Quinto anno",dur:"2 × 60 min",done:0,th:"angolo"},
+ {t:"6 · Il cielo cambia: pressione e temperatura",d:"Una settimana di misura in continuo: i muoni diminuiscono quando la pressione sale. Il monitor della scheda registra la temperatura.",lv:"Progetto",dur:"1 settimana",done:0,th:"lungo"},
+];
+const g=document.getElementById("g");const r=rng(3);
+E.forEach(e=>{const c=document.createElement("div");c.className="card exp";
+ c.innerHTML=`<svg class="thumb" width="520" height="170" viewBox="0 0 520 170"></svg><div class="body"><h3>${e.t}</h3><p>${e.d}</p>
+ <div class="meta"><span class="tag">${e.lv}</span><span class="tag">⏱ ${e.dur}</span>${e.th=="lungo"?'<span class="tag">usa il monitor I²C</span>':''}${e.th=="plateau"||e.th=="soglia"?'<span class="tag">serve il cacciavite</span>':''}</div>
+ <div class="step">${e.done?(e.done==1?"✓ completata · 4ªB, 12 ottobre":"in corso · "+Math.round(e.done*100)+"%"):"da fare"}</div><div class="prog"><i style="width:${e.done*100}%"></i></div></div>`;
+ g.appendChild(c);const s=c.querySelector("svg");thumb(s,e.th)});
+function thumb(s,k){const sc=(o)=>assi(s,Object.assign({m:{l:30,r:24,t:22,b:24}},o));
+ if(k=="conta"){const a=sc({x0:0,x1:10,y0:0,y1:300});const p=[];let n=0;for(let i=0;i<=100;i++){n+=poisson(r,2.5);p.push([i/10,n])}linea(s,p,a,"var(--and)",2.4);el("text",{x:40,y:40,"font-size":13,fill:"var(--ink2)"},s,"muoni contati nel tempo")}
+ if(k=="poisson"){const a=sc({x0:-.5,x1:11.5,y0:0,y1:.22});let pk=Math.exp(-4.1);for(let i=0;i<=11;i++){if(i)pk*=4.1/i;el("rect",{x:a.fx(i-.4),y:a.fy(pk),width:a.fx(.8)-a.fx(0),height:a.fy(0)-a.fy(pk),rx:3,fill:"var(--c1)"},s)}}
+ if(k=="plateau"){const a=sc({x0:34,x1:40,y0:0,y1:1.05});const p=[];for(let v=34;v<=40;v+=.05)p.push([v,.975/(1+Math.exp(-(v-35.6)/.45))]);linea(s,p,a,"var(--c2)",2.4);el("line",{x1:a.fx(38.4),x2:a.fx(38.4),y1:a.m.t,y2:a.fy(0),stroke:"var(--ink)","stroke-dasharray":"4 3"},s);el("text",{x:a.fx(38.4)+6,y:a.fy(.3),"font-size":12,fill:"var(--ink2)"},s,"punto di lavoro")}
+ if(k=="soglia"){const a=sc({x0:20,x1:300,y0:.1,y1:3000,logy:true});const p=[];for(let t=20;t<=300;t+=4)p.push([t,2000*Math.exp(-(t-20)/9)+3/(1+Math.exp((t-210)/20))]);linea(s,p,a,"var(--c3)",2.4);el("text",{x:a.fx(110),y:a.fy(8),"font-size":12,fill:"var(--ink2)"},s,"plateau dei muoni")}
+ if(k=="angolo"){const cx=260,cy=150;for(let d=-80;d<=80;d+=20){const L=120*Math.cos(d*Math.PI/180)**2;const t=d*Math.PI/180;el("line",{x1:cx,y1:cy,x2:cx+L*Math.sin(t),y2:cy-L*Math.cos(t),stroke:"var(--and)","stroke-width":4,"stroke-linecap":"round",opacity:.85},s)}el("text",{x:cx+20,y:34,"font-size":12,fill:"var(--ink2)"},s,"zenit")}
+ if(k=="lungo"){const a=sc({x0:0,x1:168,y0:22,y1:28});const p=[],q=[];for(let h=0;h<=168;h+=2){const P=Math.sin(h/40);p.push([h,25-0.9*P+gauss(r)*.25]);}linea(s,p,a,"var(--and)",2);el("text",{x:40,y:40,"font-size":13,fill:"var(--ink2)"},s,"muoni/min in 7 giorni")}
+}
+</script></body></html>

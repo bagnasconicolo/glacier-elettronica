@@ -1,0 +1,63 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lezione Poisson</title><link rel="stylesheet" href="comune.css">
+<style>
+.lay{display:grid;grid-template-columns:560px 1fr;gap:18px;align-items:start}.lay>*{min-width:0}
+.txt p{margin:0 0 12px;color:var(--ink2);font-size:15px;line-height:1.6}
+.txt h1{margin:4px 0 14px;font-size:28px;letter-spacing:-.01em}
+.formula{background:#f4f1f6;border:1px solid #e4d8e2;border-radius:12px;padding:16px;text-align:center;font-size:22px;margin:14px 0}
+.toc{display:flex;gap:6px;margin-bottom:14px}.toc span{flex:1;height:5px;border-radius:3px;background:#e4e6e3}.toc span.on{background:var(--ink)}
+.slider{display:flex;align-items:center;gap:14px;margin:6px 0 10px}
+.slider .track{flex:1;height:6px;border-radius:3px;background:#e4e6e3;position:relative}
+.slider .track i{position:absolute;left:0;top:0;bottom:0;width:22%;background:var(--c1);border-radius:3px}
+.slider .track b{position:absolute;left:22%;top:50%;width:20px;height:20px;margin:-10px;border-radius:50%;background:#fff;border:2px solid var(--c1)}
+.quiz label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.quiz label.ok{border-color:#9cc59e;background:#eef6ee}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.stats div{background:#f6f7f5;border-radius:10px;padding:10px 12px}.stats b{display:block;font-size:22px}
+</style></head><body>
+<header>
+  <div class="logo"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="4" rx="1.5" fill="var(--c1)"/><rect x="3" y="12" width="22" height="4" rx="1.5" fill="var(--c2)"/><rect x="3" y="19" width="22" height="4" rx="1.5" fill="var(--c3)"/><line x1="17" y1="1" x2="11" y2="27" stroke="var(--and)" stroke-width="2"/></svg>Rivelatore di muoni</div>
+  <nav><a>Dati in diretta</a><a>Esperienze</a><a class="on">Lezioni</a><a>Archivio misure</a><a>Taratura</a></nav>
+  <div class="right"><span>Lab. di Fisica · classe 4ªB</span><span class="pill"><span class="dot"></span>Scheda collegata</span></div>
+</header>
+<main>
+ <div class="lay">
+  <div class="card txt">
+   <div class="toc"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+   <div class="lbl">Lezione 4 · Statistica · pagina 3 di 5</div>
+   <h1>Perché non contiamo sempre lo stesso numero?</h1>
+   <p>Ogni muone arriva <b>indipendentemente</b> dagli altri: il rivelatore non sa quando arriverà il prossimo. In media ne vediamo 0,41 al secondo, cioè circa <b>4,1 ogni 10 secondi</b>, ma in una singola finestra possiamo contarne 0, 3, 7…</p>
+   <p>Quando gli eventi sono rari e indipendenti, la probabilità di contarne esattamente <i>k</i> in una finestra segue la <b>distribuzione di Poisson</b>, che dipende da un solo numero, la media μ:</p>
+   <div class="formula">P(k) = μ<sup>k</sup> e<sup>−μ</sup> / k!</div>
+   <p>Una conseguenza sorprendente: l'incertezza sul conteggio è <b>√N</b>. Con 100 muoni l'errore è ±10 (10 %), con 10 000 è ±100 (1 %). Per misurare meglio bisogna misurare più a lungo.</p>
+   <div class="quiz"><b>Verifica</b>
+    <label><input type="radio" disabled> Se raddoppio la durata della finestra, la media raddoppia e la larghezza resta uguale</label>
+    <label class="ok"><input type="radio" checked disabled> Se raddoppio la durata, la media raddoppia e la larghezza cresce di √2 &nbsp;<b style="color:var(--good);margin-left:auto">✓ corretto</b></label>
+    <label><input type="radio" disabled> La forma non cambia mai</label>
+   </div>
+  </div>
+  <div style="display:grid;gap:18px">
+   <div class="card">
+    <div style="display:flex;justify-content:space-between"><div><h2>Prova tu, con i dati della tua classe</h2><div class="sub">misura del 12 ottobre · 42 minuti · 1 043 muoni · cambia la durata della finestra e guarda come cambia la forma</div></div>
+     <div class="legend"><span><span class="sw" style="background:var(--c1)"></span>contato</span><span><span class="sw" style="background:var(--ink)"></span>Poisson previsto</span></div></div>
+    <div class="slider"><span class="lbl">Finestra</span><span class="mono">1 s</span><div class="track"><i></i><b></b></div><span class="mono">60 s</span><span class="tag" style="font-size:14px;font-weight:700;color:var(--ink)">10 s</span></div>
+    <svg id="h" width="900" height="400"></svg>
+    <div class="stats"><div><span class="lbl">media misurata</span><b class="mono">4,09</b></div><div><span class="lbl">varianza misurata</span><b class="mono">4,21</b><span style="color:var(--muted);font-size:12.5px">per Poisson = media ✓</span></div><div><span class="lbl">finestre</span><b class="mono">255</b></div></div>
+   </div>
+   <div class="card"><h2>Stessi dati, finestre da 1 s, 10 s e 60 s</h2><div class="sub">più è lunga la finestra, più la distribuzione assomiglia a una gaussiana</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"><svg id="m1" width="300" height="150"></svg><svg id="m2" width="300" height="150"></svg><svg id="m3" width="300" height="150"></svg></div></div>
+  </div>
+ </div>
+</main>
+<script src="grafici.js"></script>
+<script>
+const r=rng(5);
+function isto(s,lam,N,kmax,yt,small){const ymax=yt[yt.length-1];const a=assi(s,{x0:-.5,x1:kmax+.5,y0:0,y1:ymax,yt,yf:v=>v>=1000?(v/1000)+"k":v,xt:small?[0,Math.round(kmax/2),kmax]:[...Array(kmax+1).keys()].filter(k=>k%1==0),m:small?{l:40,b:26,t:22}:{l:48,b:40},xl:small?null:"muoni contati nella finestra (k)",yl:small?null:"numero di finestre"});
+ let pk=Math.exp(-lam);const pe=[];const bw=Math.min(.84,(a.fx(1)-a.fx(0))*.84/(a.fx(1)-a.fx(0)));
+ for(let k=0;k<=kmax;k++){if(k)pk*=lam/k;const e=N*pk;const n=Math.max(0,Math.round(e+gauss(r)*Math.sqrt(e)));pe.push([k,e]);
+  const w=Math.max(1,a.fx(.84)-a.fx(0)-(small&&kmax>30?1:0));el("rect",{x:a.fx(k)-w/2,y:a.fy(n),width:w,height:a.fy(0)-a.fy(n),rx:small&&kmax>30?1:3,fill:"var(--c1)",opacity:.85},s)}
+ linea(s,pe,a,"var(--ink)",1.6);if(!small)pe.forEach(p=>el("circle",{cx:a.fx(p[0]),cy:a.fy(p[1]),r:3.5,fill:"var(--ink)"},s));return a}
+const a=isto(document.getElementById("h"),4.1,255,13,[0,20,40,60]);
+el("text",{x:a.fx(8.5),y:a.fy(48),"font-size":13,fill:"var(--ink2)"},document.getElementById("h"),"μ = 4,1  ·  σ = √μ ≈ 2,0");
+const t=[["m1",.41,2550,5,[0,1000,2000],"1 s · μ = 0,41"],["m2",4.1,255,13,[0,30,60],"10 s · μ = 4,1"],["m3",24.6,42,45,[0,4,8],"60 s · μ = 24,6"]];
+t.forEach(([id,l,N,k,yt,lab])=>{const s=document.getElementById(id);isto(s,l,N,k,yt,true);el("text",{x:40,y:14,"font-size":12.5,"font-weight":600,fill:"var(--ink)"},s,lab)});
+</script></body></html>
