@@ -1,7 +1,12 @@
 # Mock-up del software per gli studenti
 
 Schermate di esempio (dati finti ma plausibili) di come potrebbe essere il software sul Raspberry Pi.
-Si aprono direttamente nel browser; `node shoot.mjs` rigenera gli screenshot PNG.
+Le pagine usano three.js (moduli ES): aprirle con un server locale, per esempio
+`python3 -m http.server` in questa cartella e poi http://localhost:8000/dashboard.html.
+`node shoot.mjs` rigenera gli screenshot PNG.
+
+In corso: `dashboard.html` ed `esperienze.html` sono gia' nella nuova grafica (scena 3D, stile.css);
+`plateau.html` e `poisson.html` sono ancora da rifare (gli screenshot sono della versione precedente).
 
 | file | schermata |
 |---|---|

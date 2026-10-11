@@ -1,51 +1,100 @@
 <!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Esperienze rivelatore</title><link rel="stylesheet" href="comune.css">
+<title>Esperienze rivelatore</title><link rel="stylesheet" href="stile.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <style>
-.intro{display:flex;justify-content:space-between;align-items:flex-end}
-.intro h1{margin:0;font-size:26px;letter-spacing:-.01em}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.exp{display:flex;flex-direction:column;gap:10px;padding:0;overflow:hidden}
-.exp .thumb{height:170px;background:#f6f7f5;border-bottom:1px solid var(--line)}
-.exp .body{padding:4px 20px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
-.exp h3{margin:0;font-size:17px}
-.exp p{margin:0;color:var(--ink2)}
-.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
-.prog{height:6px;border-radius:3px;background:#e8eae7;overflow:hidden}.prog i{display:block;height:100%;background:var(--ink)}
-.step{font-size:12.5px;color:var(--muted)}
+.hero{display:grid;grid-template-columns:1fr 1fr;height:380px}
+.hero .txt{padding:56px 0 0 56px}
+.hero h1{font:600 54px/1.02 Fraunces,serif;letter-spacing:-.025em;margin:12px 0 16px;color:#fff;max-width:640px}
+.hero h1 i{font-weight:400;color:#e58cf0}
+.hero p{color:#c3cdf0;font-size:16px;max-width:560px;margin:0}
+.prog{display:flex;gap:26px;margin-top:28px;color:#93a3d1;font-size:13px}
+.prog b{display:block;font:500 28px 'Geist Mono',monospace;color:#fff}
+main{padding:28px 32px 36px;display:grid;gap:22px}
+.filters{display:flex;gap:8px;align-items:center}
+.filters .tag{padding:7px 14px;font-size:13px}
+.filters .tag.on{background:var(--ink);color:var(--surface)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.exp{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
+.exp .th{height:230px;position:relative;background:#111b3d}
+.exp .th canvas,.exp .th svg{position:absolute;inset:0;width:100%;height:100%}
+.exp .num{position:absolute;left:18px;top:14px;font:italic 400 46px Fraunces,serif;color:#ffffff;opacity:.92;z-index:2}
+.exp .st{position:absolute;right:14px;top:14px;z-index:2}
+.exp .bd{padding:18px 22px 20px;display:flex;flex-direction:column;gap:9px;flex:1}
+.exp h3{margin:0;font:600 21px/1.2 Fraunces,serif;letter-spacing:-.01em}
+.exp p{margin:0;color:var(--ink2);font-size:14px}
+.exp .learn{font-size:13px;color:var(--ink2)}.exp .learn b{color:var(--ink);font-weight:600}
+.meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.bar{height:5px;border-radius:3px;background:#ece6d9;overflow:hidden;margin-top:4px}.bar i{display:block;height:100%;background:var(--and)}
 </style></head><body>
-<header>
-  <div class="logo"><svg width="28" height="28" viewBox="0 0 28 28"><rect x="3" y="5" width="22" height="4" rx="1.5" fill="var(--c1)"/><rect x="3" y="12" width="22" height="4" rx="1.5" fill="var(--c2)"/><rect x="3" y="19" width="22" height="4" rx="1.5" fill="var(--c3)"/><line x1="17" y1="1" x2="11" y2="27" stroke="var(--and)" stroke-width="2"/></svg>Rivelatore di muoni</div>
-  <nav><a>Dati in diretta</a><a class="on">Esperienze</a><a>Lezioni</a><a>Archivio misure</a><a>Taratura</a></nav>
-  <div class="right"><span>Lab. di Fisica · classe 4ªB</span><span class="pill"><span class="dot"></span>Scheda collegata</span></div>
-</header>
+<div class="top">
+ <div class="brand"><svg width="30" height="30" viewBox="0 0 30 30"><rect x="4" y="6" width="22" height="4" rx="2" fill="var(--c1)"/><rect x="4" y="13" width="22" height="4" rx="2" fill="var(--c2)"/><rect x="4" y="20" width="22" height="4" rx="2" fill="var(--c3)"/><line x1="18.5" y1="1" x2="11.5" y2="29" stroke="var(--and)" stroke-width="2.2" stroke-linecap="round"/></svg><span>Rivelatore di muoni <i>· per le scuole</i></span></div>
+ <nav><a>In diretta</a><a class="on">Esperienze</a><a>Lezioni</a><a>Archivio</a><a>Taratura</a></nav>
+ <div class="dx"><span>Lab. di Fisica · 4ªB</span><span class="pill"><b></b>Scheda collegata</span></div>
+</div>
+<section class="hero night">
+ <div class="txt"><div class="eyebrow">Percorso · Raggi cosmici in classe</div>
+  <h1>Sei esperienze per <i>toccare con mano</i> i raggi cosmici</h1>
+  <p>Ogni esperienza vi guida passo passo: cosa regolare sulla scheda, quanto misurare, come leggere i grafici. Le misure si salvano e si confrontano con le altre classi.</p>
+  <div class="prog"><div><b>1 / 6</b>completate</div><div><b>2</b>in corso</div><div><b>3 h 40</b>di misure salvate</div></div></div>
+ <div style="position:relative" id="hst"><canvas id="hero3d" style="width:100%;height:380px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%);mask-image:linear-gradient(90deg,transparent,#000 22%)"></canvas></div>
+</section>
 <main>
- <div class="intro"><div><div class="lbl">Percorso · Raggi cosmici in classe</div><h1>Esperienze con il rivelatore</h1>
-  <div style="color:var(--ink2);margin-top:4px">Ogni esperienza guida passo passo: cosa regolare sulla scheda, quanto misurare, come leggere i grafici. I dati si salvano e si confrontano tra classi.</div></div>
-  <div style="display:flex;gap:10px"><span class="btn">Tutti i livelli ▾</span><span class="btn">Durata ▾</span></div></div>
+ <div class="filters"><span class="tag on">Tutte</span><span class="tag">Biennio</span><span class="tag">Triennio</span><span class="tag">Quinto anno</span><span class="tag">Progetto lungo</span><span style="margin-left:auto;color:var(--muted);font-size:13px">ordinate per percorso consigliato</span></div>
  <div class="grid" id="g"></div>
 </main>
 <script src="grafici.js"></script>
 <script>
 const E=[
- {t:"1 · Quanti muoni ci attraversano?",d:"Contiamo i muoni per 10 minuti e ricaviamo il flusso per cm² al minuto. Lo confrontiamo con il valore atteso al livello del mare.",lv:"Biennio",dur:"30 min",done:1,th:"conta"},
- {t:"2 · Il caso ha delle regole: Poisson",d:"Contiamo i muoni ogni 10 s. Perché a volte 0 e a volte 9? L'istogramma segue la distribuzione di Poisson.",lv:"Triennio",dur:"45 min",done:.6,th:"poisson"},
- {t:"3 · Plateau di efficienza",d:"Giriamo il trimmer del bias (V1) e misuriamo quanti muoni vede la barra di mezzo rispetto alle altre due. Troviamo il punto di lavoro.",lv:"Triennio",dur:"60 min",done:.35,th:"plateau"},
- {t:"4 · Soglia: segnale o rumore?",d:"Con il trimmer V2 cambiamo la soglia del comparatore. A soglia bassa contiamo rumore, a soglia alta perdiamo muoni.",lv:"Triennio",dur:"45 min",done:0,th:"soglia"},
- {t:"5 · Da dove arrivano? Cos²θ",d:"Inclinando la pila di barre misuriamo il numero di muoni in funzione dell'angolo dallo zenit.",lv:"Quinto anno",dur:"2 × 60 min",done:0,th:"angolo"},
- {t:"6 · Il cielo cambia: pressione e temperatura",d:"Una settimana di misura in continuo: i muoni diminuiscono quando la pressione sale. Il monitor della scheda registra la temperatura.",lv:"Progetto",dur:"1 settimana",done:0,th:"lungo"},
+ {t:"Quanti muoni ci attraversano?",d:"Contiamo i muoni per 10 minuti e ricaviamo il flusso per cm² al minuto. Lo confrontiamo con il valore atteso al livello del mare.",imp:"flusso, area, incertezza √N",lv:"Biennio",dur:"30 min",done:1,k:"conta"},
+ {t:"Il caso ha delle regole",d:"Contiamo i muoni ogni 10 secondi. Perché a volte 0 e a volte 9? L'istogramma segue la distribuzione di Poisson.",imp:"probabilità, Poisson, media e varianza",lv:"Triennio",dur:"45 min",done:.6,k:"poisson"},
+ {t:"Plateau di efficienza",d:"Giriamo il trimmer del bias (V1) e misuriamo quanti muoni vede la barra di mezzo rispetto alle altre due.",imp:"efficienza, errore binomiale, punto di lavoro",lv:"Triennio",dur:"60 min",done:.35,k:"plateau",tool:"cacciavite"},
+ {t:"Segnale o rumore?",d:"Con il trimmer V2 cambiamo la soglia del comparatore. A soglia bassa contiamo rumore, a soglia alta perdiamo muoni.",imp:"soglia, rumore del SiPM, scala logaritmica",lv:"Triennio",dur:"45 min",done:0,k:"soglia",tool:"cacciavite · oscilloscopio"},
+ {t:"Da dove arrivano?",d:"Inclinando la pila di barre misuriamo quanti muoni arrivano a ogni angolo dallo zenit: la legge del cos²θ.",imp:"angolo solido, atmosfera come schermo",lv:"Quinto anno",dur:"2 × 60 min",done:0,k:"angolo",tool:"telaio inclinabile"},
+ {t:"Il cielo cambia",d:"Una settimana di misura continua: quando la pressione sale i muoni diminuiscono. Il monitor registra anche la temperatura.",imp:"correlazione, effetto barometrico",lv:"Progetto",dur:"1 settimana",done:0,k:"pressione",tool:"barometro I²C"},
 ];
-const g=document.getElementById("g");const r=rng(3);
-E.forEach(e=>{const c=document.createElement("div");c.className="card exp";
- c.innerHTML=`<svg class="thumb" width="520" height="170" viewBox="0 0 520 170"></svg><div class="body"><h3>${e.t}</h3><p>${e.d}</p>
- <div class="meta"><span class="tag">${e.lv}</span><span class="tag">⏱ ${e.dur}</span>${e.th=="lungo"?'<span class="tag">usa il monitor I²C</span>':''}${e.th=="plateau"||e.th=="soglia"?'<span class="tag">serve il cacciavite</span>':''}</div>
- <div class="step">${e.done?(e.done==1?"✓ completata · 4ªB, 12 ottobre":"in corso · "+Math.round(e.done*100)+"%"):"da fare"}</div><div class="prog"><i style="width:${e.done*100}%"></i></div></div>`;
- g.appendChild(c);const s=c.querySelector("svg");thumb(s,e.th)});
-function thumb(s,k){const sc=(o)=>assi(s,Object.assign({m:{l:30,r:24,t:22,b:24}},o));
- if(k=="conta"){const a=sc({x0:0,x1:10,y0:0,y1:300});const p=[];let n=0;for(let i=0;i<=100;i++){n+=poisson(r,2.5);p.push([i/10,n])}linea(s,p,a,"var(--and)",2.4);el("text",{x:40,y:40,"font-size":13,fill:"var(--ink2)"},s,"muoni contati nel tempo")}
- if(k=="poisson"){const a=sc({x0:-.5,x1:11.5,y0:0,y1:.22});let pk=Math.exp(-4.1);for(let i=0;i<=11;i++){if(i)pk*=4.1/i;el("rect",{x:a.fx(i-.4),y:a.fy(pk),width:a.fx(.8)-a.fx(0),height:a.fy(0)-a.fy(pk),rx:3,fill:"var(--c1)"},s)}}
- if(k=="plateau"){const a=sc({x0:34,x1:40,y0:0,y1:1.05});const p=[];for(let v=34;v<=40;v+=.05)p.push([v,.975/(1+Math.exp(-(v-35.6)/.45))]);linea(s,p,a,"var(--c2)",2.4);el("line",{x1:a.fx(38.4),x2:a.fx(38.4),y1:a.m.t,y2:a.fy(0),stroke:"var(--ink)","stroke-dasharray":"4 3"},s);el("text",{x:a.fx(38.4)+6,y:a.fy(.3),"font-size":12,fill:"var(--ink2)"},s,"punto di lavoro")}
- if(k=="soglia"){const a=sc({x0:20,x1:300,y0:.1,y1:3000,logy:true});const p=[];for(let t=20;t<=300;t+=4)p.push([t,2000*Math.exp(-(t-20)/9)+3/(1+Math.exp((t-210)/20))]);linea(s,p,a,"var(--c3)",2.4);el("text",{x:a.fx(110),y:a.fy(8),"font-size":12,fill:"var(--ink2)"},s,"plateau dei muoni")}
- if(k=="angolo"){const cx=260,cy=150;for(let d=-80;d<=80;d+=20){const L=120*Math.cos(d*Math.PI/180)**2;const t=d*Math.PI/180;el("line",{x1:cx,y1:cy,x2:cx+L*Math.sin(t),y2:cy-L*Math.cos(t),stroke:"var(--and)","stroke-width":4,"stroke-linecap":"round",opacity:.85},s)}el("text",{x:cx+20,y:34,"font-size":12,fill:"var(--ink2)"},s,"zenit")}
- if(k=="lungo"){const a=sc({x0:0,x1:168,y0:22,y1:28});const p=[],q=[];for(let h=0;h<=168;h+=2){const P=Math.sin(h/40);p.push([h,25-0.9*P+gauss(r)*.25]);}linea(s,p,a,"var(--and)",2);el("text",{x:40,y:40,"font-size":13,fill:"var(--ink2)"},s,"muoni/min in 7 giorni")}
-}
+const g=document.getElementById("g");
+E.forEach((e,i)=>{const c=document.createElement("article");c.className="exp";
+ c.innerHTML=`<div class="th" data-k="${e.k}"><span class="num">${i+1}</span><span class="st">${e.done==1?'<span class="pill">✓ completata</span>':e.done?'<span class="pill warn"><b></b>in corso</span>':'<span class="pill dark">da fare</span>'}</span></div>
+ <div class="bd"><h3>${e.t}</h3><p>${e.d}</p><div class="learn"><b>Si impara:</b> ${e.imp}</div>
+ <div class="meta"><span class="tag">${e.lv}</span><span class="tag">⏱ ${e.dur}</span>${e.tool?`<span class="tag">🛠 ${e.tool}</span>`:""}</div>
+ <div class="bar"><i style="width:${e.done*100}%"></i></div></div>`;g.appendChild(c)});
+// illustrazioni SVG (stesso cielo notturno delle scene 3D)
+const r=rng(9);
+function svgTh(k){const th=document.querySelector(`.th[data-k=${k}]`);const W=540,H=230;const s=el("svg",{viewBox:`0 0 ${W} ${H}`,preserveAspectRatio:"xMidYMid slice"},th);
+ for(let i=0;i<60;i++)el("circle",{cx:r()*W,cy:r()*H,r:r()*1.1+.2,fill:"#cfd8ff",opacity:.5},s);return s}
+// 2 - pioggia di muoni divisa in finestre
+(()=>{const s=svgTh("poisson");const x0=30,x1=510,y=150;let t=0;const ev=[];while(t<60){t+=-Math.log(r())/.41;if(t<60)ev.push(t)}
+ for(let w=0;w<6;w++){const a=x0+w*(x1-x0)/6,b=a+(x1-x0)/6;el("rect",{x:a+2,y:60,width:b-a-4,height:110,rx:8,fill:w%2?"#ffffff08":"#ffffff12"},s);
+  const n=ev.filter(e=>e>=w*10&&e<w*10+10).length;el("text",{x:(a+b)/2,y:198,"text-anchor":"middle","font-size":26,fill:"#fff","font-family":"Fraunces,serif"},s,n)}
+ ev.forEach(e=>{const x=x0+e/60*(x1-x0);el("line",{x1:x+18,y1:18,x2:x,y2:y,stroke:"#e58cf0","stroke-width":1.5,opacity:.7},s);el("circle",{cx:x,cy:y,r:4,fill:"#e58cf0"},s)});
+ el("line",{x1:x0,x2:x1,y1:y,y2:y,stroke:"#ffffff40"},s);el("text",{x:x1,y:222,"text-anchor":"end","font-size":11.5,fill:"#93a3d1"},s,"muoni contati in ogni finestra da 10 s")})();
+// 4 - impulso all'oscilloscopio con soglia
+(()=>{const s=svgTh("soglia");const fx=t=>40+t*4.6,fy=v=>190-v*150;
+ for(let i=0;i<=10;i++)el("line",{x1:fx(i*10),x2:fx(i*10),y1:30,y2:195,stroke:"#ffffff10"},s);for(let i=0;i<=5;i++)el("line",{x1:40,x2:500,y1:fy(i*.2)+5,y2:fy(i*.2)+5,stroke:"#ffffff10"},s);
+ const p=[];for(let t=0;t<=100;t+=.5){let v=.06+gauss(r)*.012;if(t>30)v+=.85*(Math.exp(-(t-30)/14)-Math.exp(-(t-30)/2.2));if(t>72&&t<80)v+=.14*Math.sin((t-72)/8*Math.PI);p.push([t,v])}
+ el("path",{d:"M"+p.map(q=>fx(q[0]).toFixed(1)+" "+fy(q[1]).toFixed(1)).join("L"),fill:"none",stroke:"#ffb062","stroke-width":2},s);
+ el("line",{x1:40,x2:500,y1:fy(.25),y2:fy(.25),stroke:"#e58cf0","stroke-width":1.6,"stroke-dasharray":"6 4"},s);
+ el("text",{x:500,y:fy(.25)-8,"text-anchor":"end","font-size":12,fill:"#e58cf0"},s,"soglia (V2)");
+ el("text",{x:fx(37),y:fy(.62),"font-size":12,fill:"#fff"},s,"muone: supera la soglia");el("text",{x:fx(70),y:fy(.32)-4,"font-size":12,fill:"#93a3d1"},s,"rumore: no")})();
+// 6 - pressione e muoni: due strisce, ciascuna con il suo asse
+(()=>{const s=svgTh("pressione");const fx=h=>40+h/168*460;const P=[],M=[];for(let h=0;h<=168;h+=2){const pr=1013+9*Math.sin(h/30)+3*Math.sin(h/9);P.push([h,pr]);M.push([h,24.6*(1-.002*(pr-1013))+gauss(r)*.18])}
+ const strip=(d,y0,y1,lo,hi,col,lab)=>{el("text",{x:40,y:y0-8,"font-size":11.5,fill:"#93a3d1"},s,lab);el("line",{x1:40,x2:500,y1:y1,y2:y1,stroke:"#ffffff22"},s);
+  el("path",{d:"M"+d.map(q=>fx(q[0]).toFixed(1)+" "+(y1-(q[1]-lo)/(hi-lo)*(y1-y0)).toFixed(1)).join("L"),fill:"none",stroke:col,"stroke-width":2},s)};
+ strip(P,40,105,1000,1026,"#cfd8ff","pressione (hPa)");strip(M,140,205,24.0,25.2,"#e58cf0","muoni al minuto");
+ el("text",{x:500,y:222,"text-anchor":"end","font-size":11.5,fill:"#93a3d1"},s,"7 giorni · quando una sale, l'altra scende")})();
+</script>
+<script type="module">
+import { scena } from "./scena3d.js";
+const hs=document.getElementById("hst");
+const tr=[];for(let i=0;i<9;i++)tr.push({x:-2.2+i*.55,z:(i%3-1)*.35,theta:(i*37)%28,phi:i*50,main:i==4,alpha:i==4?1:.45,su:9,fotoni:i==4});
+scena(document.getElementById("hero3d"),{w:hs.clientWidth,h:380,cam:[6.5,3.2,9.5],target:[1.3,-.2,0],fov:30,bg:"#111b3d",tracce:tr});
+const th=k=>{const d=document.querySelector(`.th[data-k=${k}]`);const c=document.createElement("canvas");d.appendChild(c);return [c,d.clientWidth,d.clientHeight]};
+const base={pcb:false,bg:"#111b3d",fov:30,dpr:1.5,bloomStr:.6};
+let [c,w,h]=th("conta");
+scena(c,{...base,w,h,cam:[5.5,3,8],target:[0,-.1,0],tracce:[0,1,2,3,4,5].map(i=>({x:-2+i*.8,z:(i%2-.5)*.5,theta:i*5,phi:i*60,main:i==2,alpha:i==2?1:.6,su:8}))});
+[c,w,h]=th("plateau");
+scena(c,{...base,w,h,cam:[5.5,2.4,8],target:[0,0,0],evidenzia:2,tracce:[{x:-.3,theta:10,phi:30,main:true,su:8}]});
+[c,w,h]=th("angolo");
+scena(c,{...base,w,h,cam:[0.5,1.2,10],target:[0,0,0],incl:35,fov:32,tracce:[{x:0,theta:35,phi:180,main:true,su:9},{x:-1.5,theta:40,phi:180,alpha:.5,su:9},{x:1.5,theta:30,phi:180,alpha:.5,su:9}]});
+window.__ready=true;
 </script></body></html>

@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+:root{
+  --paper:#f3efe6; --surface:#fffcf6; --ink:#17202f; --ink2:#4a5262; --muted:#878c96; --line:#e6e0d3; --grid:#ede7db;
+  --night:#0c1430; --night2:#18264d; --star:#cfd8ff;
+  --c1:#1f5fbf; --c2:#14876f; --c3:#d9822b; --and:#9b3d8f;
+  --c1g:#6ea8ff; --c2g:#3fe0b8; --c3g:#ffb062; --andg:#e58cf0;
+  --good:#2e7d4f; --warn:#b26a00;
+  --r:18px; --sh:0 1px 0 #0000000a,0 12px 32px -18px #2a22104d;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font:14.5px/1.5 Geist,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.serif{font-family:Fraunces,Georgia,serif;font-optical-sizing:auto}
+.mono,.num{font-family:'Geist Mono',ui-monospace,monospace;font-feature-settings:"tnum"}
+/* barra superiore */
+.top{display:flex;align-items:center;gap:22px;padding:0 32px;height:64px;background:var(--surface);border-bottom:1px solid var(--line);position:relative;z-index:2}
+.brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:15.5px;letter-spacing:-.01em}
+.brand i{font-family:Fraunces,serif;font-style:italic;font-weight:400;color:var(--ink2)}
+.top nav{display:flex;gap:2px;margin-left:18px}
+.top nav a{padding:8px 15px;border-radius:99px;color:var(--ink2);font-weight:500;text-decoration:none}
+.top nav a.on{background:var(--ink);color:var(--surface)}
+.top .dx{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--ink2);font-size:13.5px}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:99px;background:#e3efe6;color:var(--good);font-weight:600;font-size:13px}
+.pill b{width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 22%,transparent)}
+.pill.warn{background:#f8ecd6;color:var(--warn)}
+.pill.dark{background:#ffffff14;color:#d9e4ff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 17px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-weight:600;color:var(--ink);font-size:13.5px}
+.btn.pri{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+/* superfici */
+.panel{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);padding:22px 24px;min-width:0}
+.panel h2{margin:0;font:600 19px/1.25 Fraunces,serif;letter-spacing:-.01em}
+.panel .sub{color:var(--muted);font-size:13px;margin:3px 0 14px}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:#efe9dc;color:var(--ink2);font-size:12px;font-weight:500}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:0}
+.legend{display:flex;gap:16px;color:var(--ink2);font-size:12.5px;flex-wrap:wrap}
+.why{display:flex;gap:10px;margin-top:12px;padding:11px 13px;border-radius:12px;background:#f6f1e6;color:var(--ink2);font-size:13px;line-height:1.45}
+.why b{color:var(--ink)}
+.why .q{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font:italic 600 13px Fraunces,serif}
+svg text{font-family:Geist,system-ui,sans-serif}
+svg .n{font-family:'Geist Mono',monospace}
+.card svg[viewBox],.panel svg[viewBox]{width:100%;height:auto;display:block}
+/* scena notturna */
+.night{background:radial-gradient(900px 420px at 70% 0%,#22356b 0%,transparent 70%),#111b3d;color:#e8edff;position:relative;overflow:hidden}
+.night .eyebrow{color:#93a3d1}
+canvas.scena{display:block}
+.lbl3d{position:absolute;transform:translate(-50%,-50%);pointer-events:none}
