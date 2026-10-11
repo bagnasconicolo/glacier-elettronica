@@ -308,6 +308,75 @@ add(Sym("PMOS", [P(1, -5.08, 0, 0, "G", ln=2.54),
         "Q", hide_pin_names=True))
 
 
+# ---------------- moduli: meteo e scatolina di acquisizione -----------------
+# Sensirion SHT4x (DFN-4): 1 SDA, 2 SCL, 3 VDD, 4 VSS (libreria KiCad Sensor_Humidity:SHT4x)
+add(icbox("SHT4X", 10.16, 7.62,
+          [("1", 1.27, "SDA", "bidirectional"), ("2", -1.27, "SCL", "input")], [],
+          [("3", 0, "VDD", "power_in")], [("4", 0, "VSS", "power_in")]))
+# ST LPS22HH (HLGA-10): pinout della libreria KiCad (LPS22HH estende LPS25HB)
+add(icbox("LPS22HH", 12.7, 12.7,
+          [("4", 2.54, "SDA", "bidirectional"), ("2", 0, "SCL", "input"),
+           ("5", -2.54, "SA0", "input"), ("6", -5.08, "~CS", "input")],
+          [("7", 0, "INT_DRDY", "output")],
+          [("10", -1.27, "VDD", "power_in"), ("1", 1.27, "VDD_IO", "power_in")],
+          [("3", -2.54, "GND", "passive"), ("8", 0, "GND", "power_in"), ("9", 2.54, "GND", "passive")]))
+# connettore Qwiic / STEMMA QT (JST SH 4 poli): 1 GND, 2 3V3, 3 SDA, 4 SCL
+add(Sym("QWIIC", [P(1, -6.35, 3.81, 0, "GND", ln=3.81), P(2, -6.35, 1.27, 0, "3V3", ln=3.81),
+                  P(3, -6.35, -1.27, 0, "SDA", ln=3.81), P(4, -6.35, -3.81, 0, "SCL", ln=3.81)],
+        [rect(-2.54, -5.08, 2.54, 5.08)] + [circ(-1.27, y, 0.508) for y in (3.81, 1.27, -1.27, -3.81)],
+        "J", pin_names_off=0.762))
+# connettore 1x6 (GPS)
+add(Sym("CONN6", [P(k, -6.35, 6.35 - (k - 1) * 2.54, 0, str(k), ln=3.81) for k in range(1, 7)],
+        [rect(-2.54, -7.62, 2.54, 8.89)] + [circ(-1.27, 6.35 - k * 2.54, 0.508) for k in range(6)],
+        "J", hide_pin_names=True))
+# ponticelli a saldare: SJ2 aperto (1-2), SJ3 con il centrale (2) verso 1 o 3
+add(Sym("SJ2", [P(1, -3.81, 0, 0, "1", ln=2.286), P(2, 3.81, 0, 180, "2", ln=2.286)],
+        [arc(-0.254, 1.016, -1.27, 0, -0.254, -1.016), poly([(-0.254, 1.016), (-0.254, -1.016)]),
+         arc(0.254, -1.016, 1.27, 0, 0.254, 1.016), poly([(0.254, 1.016), (0.254, -1.016)])],
+        "JP", hide_pin_names=True))
+add(Sym("SJ3", [P(1, -5.08, 0, 0, "1", ln=2.54), P(3, 5.08, 0, 180, "3", ln=2.54),
+                P(2, 0, -3.81, 90, "2", ln=2.54)],
+        [rect(-2.54, -1.27, -1.016, 1.27), rect(-0.762, -1.27, 0.762, 1.27), rect(1.016, -1.27, 2.54, 1.27),
+         poly([(-1.016, 0), (-0.762, 0)], width=0.6)],
+        "JP", hide_pin_names=True))
+# TI TCA9548A (TSSOP-24): pinout della libreria KiCad (TCA9548APWR)
+_sd = []
+for k in range(8):
+    _sd.append((str(4 + 2 * k + (1 if k >= 4 else 0)), 10.16 - k * 2.54 * 1.0 - 0.0, f"SD{k}", "bidirectional"))
+add(icbox("TCA9548A", 15.24, 43.18,
+          [("23", 17.78, "SDA", "bidirectional"), ("22", 15.24, "SCL", "input"), ("3", 10.16, "~RESET", "input"),
+           ("1", 2.54, "A0", "input"), ("2", 0, "A1", "input"), ("21", -2.54, "A2", "input")],
+          [(str(4 + 2 * k + (1 if k >= 4 else 0)), 19.05 - k * 5.08, f"SD{k}", "bidirectional") for k in range(8)]
+          + [(str(5 + 2 * k + (1 if k >= 4 else 0)), 16.51 - k * 5.08, f"SC{k}", "output") for k in range(8)],
+          [("24", 0, "VCC", "power_in")], [("12", 0, "GND", "power_in")]))
+# Diodes AP2112K (SOT-23-5): 1 VIN, 2 GND, 3 EN, 4 NC, 5 VOUT
+add(icbox("AP2112K", 10.16, 7.62,
+          [("1", 1.27, "VIN", "power_in"), ("3", -1.27, "EN", "input")],
+          [("5", 1.27, "VOUT", "power_out"), ("4", -1.27, "NC", "no_connect")],
+          [], [("2", 0, "GND", "power_in")]))
+# Raspberry Pi Pico / Pico 2 (modulo su zoccolo): pin 1-20 a sinistra, 40-21 a destra
+_PL = ["GP0", "GP1", "GND", "GP2", "GP3", "GP4", "GP5", "GND", "GP6", "GP7", "GP8", "GP9", "GND",
+       "GP10", "GP11", "GP12", "GP13", "GND", "GP14", "GP15"]
+_PR = ["VBUS", "VSYS", "GND", "3V3_EN", "3V3(OUT)", "ADC_VREF", "GP28", "GND", "GP27", "GP26",
+       "RUN", "GP22", "GND", "GP21", "GP20", "GP19", "GP18", "GND", "GP17", "GP16"]   # pin 40 ... 21
+PICO_PINS = {k + 1: n for k, n in enumerate(_PL)}
+PICO_PINS.update({40 - k: n for k, n in enumerate(_PR)})
+add(icbox("PICO2", 20.32, 53.34,
+          [(str(k + 1), 24.13 - k * 2.54, _PL[k], "power_in" if _PL[k] == "GND" else "bidirectional")
+           for k in range(20)],
+          [(str(40 - k), 24.13 - k * 2.54, _PR[k],
+            "power_in" if _PR[k] in ("GND",) else ("power_out" if _PR[k] in ("3V3(OUT)", "VBUS") else "bidirectional"))
+           for k in range(20)],
+          [], [], ref="A"))
+# diodo ESD bidirezionale (SOD-323): due diodi contrapposti
+add(Sym("TVSB", [P(1, 0, 3.81, 270, ln=1.27), P(2, 0, -3.81, 90, ln=1.27)],
+        [poly([(-1.016, 2.54), (1.016, 2.54), (0, 0.508), (-1.016, 2.54)]),
+         poly([(-1.016, -2.54), (1.016, -2.54), (0, -0.508), (-1.016, -2.54)]),
+         poly([(-1.27, 0.508), (1.27, 0.508)], width=0.3), poly([(-1.27, -0.508), (1.27, -0.508)], width=0.3),
+         poly([(0, 2.54), (0, 2.54)])],
+        "D", hide_pin_names=True))
+
+
 def power_sym(name, down=False):
     if name == "GND":
         body = [poly([(0, 0), (0, -1.27)]),

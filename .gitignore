@@ -33,3 +33,7 @@ hardware/generator/riv_cosmici_3ch/
 hardware/render3d/node_modules
 hardware/render3d/package-lock.json
 hardware/render3d/out/*/top.svg
+
+# log di Freerouting dei moduli
+hardware/moduli/**/freerouting.log
+hardware/moduli/**/logs/
