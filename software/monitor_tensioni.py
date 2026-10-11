@@ -24,7 +24,10 @@ gli si chiede una lettura; una lettura al secondo non disturba le misure):
     python3 monitor_tensioni.py --csv log.csv   # e salva su file
 """
 import argparse, csv, math, time
-from smbus2 import SMBus, i2c_msg
+try:
+    from smbus2 import SMBus, i2c_msg
+except ImportError:          # solo le formule (usate anche da acquisizione_pico.py)
+    SMBus = i2c_msg = None
 
 ADDR_BIAS = 0x68
 RATIO = (1_000_000 + 43_000) / 43_000            # partitore 1M / 43k
