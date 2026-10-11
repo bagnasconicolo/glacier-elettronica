@@ -106,7 +106,19 @@ CH_TP = {
 # ---------------------------------------------------------------- comuni
 PWR = {
     # ingresso 5 V + regolatore 3,3 V
-    "J3":  (4.0, 12.0, 270),        # 1 = GND, 2 = +5V
+    # protezione: USB-C sul bordo sinistro (bocca verso l'esterno), poi in colonna
+    # fusibile -> TVS -> MOSFET P -> condensatore; LED di accensione in fondo
+    "J7":  (3.4, 17.0, 270),        # bordo scheda a x = 0 (bocca a filo, corpo +0,5 mm)
+    "R60": (10.795, 16.0, 0),       # CC1 a massa
+    "R61": (10.795, 18.0, 0),       # CC2 a massa
+    "F1":  (14.605, 9.5, 90),       # pin 1 in basso (VIN_RAW), pin 2 in alto (VIN_F)
+    "D5":  (14.605, 17.0, 90),      # pin 1 = catodo in basso (VIN_F), anodo in alto (GND)
+    "Q4":  (14.605, 24.13, 0),      # drain in alto (VIN_F), gate/source in basso
+    "R62": (11.43, 25.4, 90),
+    "C60": (14.605, 28.575, 0),
+    "R63": (11.43, 32.0, 0),
+    "D6":  (15.24, 32.0, 180),      # anodo verso R63, catodo a destra (massa)
+    "J3":  (4.0, 28.0, 270),        # alimentatore da banco, SOLO 5 V: 1 = GND, 2 = VIN
     "U6":  (17.0, 12.0, 0),
     "CF8": (14.0, 20.0, 0),
     "CF9": (20.0, 20.0, 0),
@@ -130,7 +142,7 @@ PWR = {
     "R40": (57.0, 5.0, 90),
     "R41": (57.0, 10.5, 90),
     "C40": (57.0, 15.5, 90),
-    # monitor tensioni: ADC MCP3424 + connettore I2C verso il Raspberry Pi
+    # monitor tensioni: ADC MCP3424 + connettore I2C verso la scatolina di acquisizione
     "U11":  (79.5, 11.0, 0),
     "CF12": (77.0, 4.0, 0),
     "R42":  (87.3, 10.0, 0),
@@ -143,8 +155,8 @@ PWR = {
     "C41":  (84.0, 20.0, 90),
 }
 PWR_TP = {
-    "TP2": (9.0, 19.5),      # +5V
-    "TP6": (9.0, 23.5),      # GND
+    "TP2": (10.16, 21.6),    # +5V (dopo la protezione)
+    "TP6": (10.16, 29.0),    # GND
     "TP3": (24.5, 20.0),     # +3V3
     "TP1": (53.0, 7.0),      # VOUT40
     "TP4": (71.0, 8.0),      # +3V6
@@ -176,7 +188,7 @@ for _r in ("C11", "R15", "U3", "CF2", "R16", "C9", "R17", "R52", "C52", "V2", "R
 for _r in ("U9", "CF10", "R23", "U2", "R20", "C21", "CF5", "CF6", "R21", "D3"):
     COL_SHIFT[_r] = 6.35                                 # 4 uscita + C LED
 PWR_SHIFT = {}
-for _r in ("J3", "TP2", "TP6", "U6", "CF8", "CF9", "TP3"):
+for _r in ("U6", "CF8", "CF9", "TP3"):
     PWR_SHIFT[_r] = 6.35                                 # 5 V e 3,3 V (lontano dal foro d'angolo)
 for _r in ("C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1", "R40", "R41", "C40"):
     PWR_SHIFT[_r] = 8.255                                # alta tensione
@@ -270,6 +282,7 @@ def corridor_tracks():
 # reti ad alta tensione e larghezze pista per i nomi con suffisso di canale
 HV_EXTRA = set()
 WIDTH_EXTRA = {}
+WIDTH_EXTRA.update({"VIN_RAW": 0.5, "VIN_F": 0.5})   # ingresso 5 V: come il +5V
 for n in N.CHANNELS:
     HV_EXTRA |= {f"VREG38{n}", f"BIAS{n}"}
     WIDTH_EXTRA.update({f"VREG38{n}": 0.4, f"BIAS{n}": 0.4})
@@ -288,7 +301,7 @@ CH_BLOCKS = [
     ("C LED", "lampeggia a ogni evento", ["U2", "R20", "C21", "CF5", "CF6", "R21", "D3"]),
 ]
 PWR_BLOCKS = [
-    ("5V IN", None, ["J3", "TP2", "TP6"]),
+    ("5V IN", None, ["F1", "D5", "Q4", "R62", "C60", "R63", "D6", "R60", "R61", "TP2", "TP6"]),
     ("3,3V", None, ["U6", "CF8", "CF9", "TP3"]),
     ("ALTA TENSIONE 40V", "ATTENZIONE: fino a 40 V", ["C22", "L1", "U1", "C2", "C3", "R3", "C1", "R22", "R2", "R1", "TP1",
                                   "R40", "R41", "C40"]),

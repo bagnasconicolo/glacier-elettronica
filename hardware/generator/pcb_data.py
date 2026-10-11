@@ -11,6 +11,7 @@ FP_OF = {
     "SO8": "SOIC8", "SOT223": "SOT223", "3296W": "TRIM_3296W", "HDR2": "HDR1x02",
     "LEMO00": "LEMO_EPL00", "TP": "TP_THT",
     "SO14": "SOIC14", "HDR3": "HDR1x03", "MH3": "MH_M3", "KK2": "MOLEX_KK_2", "KK3": "MOLEX_KK_3",
+    "USBC6P": "USBC_GCT_USB4125", "SMA": "D_SMA", "F1812": "F_1812",
 }
 
 BOARD = (20.0, 20.0, 100.0, 75.0)  # x1 y1 x2 y2
@@ -146,7 +147,28 @@ def pad_shape(p, extra=0.0):
     if p["kind"] == "tht" and abs(p["w"] - p["h"]) < 1e-6:
         from shapely.geometry import Point
         return Point(p["x"], p["y"]).buffer(p["w"] / 2 + extra, 32)
+    if p["kind"] == "tht_oval":                      # ovale: segmento sull'asse lungo, bufferizzato
+        from shapely.geometry import LineString
+        r = min(p["w"], p["h"]) / 2
+        a = (max(p["w"], p["h"]) - min(p["w"], p["h"])) / 2
+        dx, dy = (a, 0) if p["w"] > p["h"] else (0, a)
+        dx, dy = rot_delta(dx, dy, p["rot"])
+        return LineString([(p["x"] - dx, p["y"] - dy), (p["x"] + dx, p["y"] + dy)]).buffer(r + extra, 32)
     return pad_rect(p, extra)
+
+
+def slot_ends(p):
+    """asola di un pad 'tht_oval': (x1, y1, x2, y2, diametro utensile) in coordinate scheda"""
+    dw, dh = p["drill"]
+    a = (max(dw, dh) - min(dw, dh)) / 2
+    dx, dy = (a, 0) if dw > dh else (0, a)
+    dx, dy = rot_delta(dx, dy, p["rot"])
+    return (p["x"] - dx, p["y"] - dy, p["x"] + dx, p["y"] + dy, min(dw, dh))
+
+
+def hole_d(p):
+    """diametro del foro (per le asole: la dimensione maggiore, per i controlli prudenti)"""
+    return max(p["drill"]) if isinstance(p["drill"], (tuple, list)) else p["drill"]
 
 if __name__ == "__main__":
     pads = abs_pads()

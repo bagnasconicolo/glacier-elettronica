@@ -57,7 +57,15 @@ CH9 = CH9.replace('T("Buffer uscita 3,3V -> Raspberry Pi (74LVC1G17)", 262, 136)
 # etichetta SIG_IN sul filo J1 -> C7 (serve al test point del canale)
 CH1 = BLOCKS[1] + '\nL("SIG_IN", 48.26, 61.27)\n'
 CHANNEL_SRC = "\n".join([CH1, BLOCKS[2], CH3, BLOCKS[5], CH7, CH9])
-SHARED_SRC = "\n".join([BLOCKS[6], BLOCKS[8], U5_PART, U7_PART])
+# blocco 8: J3 non e' piu' il +5V ma l'ingresso VIN_RAW della protezione
+B8 = BLOCKS[8]
+_old_j3 = ('path((234.95, 171.45), (231.14, 171.45), (227.33, 171.45), (224.79, 171.45), (219.71, 171.45))\n'
+           'J(227.33, 171.45); J(224.79, 171.45); J(231.14, 171.45); FLG(231.14, 171.45)\n')
+assert _old_j3 in B8
+B8 = B8.replace(_old_j3, 'w(234.95, 171.45, 232.41, 171.45); L("VIN_RAW", 232.41, 171.45)\n'
+                         'path((227.33, 171.45), (224.79, 171.45), (219.71, 171.45)); J(224.79, 171.45)\n')
+B8 = B8.replace('T("+5V IN", 239, 165)', 'T("SOLO 5 V (banco)", 236, 165)')
+SHARED_SRC = "\n".join([BLOCKS[6], B8, U5_PART, U7_PART])
 
 
 def run(src, dx, dy, n=None):
@@ -137,7 +145,7 @@ def build():
         stub(f"TP{i}", 362 + (i - 1) * 12.7, 342, nets={"1": net})
     # ---- monitor delle tensioni: partitori + ADC MCP3424 + connettore I2C
     mx, my = 360.0, 400.0
-    G.T("MONITOR TENSIONI: partitori 1M/43k su VREG38n e VOUT40 -> ADC MCP3424 (I2C, 0x68) -> Raspberry Pi",
+    G.T("MONITOR TENSIONI: partitori 1M/43k su VREG38n e VOUT40 -> ADC MCP3424 (I2C, 0x68) -> J6",
         mx - 2, my - 22)
     divs = [(netdata3.chref("R50", n), netdata3.chref("R51", n), netdata3.chref("C50", n),
              f"VREG38{n}", f"MON{n}") for n in netdata3.CHANNELS]
@@ -156,7 +164,7 @@ def build():
     stub("R42", ux + 28, uy - 5.08, rot=90, nets={"1": "SDA_ADC", "2": "I2C_SDA"})
     stub("R43", ux + 28, uy + 5.08, rot=90, nets={"1": "SCL_ADC", "2": "I2C_SCL"})
     stub("J6", ux + 55, uy + 2.54, nets={"1": "GND", "2": "I2C_SDA", "3": "I2C_SCL"})
-    G.T("verso Raspberry Pi (pull-up sul Pi)", ux + 42, uy - 6)
+    G.T("verso la scatolina di acquisizione (pull-up li')", ux + 42, uy - 6)
     # ---- monitor delle soglie e della temperatura: secondo MCP3424 sullo stesso bus I2C
     sx2, sy2 = 360.0, 460.0
     G.T("MONITOR SOGLIE E TEMPERATURA: TH -> 10k + 100n (accanto al comparatore) -> ADC MCP3424 U12 (I2C)",
@@ -177,6 +185,28 @@ def build():
                                 "9": "+3V3", "10": "GND"})
     stub("CF13", ux2 + 22, uy2 - 20, nets={"1": "+3V3", "2": "GND"})
     G.T("Adr0 = VDD, Adr1 = GND: indirizzo diverso da U11", ux2 + 18, uy2 + 6)
+    # ---- protezione dell'alimentazione (aggiunta)
+    px, py = 560.0, 300.0
+    G.T("PROTEZIONE ALIMENTAZIONE: USB-C o J3 -> fusibile F1 -> TVS D5 -> MOSFET P Q4 (inversione) -> +5V",
+        px - 12, py - 24)
+    G.PROP_POS.update({
+        "J7": ((0, -6.6, "center"), (0, 6.9, "center")),
+    })
+    stub("J7", px, py, nets={"1": "VIN_RAW", "2": "CC1", "3": "CC2", "4": "GND"})
+    G.T("USB-C solo alimentazione", px - 14, py - 11)
+    stub("R60", px + 20, py + 12, nets={"1": "CC1", "2": "GND"})
+    stub("R61", px + 28, py + 12, nets={"1": "CC2", "2": "GND"})
+    G.T("5,1k: il caricatore da' 5 V", px + 14, py + 24)
+    stub("F1", px + 42, py, nets={"1": "VIN_RAW", "2": "VIN_F"})
+    stub("D5", px + 50, py + 14, nets={"1": "VIN_F", "2": "GND"})
+    stub("Q4", px + 75, py, nets={"1": "Q4_G", "2": "+5V", "3": "VIN_F"})
+    stub("R62", px + 68, py + 14, nets={"1": "Q4_G", "2": "GND"})
+    stub("C60", px + 92, py + 8, nets={"1": "+5V", "2": "GND"})
+    stub("R63", px + 102, py + 4, nets={"1": "+5V", "2": "LED_PWR"})
+    stub("D6", px + 114, py + 16, nets={"1": "GND", "2": "LED_PWR"})
+    G.FLG(px + 92, py + 8 - 6.35)                     # +5V generato qui (dal source di Q4)
+    G.T("LED acceso", px + 108, py + 26)
+
     # ---- fori di fissaggio (a massa)
     G.T("Fori di fissaggio M3 (a massa)", 360, 520)
     for k in range(1, 9):

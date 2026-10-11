@@ -15,7 +15,7 @@ dopo, se e quando servirà.
 | SiPM AFBR-S4N22P014M | Mouser (stesso file) | 6 | 125 € (togliere se già disponibili) |
 | Raspberry Pi Zero 2 W + scheda SD 16–32 GB | qualsiasi rivenditore | 2 | ~50 € (o Pi già in laboratorio) |
 | Raspberry Pi Pico (o Pico 2) + adattatore USB OTG, millefori, 4 buffer per rivelatore | qualsiasi rivenditore; buffer e adattatori nel file Mouser | 2 (+1 di scorta) | ~25 € |
-| Alimentatori 5 V | qualsiasi rivenditore | 4 (2 per la scheda, 2 per il Pi) | ~30 € |
+| Alimentatori 5 V USB (caricatori da telefono) + cavi USB-C e micro-USB | qualsiasi rivenditore | 4 (2 per la scheda via USB-C, 2 per lo Zero) | ~30 € |
 | Base in plexiglass, distanziali M3, staffe stampate per le barre | laboratorio | 2 | ~20–40 € |
 | LEMO | — | — | già disponibili |
 | **Totale** | | | **~490–540 €** (≈ 360–410 € senza SiPM) |
@@ -50,9 +50,10 @@ Note sui prezzi:
   **pin 1 = conduttore centrale (segnale), pin 2 = calza (bias)**, guaina
   termorestringente sulla calza.
 - **Il Pi lontano dai SiPM** (dall'altro lato della base), perché scalda.
-- **Alimentazione:** due alimentatori separati, uno per la scheda (5 V su J3) e uno per il
-  Pi. Costa pochi euro in più e toglie un dubbio: se poi le misure sono pulite, si
-  prova con un alimentatore unico.
+- **Alimentazione:** due alimentatori separati, uno per la scheda (USB-C J7, protetto:
+  fusibile, TVS, MOSFET contro l'inversione; oppure 5 V da banco su J3, SOLO 5 V) e uno
+  per lo Zero 2 W, che alimenta il Pico via USB. Costa pochi euro in più e toglie un
+  dubbio: se poi le misure sono pulite, si prova con un alimentatore unico.
 - **Collegamenti:** uscite dei canali e AND (LEMO) verso il Pico, attraverso 4 buffer di
   protezione su millefori (`firmware/pico_acquisizione/LEGGIMI.md`); Pico allo Zero via USB.
   J6 (I²C, **Molex KK 254 a 3 poli** come i connettori delle barre: header 22-27-2031 sulla

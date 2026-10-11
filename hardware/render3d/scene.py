@@ -75,7 +75,7 @@ for p in pads:
         svg.append(f'<rect x="{tx(p["x"] - w / 2):.1f}" y="{ty(p["y"] - h / 2):.1f}" '
                    f'width="{w * PX:.1f}" height="{h * PX:.1f}" rx="{0.15 * PX:.1f}" fill="{COPPER}"/>')
     if p["kind"] != "smd":
-        svg.append(f'<circle cx="{tx(p["x"]):.1f}" cy="{ty(p["y"]):.1f}" r="{p["drill"] / 2 * PX:.1f}" fill="#111"/>')
+        svg.append(f'<circle cx="{tx(p["x"]):.1f}" cy="{ty(p["y"]):.1f}" r="{(min(p["drill"]) if isinstance(p["drill"], (tuple, list)) else p["drill"]) / 2 * PX:.1f}" fill="#111"/>')
 # serigrafia: contorni dei footprint + riferimenti (o la serigrafia didattica, se c'e')
 SILK = os.path.join(os.path.dirname(STATE), "silk.json") if variant == "3ch" else None
 silk = json.load(open(SILK)) if SILK and os.path.exists(SILK) else None

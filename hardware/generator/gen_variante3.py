@@ -47,11 +47,19 @@ cairosvg.svg2png(url=os.path.join(SRC, "pcb3_render.svg"),
 import gen_bom                                     # noqa: E402
 gen_bom.COMPONENTS = netdata3.COMPONENTS
 gen_bom.PKG.update({"LEMO00": "LEMO 00 (EPL.00.250.NTN)", "TP": "test point THT",
-                    "SO14": "SOIC-14", "HDR3": "header 1x3 2,54", "KK2": "Molex KK 254 2 poli (22-27-2021)", "KK3": "Molex KK 254 3 poli (22-27-2031)"})
+                    "SO14": "SOIC-14", "HDR3": "header 1x3 2,54", "KK2": "Molex KK 254 2 poli (22-27-2021)", "KK3": "Molex KK 254 3 poli (22-27-2031)",
+                    "USBC6P": "USB-C 6P SMD", "SMA": "SMA (DO-214AC)", "F1812": "1812 (4532)"})
 gen_bom.NOTE.update({"74LVC1G11": "SN74LVC1G11DBVR, AND a 3 ingressi (coincidenza)",
                      "MCP3424": "MCP3424-E/SL, ADC I2C del monitor tensioni (LCSC C640884)",
                      "1M": "partitore monitor (alto)", "43k": "partitore monitor (basso)",
-                     "10k": ""})
+                     "10k": "",
+                     "USB_C_PWR": "GCT USB4125-GF-A, USB-C solo alimentazione (JLCPCB C3151650)",
+                     "MF-MSMF050-2": "Bourns, fusibile ripristinabile 0,5 A / 15 V (JLCPCB C17313)",
+                     "SMAJ5.0A": "Littelfuse, TVS 5 V 400 W (JLCPCB C83329)",
+                     "AO3401A": "AOS, MOSFET P -30 V contro l'inversione di polarita' (JLCPCB C15127)",
+                     "10u": "X7R 16 V (Samsung CL31B106KOHNNNE, JLCPCB C47971)",
+                     "LED verde": "LED di accensione (KT-0805G, JLCPCB C2297)",
+                     "5k1": "CC1/CC2 dell'USB-C a massa", "1k5": "LED di accensione"})
 rows = []
 groups = {}
 for ref, (kind, value, fpk, extra) in netdata3.COMPONENTS.items():

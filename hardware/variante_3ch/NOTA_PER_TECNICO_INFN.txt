@@ -1,13 +1,13 @@
 RIVELATORE DI MUONI A 3 CANALI - NOTA PER LA VERIFICA (INFN Torino)
 Riferimento: scheda "Riv. Cosmici 2024 - Amplif, alim, soglie" (S. Gallian, rev. A)
-Data: 10/10/2026 - progetto: github.com/bagnasconicolo/glacier-elettronica
+Data: 11/10/2026 - progetto: github.com/bagnasconicolo/glacier-elettronica
 (branch claude/gallant-feynman-h18ciy, cartella hardware/variante_3ch)
 
 Gentile tecnico,
 la scheda a 3 canali riprende il circuito INFN senza modificarne il funzionamento.
 Prima di ordinare i due prototipi abbiamo cambiato DUE VALORI rispetto all'originale,
-perche' fuori dai limiti dei datasheet. Le chiediamo di confermarli (o di dirci di
-tornare ai valori originali). Il circuito stampato non cambia: stessi footprint.
+perche' fuori dai limiti dei datasheet, e aggiunto una PROTEZIONE DELL'INGRESSO 5 V
+(punto 3). Le chiediamo di confermarli (o di dirci di tornare ai valori originali).
 
 
 =====================================================================
@@ -52,6 +52,30 @@ DA VERIFICARE: che 2,2 uF X7R sia adatto anche per l'ESR richiesta dall'LP2985
 
 
 =====================================================================
+3) PROTEZIONE DELL'ALIMENTAZIONE (aggiunta, nuova rispetto alla nota precedente)
+=====================================================================
+Nell'originale il +5V arriva da J3 senza protezioni: un cavo invertito o un
+alimentatore sbagliato danneggiano LT3461, MCP1825 e LP2985. Abbiamo aggiunto, prima
+del +5V (fuori dal canale analogico):
+   J7  USB-C solo alimentazione (GCT USB4125-GF-A), CC1/CC2 a massa con 5,1k (R60,
+       R61): un caricatore USB qualsiasi da' 5 V, senza negoziazione.
+       J3 resta come ingresso da banco, marcato "SOLO 5 V".
+   F1  fusibile ripristinabile Bourns MF-MSMF050-2 (0,5 A tenuta, 1 A intervento, 15 V)
+   D5  TVS SMAJ5.0A verso massa (rottura 6,4 V): picchi e scariche; con J3 invertito
+       conduce in diretta e fa intervenire F1
+   Q4  MOSFET P AO3401A in serie (drain verso l'ingresso, source verso il +5V, gate a
+       massa con R62 10k): conduce con Vgs = -5 V (~0,05 ohm, ~5 mV a 0,1 A), si apre
+       con l'ingresso invertito
+   C60 10 uF X7R sul +5V; D6 LED verde di accensione con R63 1k5 (~1,5 mA)
+Caduta totale a 0,1 A: ~20 mV (F1 ~0,15 ohm + Q4). In simulazione (ngspice, scheda
+intera) le tensioni e gli impulsi restano quelli di prima (vedi sim_3canali.txt).
+DA VERIFICARE: che il ritardo di accensione di Q4 e il condensatore C60 non creino
+problemi all'avvio del LT3461 (soft-start) e dei regolatori.
+Limite noto: su J3 una tensione sbagliata (> 6,4 V) viene scaricata da D5 finche' F1
+non interviene; l'MCP1825 funziona fino a 6 V. Per questo J3 e' marcato SOLO 5 V.
+
+
+=====================================================================
 Per completezza: le altre differenze rispetto alla scheda INFN
 (nessuna cambia i valori del canale analogico)
 =====================================================================
@@ -59,13 +83,15 @@ Per completezza: le altre differenze rispetto alla scheda INFN
    comparatore MAX961 con latch C9/R16, monostabile TLC555 + LED), con in comune:
    boost LT3461 (VOUT40), 3,3 V (MCP1825), +3V6 e riferimento 3,6 V (LP2985).
    Ogni canale ha il suo LT1636 per il bias.
- - Uscita di ogni canale verso Raspberry Pi: 74LVC1G17 (buffer Schmitt a 3,3 V)
-   + 33 ohm serie su LEMO, al posto del buffer a 2 transistor a 5 V
-   (i GPIO del Pi non tollerano 5 V). Non c'e' l'uscita TTL 5 V (MCP1402, J2).
+ - Uscita di ogni canale su LEMO: 74LVC1G17 (buffer Schmitt a 3,3 V) + 33 ohm serie,
+   al posto del buffer a 2 transistor a 5 V. Le uscite vanno a una scatolina di
+   acquisizione (Raspberry Pi Pico 2, che annota l'istante di ogni impulso con
+   risoluzione di ~13 ns, + Raspberry Pi Zero 2 W). Non c'e' l'uscita TTL 5 V (MCP1402, J2).
  - Coincidenza: 74LVC1G11 (AND a 3) sulle uscite, ponticelli JP1-JP3 per
    escludere un canale (pull-up 10k verso +3,3 V: ponticello aperto = ingresso
    dell'AND fisso a 1 = canale escluso), uscita AND su LEMO con 33 ohm serie.
- - Monitor delle tensioni (MCP3424, I2C verso il Pi): partitore 1M/43k + 100 nF
+ - Monitor delle tensioni (MCP3424, I2C verso la scatolina di acquisizione):
+   partitore 1M/43k + 100 nF
    su VREG38 di ogni canale (dentro l'anello dell'LT1636, quindi non sposta il bias)
    e su VOUT40. Verificato in simulazione: nessun effetto sul bias e sugli impulsi.
  - Lettura delle soglie e della temperatura (secondo MCP3424, U12): dal nodo TH di
@@ -82,7 +108,8 @@ Per completezza: le altre differenze rispetto alla scheda INFN
  - Connettore della barra: Molex KK 254 a 2 poli (1 = anodo/segnale, conduttore
    centrale; 2 = catodo/bias +38 V, calza del coassiale), non LEMO, per non
    confonderlo con le uscite LEMO che hanno la carcassa a massa.
- - Connettore I2C del monitor (J6): Molex KK 254 a 3 poli (1 GND, 2 SDA, 3 SCL).
+ - Connettore I2C del monitor (J6): Molex KK 254 a 3 poli (1 GND, 2 SDA, 3 SCL),
+   verso l'hub I2C della scatolina di acquisizione (pull-up li').
  - Test point su ogni nodo utile e 8 fori di fissaggio M3.
 
 Verifiche gia' fatte sul progetto:

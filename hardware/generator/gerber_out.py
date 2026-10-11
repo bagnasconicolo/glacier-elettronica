@@ -55,6 +55,10 @@ class Gerber:
         self.use(f"R,{w:.3f}X{h:.3f}")
         self.body.append(f"X{fmt(x)}Y{fmt(-y)}D03*")
 
+    def flash_oval(self, x, y, w, h):
+        self.use(f"O,{w:.3f}X{h:.3f}")
+        self.body.append(f"X{fmt(x)}Y{fmt(-y)}D03*")
+
     def flash_circle(self, x, y, d):
         self.use(f"C,{d:.3f}")
         self.body.append(f"X{fmt(x)}Y{fmt(-y)}D03*")
@@ -86,6 +90,8 @@ def pad_flash(g, p, grow=0.0):
         w, h = h, w
     if p["kind"] == "tht" and abs(w - h) < 1e-6:
         g.flash_circle(p["x"], p["y"], w)
+    elif p["kind"] == "tht_oval":
+        g.flash_oval(p["x"], p["y"], w, h)
     else:
         g.flash_rect(p["x"], p["y"], w, h)
 
@@ -159,23 +165,30 @@ g.write()
 
 # ---------------- drill (Excellon, PTH) ----------------
 holes = {}
+slots = {}
+from pcb_data import slot_ends
 for p in G.pads:
-    if p["kind"] != "smd":
+    if p["kind"] == "tht_oval":
+        x1, y1, x2, y2, d = slot_ends(p)
+        slots.setdefault(d, []).append((x1, y1, x2, y2))
+    elif p["kind"] != "smd":
         holes.setdefault(p["drill"], []).append((p["x"], p["y"]))
 for v in G.vias:
     holes.setdefault(G.VIA_DRILL, []).append((v["x"], v["y"]))
 lines = ["M48", "METRIC,TZ"]
 tools = {}
-for i, d in enumerate(sorted(holes), 1):
+for i, d in enumerate(sorted(set(holes) | set(slots)), 1):
     tools[d] = i
     lines.append(f"T{i}C{d:.3f}")
 lines.append("%")
 lines.append("G90")
 lines.append("G05")
-for d in sorted(holes):
+for d in sorted(set(holes) | set(slots)):
     lines.append(f"T{tools[d]}")
-    for (x, y) in holes[d]:
+    for (x, y) in holes.get(d, []):
         lines.append(f"X{x:.3f}Y{-y:.3f}")
+    for (x1, y1, x2, y2) in slots.get(d, []):          # asola: foro "trascinato" da un estremo all'altro
+        lines.append(f"X{x1:.3f}Y{-y1:.3f}G85X{x2:.3f}Y{-y2:.3f}")
 lines.append("M30")
 open(os.path.join(OUT, f"{NAME}-PTH.drl"), "w").write("\n".join(lines) + "\n")
 

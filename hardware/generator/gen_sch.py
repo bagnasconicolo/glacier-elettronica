@@ -25,6 +25,7 @@ FP_MAP = {
     "3296W": "rivlib:TRIM_3296W", "HDR2": "rivlib:HDR1x02",
     "LEMO00": "rivlib:LEMO_EPL00", "TP": "rivlib:TP_THT",
     "SO14": "rivlib:SOIC14", "HDR3": "rivlib:HDR1x03", "MH3": "rivlib:MH_M3", "KK2": "rivlib:MOLEX_KK_2", "KK3": "rivlib:MOLEX_KK_3",
+    "USBC6P": "rivlib:USBC_GCT_USB4125", "SMA": "rivlib:D_SMA", "F1812": "rivlib:F_1812",
 }
 SYM_MAP = {  # kind -> lib symbol
     "R": "R", "C": "C", "L": "L", "D": "D", "LED": "LED", "NPN": "NPN",
@@ -33,9 +34,11 @@ SYM_MAP = {  # kind -> lib symbol
     "LP2985": "LP2985", "MCP1825": "MCP1825", "LT1636": "LT1636",
     "LVC1G17": "LVC1G17", "LVC1G11": "LVC1G11", "TP": "TP",
     "MCP3424": "MCP3424", "CONN3": "CONN3", "MH": "MH",
+    "USBC": "USBC", "FUSE": "FUSE", "TVS": "TVS", "PMOS": "PMOS",
 }
 
 instances = []   # (ref, symname, x, y, rot, mirror, value, footprint)
+PROP_POS = {}    # ref -> ((dx, dy, justify), (dx, dy, justify)): posizione di riferimento e valore
 wires = []       # ((x1,y1),(x2,y2))
 junctions = []
 labels = []      # (name, x, y)
@@ -558,10 +561,13 @@ def write_sch(fn, paper="A3", title="Riv. Cosmici 2024 - Amplif, alim, soglie"):
         mir = " (mirror x)" if mirror == "x" else ""
         out.append(f'  (symbol (lib_id "riv:{symname}") (at {x} {y} {rot}){mir} (unit 1) '
                    f'(in_bom yes) (on_board yes) (uuid {u})')
-        out.append(f'    (property "Reference" "{ref}" (id 0) (at {x + 2.54} {y - 2.54} 0) '
-                   f'(effects (font (size 1.27 1.27)) (justify left)))')
-        out.append(f'    (property "Value" "{value}" (id 1) (at {x + 2.54} {y + 2.54} 0) '
-                   f'(effects (font (size 1.27 1.27)) (justify left)))')
+        (rdx, rdy, rj), (vdx, vdy, vj) = PROP_POS.get(ref, ((2.54, -2.54, "left"), (2.54, 2.54, "left")))
+        jr = f" (justify {rj})" if rj != "center" else ""        # centrato = senza justify
+        jv = f" (justify {vj})" if vj != "center" else ""
+        out.append(f'    (property "Reference" "{ref}" (id 0) (at {x + rdx} {y + rdy} 0) '
+                   f'(effects (font (size 1.27 1.27)){jr}))')
+        out.append(f'    (property "Value" "{value}" (id 1) (at {x + vdx} {y + vdy} 0) '
+                   f'(effects (font (size 1.27 1.27)){jv}))')
         out.append(f'    (property "Footprint" "{fp}" (id 2) (at {x} {y} 0) '
                    f'(effects (font (size 1.27 1.27)) hide))')
         out.append(f'    (property "Datasheet" "" (id 3) (at {x} {y} 0) '

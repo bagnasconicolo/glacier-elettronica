@@ -372,6 +372,9 @@ def build_top():
     x, y, _ = PD.PLACEMENT["J3"]
     place_text("GND", 0.9, near(x + 3.5, y, 0, 0, rmax=2), required=True)
     place_text("+5V", 0.9, near(x + 3.5, y + 2.54, 0, 0, rmax=2), required=True)
+    place_text("SOLO 5 V", 0.9, near(x, y - 2.6, 0, 0, rmax=1.5), required=True)
+    x, y, _ = PD.PLACEMENT["J7"]                     # USB-C: scritta sopra, verso l'interno
+    place_text("USB-C 5V", 0.9, near(x + 1.0, y - 6.6, 0, 0, rmax=1.5), required=True)
     for n in N.CHANNELS:
         x, y, _ = PD.PLACEMENT[f"JP{n}"]
         place_text(f"CH{n}", 1.1, near(x, y + 5.6, 0, 0, rmax=1) + near(x, y - 2.4, 0, 0, rmax=1),
@@ -459,8 +462,9 @@ LEGEND = [
     ("COINCIDENZA: l'uscita AND", 1.0), ("va a 1 solo se tutti i", 1.0),
     ("canali inclusi (jumper", 1.0), ("chiusi) vedono un evento", 1.0),
     ("nello stesso istante:", 1.0), ("un muone che attraversa", 1.0), ("piu' barre.", 1.0), ("", 0.8),
-    ("ALIMENTAZIONE: 5 V su J3.", 1.0), ("Il blocco ALTA TENSIONE", 1.0),
-    ("produce 41 V: non toccare", 1.0), ("la scheda accesa.", 1.0),
+    ("ALIMENTAZIONE: USB-C (J7)", 1.0), ("o SOLO 5 V su J3; fusibile", 1.0),
+    ("e protezioni contro", 1.0), ("l'inversione. Il blocco", 1.0), ("ALTA TENSIONE produce", 1.0),
+    ("~40 V: non toccare la", 1.0), ("scheda accesa.", 1.0),
 ]
 # colonna senza fori passanti (tra i blocchi dei canali e i LEMO)
 LEG_X1, LEG_X2 = X1 + 68.5, X1 + 93.5

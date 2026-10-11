@@ -31,6 +31,7 @@ PKG = {
     "SO8": "SOIC-8", "SOT223": "SOT-223", "3296W": "3296W",
     "HDR2": "Header 2.54mm 1x2",
     "SO14": "SOIC-14", "HDR3": "Header 2.54mm 1x3", "KK2": "Molex KK 254 1x2", "KK3": "Molex KK 254 1x3",
+    "USBC6P": "USB-C 6P SMD", "SMA": "SMA(DO-214AC)", "F1812": "1812",
 }
 
 # (valore, footprint) -> (Comment, JLCPCB Part #, MPN). I codici sono quelli che il
@@ -64,6 +65,13 @@ PART = {
     ("10k NTC", "R0805"):   ("NCP21XV103J03RA", "", "Murata NCP21XV103J03RA NTC 10k 5% B=3900 0805"),
     ("I2C_RPI", "HDR3"):    ("Header 1x3 2.54mm", "", "pin header maschio 1x3 (a mano)"),
     ("I2C_RPI", "KK3"):     ("Molex 22-27-2031", "", "Molex KK 254 3 poli 22-27-2031 (a mano)"),
+    # protezione dell'alimentazione (codici verificati sul catalogo JLCPCB/LCSC, 11/10/2026)
+    ("USB_C_PWR", "USBC6P"): ("USB4125-GF-A", "C3151650", "GCT USB4125-GF-A, USB-C solo alimentazione 6P"),
+    ("MF-MSMF050-2", "F1812"): ("MF-MSMF050-2", "C17313", "Bourns MF-MSMF050-2 PPTC 0,5A/1A 15V"),
+    ("SMAJ5.0A", "SMA"):    ("SMAJ5.0A", "C83329", "Littelfuse SMAJ5.0A TVS 5V 400W"),
+    ("AO3401A", "SOT23"):   ("AO3401A", "C15127", "AOS AO3401A MOSFET P -30V 4A"),
+    ("10u", "C1206"):       ("CL31B106KOHNNNE", "C47971", "Samsung CL31B106KOHNNNE 10uF 16V X7R"),
+    ("LED verde", "LED0805"): ("KT-0805G", "C2297", "Hubei KENTO KT-0805G LED verde 0805"),
 }
 for _v in ("SiPM", "TTL_OUT", "PWR_5V", "LEMO_OUT"):
     PART[(_v, "HDR2")] = ("Header 1x2 2.54mm", "", "pin header maschio 1x2 (a mano)")
@@ -91,6 +99,10 @@ def uniroyal(v):
         sig = digits[:3]
         code = sig + str(len(digits) - 3)
     return f"0805W8F{code}T5E"
+
+
+# componenti per cui la posizione di montaggio e' l'origine dell'impronta (pad asimmetrici)
+CPL_ORIGINE = {"J7"}
 
 
 def comment_for(value, fpk):
@@ -162,7 +174,7 @@ def main():
     for ref in sorted(PLACEMENT, key=ref_key):
         if ref in DNP:
             continue
-        x, y = cen[ref]
+        x, y = PLACEMENT[ref][:2] if ref in CPL_ORIGINE else cen[ref]
         rot = PLACEMENT[ref][2] % 360
         cpl_rows.append([ref, f"{x - X1:.3f}mm", f"{Y2 - y:.3f}mm", "Top", f"{rot:.0f}"])
     with open(os.path.join(OUT, "CPL_JLCPCB.csv"), "w", newline="") as f:

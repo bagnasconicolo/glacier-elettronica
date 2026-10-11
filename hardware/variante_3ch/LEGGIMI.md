@@ -25,7 +25,7 @@ circuito di ogni canale è **identico** all'originale INFN.
 
 | Fascia | Cosa c'è |
 |---|---|
-| **Alimentazione** (in alto) | `5V IN` (J3) → `3,3V` (U6) → `ALTA TENSIONE 41V` (U1, LT3461) → `RIFERIMENTI` 3,6 V (U5 soglie, U7 bias) → `MONITOR` (ADC delle tensioni, I²C) |
+| **Alimentazione** (in alto) | `5V IN` (USB-C J7 o J3 → fusibile, TVS, MOSFET contro l'inversione) → `3,3V` (U6) → `ALTA TENSIONE 40V` (U1, LT3461) → `RIFERIMENTI` 3,6 V (U5 soglie, U7 bias) → `MONITOR` (ADC delle tensioni, I²C) |
 | **Canale 1, 2, 3** | riga alta = percorso del segnale da sinistra a destra: `1 SiPM` → `2 AMPLIFICATORE` → `3 COMPARATORE` → `4 USCITA` (LEMO sul bordo destro); riga bassa = circuiti di supporto sotto il blocco che servono: `A ALIMENTAZIONE SiPM ~38V` (V1), `B SOGLIA` (V2), `C LED` (555) |
 | **Coincidenza** (in basso) | schema a blocchi di un canale in serigrafia; jumper JP1–JP3 → AND a 3 (U10) → LEMO J5 |
 | **Lato saldature** | legenda "Come funziona" (testo specchiato, si legge girando la scheda) |
@@ -36,6 +36,25 @@ circuito di ogni canale è **identico** all'originale INFN.
   Tutti i riferimenti sono stampati in serigrafia.
 - Il circuito di ogni canale è **identico** all'originale INFN; tolto solo il driver TTL
   a 5 V (MCP1402, J2): le uscite sono LEMO a 3,3 V.
+
+## Alimentazione e protezione (blocco `5V IN`)
+
+Si alimenta da **USB-C** (J7, sul bordo sinistro): va bene un caricatore da telefono
+qualsiasi, perché CC1 e CC2 hanno 5,1k a massa (R60, R61) e il caricatore dà 5 V senza
+negoziazione. **J3** resta per l'alimentatore da banco ed è marcato **SOLO 5 V**.
+Consumo della scheda: ~0,1 A.
+
+| Rif. | Parte | Cosa fa |
+|---|---|---|
+| F1 | Bourns MF-MSMF050-2, fusibile ripristinabile 0,5 A (interviene a 1 A), 15 V | corto o assorbimento eccessivo: si apre, si richiude da solo spegnendo |
+| D5 | SMAJ5.0A, TVS 5 V verso massa | picchi e scariche all'inserimento del cavo; con J3 invertito conduce e fa intervenire F1 |
+| Q4 | AO3401A, MOSFET P in serie (gate a massa con R62 10k) | conduce con l'ingresso giusto (~0,05 Ω), si apre con l'ingresso invertito |
+| C60 | 10 µF X7R | serbatoio sul +5V dopo la protezione |
+| D6, R63 | LED verde + 1k5 | scheda accesa |
+
+Caduta totale a 0,1 A: ~20 mV. **Limite:** su J3 una tensione sbagliata (oltre ~6,4 V)
+viene scaricata da D5 finché F1 non interviene; l'MCP1825 (U6) funziona fino a 6 V.
+Per questo J3 è marcato SOLO 5 V; con l'USB-C il problema non c'è.
 
 ## Fori di fissaggio
 
@@ -108,8 +127,8 @@ Usa una sonda 10× con la molla di massa corta sul GND più vicino.
 
 ## Monitor delle tensioni (blocco `MONITOR`)
 
-Un ADC **MCP3424** (U11, I²C, indirizzo 0x68) legge quattro tensioni e le passa al
-Raspberry Pi dal connettore **J6**, Molex KK 254 a 3 poli con aggancio (1 GND, 2 SDA, 3 SCL; le pull-up sono quelle del Pi):
+Un ADC **MCP3424** (U11, I²C, indirizzo 0x68) legge quattro tensioni e le passa alla
+scatolina di acquisizione (hub I²C, letto dal Pico 2) dal connettore **J6**, Molex KK 254 a 3 poli con aggancio (1 GND, 2 SDA, 3 SCL; le pull-up sono nella scatolina, o quelle del Pi se J6 va direttamente allo Zero):
 
 | Ingresso ADC | Cosa misura | Partitore |
 |---|---|---|
@@ -167,7 +186,7 @@ SiPM, cioè proprio sul nodo più delicato: non ne vale la pena.
 
 ## Montaggio
 
-JLCPCB monta 147 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
+JLCPCB monta 168 componenti (`jlcpcb/`), compresi USB-C e protezione dell'alimentazione. **A mano** (non in BOM/CPL):
 
 | Rif. | Parte | Per scheda |
 |---|---|---|
@@ -177,8 +196,8 @@ JLCPCB monta 147 componenti (`jlcpcb/`). **A mano** (non in BOM/CPL):
 | U5, U7 | LP2985AIM5-3.6 | 2 |
 | D101, D201, D301 | 1N4148 | 3 |
 | J101, J201, J301 | Molex KK 254 22-27-2021 (cavo barra: 22-01-3027 + 2× 08-50-0114; pin 1 = centrale/segnale, pin 2 = calza/bias) | 3 |
-| J3 | header 1×2 (5 V) | 1 |
-| J6 | Molex KK 254 3 poli 22-27-2031 (I²C verso il Raspberry Pi; cavo: 22-01-3037 + 3 contatti 08-50-0114) | 1 |
+| J3 | header 1×2 (alimentatore da banco, SOLO 5 V; facoltativo: si alimenta dall'USB-C J7, montato da JLCPCB) | 1 |
+| J6 | Molex KK 254 3 poli 22-27-2031 (I²C verso la scatolina di acquisizione; cavo: 22-01-3037 + 3 contatti 08-50-0114) | 1 |
 | JP1–JP3 | header 1×2 + ponticello | 3 |
 | J104, J204, J304, J5 | LEMO EPL.00.250.NTN | 4 |
 | TP* | test point (pin di strip header) | 24 |
@@ -206,6 +225,17 @@ CF7, CF9) valgono le stesse note della scheda singola.
   loro); fanno eccezione, per costruzione, i 2 mm attorno ai filtri R?52/C?52.
 - Serigrafia: testo alto almeno 0,9 mm (tratto ~0,17 mm), mai sopra i pad; generata da
   `silk3.py` e identica in KiCad (`gr_poly`) e nei Gerber.
-- Non ancora fatto: simulazione SPICE della scheda a 3 canali (il canale è identico a
-  quello simulato in `simulation/ltspice/`); ERC di KiCad (la versione 7 non lo fa
-  da riga di comando: il confronto delle netlist sopra copre i collegamenti).
+- Simulazione ngspice della scheda a 3 canali intera, con la protezione dell'alimentazione
+  (`simulation/ltspice/sim_3canali.py`, risultati in `sim_3canali.txt`).
+- Non ancora fatto: ERC di KiCad (la versione 7 non lo fa da riga di comando: il
+  confronto delle netlist sopra copre i collegamenti).
+
+## Stato del routing (per rigenerare il PCB)
+
+`sorgenti/routing_state_3ch.json` è il routing completo (piste, via, piano di massa) da
+cui `generator/gen_pcb3.py --solo-serigrafia` riscrive PCB, Gerber e anteprime senza
+ri-instradare. La cartella di lavoro `generator/riv_cosmici_3ch/` non è nel repository:
+per ripartire, `mkdir -p generator/riv_cosmici_3ch && cp sorgenti/routing_state_3ch.json
+generator/riv_cosmici_3ch/routing_state.json`. Modifiche locali al routing:
+`generator/reinstrada_reti3.py` (alcune reti) e `generator/aggiungi_protezione3.py`
+(come è stata aggiunta la protezione dell'alimentazione).

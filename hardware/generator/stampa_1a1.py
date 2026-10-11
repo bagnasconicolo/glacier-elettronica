@@ -60,7 +60,7 @@ def pads_svg(fill):
         out.append(poly(list(PD.pad_rect(p).exterior.coords), fill=fill, stroke="black", stroke_width="0.08"))
     for p in silk3.PADS:
         if p["kind"] != "smd":
-            r = p["drill"] / 2
+            r = (min(p["drill"]) if isinstance(p["drill"], (tuple, list)) else p["drill"]) / 2
             out.append(f'<circle cx="{p["x"] + OX}" cy="{p["y"] + OY}" r="{r}" fill="white" stroke="black" stroke-width="0.06"/>')
             out.append(f'<path d="M{p["x"] + OX - r} {p["y"] + OY}h{2 * r}M{p["x"] + OX} {p["y"] + OY - r}v{2 * r}" stroke="black" stroke-width="0.04"/>')
     return out

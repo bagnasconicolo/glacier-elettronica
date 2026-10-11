@@ -14,7 +14,9 @@ Costruito automaticamente da netdata.py (la scheda a 1 canale):
     uscita AND su LEMO J5 tramite R30 33 ohm;
   - test point per oscilloscopio (TPn01..TPn06 per canale, TP1..TP6 comuni);
   - monitor delle tensioni: ADC MCP3424 (U11) in I2C su J6 legge i tre bias
-    (partitori R?50/R?51 su VREG38n) e l'alta tensione (R40/R41).
+    (partitori R?50/R?51 su VREG38n) e l'alta tensione (R40/R41);
+  - protezione dell'alimentazione: USB-C J7 o J3 -> fusibile F1 -> TVS D5 ->
+    MOSFET P Q4 (inversione di polarita') -> +5V, LED di accensione D6.
 """
 import re
 from netdata import COMPONENTS as C1, NETS as N1, PIN_COUNT as PC1, NC_PINS as NC1
@@ -106,7 +108,7 @@ for i, net in enumerate(TP_SHARED, 1):
     COMPONENTS[ref] = ("TP", net, "TP", {"note": "test point"})
     NETS[net].append((ref, "1"))
 
-# ---- monitor delle tensioni (ADC MCP3424 in I2C verso il Raspberry Pi)
+# ---- monitor delle tensioni (ADC MCP3424 in I2C verso la scatolina di acquisizione)
 # Partitore 1M / 43k (rapporto 1/24,26) su VREG38n, l'uscita del regolatore del bias:
 # e' dentro l'anello di retroazione di U?08, quindi il carico (37 uA) non cambia
 # VREG38 ne' BIAS; tra il partitore e il SiPM resta il filtro R8/C6. Condensatore
@@ -129,7 +131,7 @@ COMPONENTS.update({
     "CF12": ("C", "100n", "C0805", {"note": "decoupling MCP3424"}),
     "R42":  ("R", "100R", "R0805", {"note": "serie SDA: fronti piu' lenti, meno disturbi"}),
     "R43":  ("R", "100R", "R0805", {"note": "serie SCL: fronti piu' lenti, meno disturbi"}),
-    "J6":   ("CONN3", "I2C_RPI", "KK3", {"note": "Molex KK 254 22-27-2031 verso Raspberry Pi: 1=GND 2=SDA 3=SCL (pull-up sul Pi)"}),
+    "J6":   ("CONN3", "I2C_RPI", "KK3", {"note": "Molex KK 254 22-27-2031 verso la scatolina di acquisizione (hub I2C): 1=GND 2=SDA 3=SCL (pull-up nella scatolina)"}),
 })
 NETS["VOUT40"].append(("R40", "1"))
 NETS["MON4"] = [("R40", "2"), ("R41", "1"), ("C40", "1"), ("U11", ADC_CH[4][0])]
@@ -171,12 +173,45 @@ NETS["+3V3"] += [("U12", "6"), ("U12", "9"), ("CF13", "1"), ("R44", "1")]
 NETS["SDA_ADC"].append(("U12", "7"))
 NETS["SCL_ADC"].append(("U12", "8"))
 
+# ---- protezione dell'alimentazione (aggiunta: non c'e' nella scheda INFN)
+# Ingresso dal connettore USB-C solo alimentazione J7 (5,1k su CC1 e CC2: qualunque
+# caricatore USB da' 5 V e non serve negoziazione) oppure da J3 (alimentatore da banco,
+# SOLO 5 V). Poi, in serie: F1 fusibile ripristinabile (0,5 A tenuta, 1 A intervento,
+# 15 V; la scheda assorbe ~0,1 A) -> D5 TVS SMAJ5.0A verso massa (picchi, scariche, e con
+# la polarita' invertita su J3 conduce e fa intervenire F1) -> Q4 MOSFET P AO3401A
+# (drain verso l'ingresso, source verso il carico, gate a massa: conduce con Vgs = -5 V,
+# si apre con l'ingresso invertito) -> +5V. C60 10 uF sul +5V, LED verde D6 di accensione.
+# Limite: una tensione sbagliata (> 6,4 V) su J3 viene scaricata da D5 finche' F1 non
+# interviene; l'MCP1825 (U6) regge 6 V di funzionamento: J3 e' marcato SOLO 5 V.
+COMPONENTS.update({
+    "J7":  ("USBC", "USB_C_PWR", "USBC6P", {"note": "GCT USB4125-GF-A, USB-C solo alimentazione (6 contatti)"}),
+    "R60": ("R", "5k1", "R0805", {"note": "CC1 a massa (il caricatore riconosce un dispositivo: 5 V)"}),
+    "R61": ("R", "5k1", "R0805", {"note": "CC2 a massa"}),
+    "F1":  ("FUSE", "MF-MSMF050-2", "F1812", {"note": "fusibile ripristinabile 0,5 A / 1 A, 15 V (Bourns, LCSC C17313)"}),
+    "D5":  ("TVS", "SMAJ5.0A", "SMA", {"note": "TVS 5 V unidirezionale, pin 1 = catodo (verso VIN_F)"}),
+    "Q4":  ("PMOS", "AO3401A", "SOT23", {"note": "MOSFET P -30 V contro l'inversione di polarita' (1=G 2=S 3=D)"}),
+    "R62": ("R", "10k", "R0805", {"note": "gate di Q4 a massa"}),
+    "C60": ("C", "10u", "C1206", {"note": "X7R 16 V, serbatoio sul +5V dopo la protezione"}),
+    "D6":  ("LED", "LED verde", "LED0805", {"note": "accensione (pin 1 = catodo)"}),
+    "R63": ("R", "1k5", "R0805", {"note": "corrente del LED di accensione (~2 mA)"}),
+})
+NETS["+5V"] = [(r, p) for r, p in NETS["+5V"] if not (r == "J3" and str(p) == "2")]
+NETS["VIN_RAW"] = [("J3", "2"), ("J7", "1"), ("F1", "1")]
+NETS["CC1"] = [("J7", "2"), ("R60", "1")]
+NETS["CC2"] = [("J7", "3"), ("R61", "1")]
+NETS["VIN_F"] = [("F1", "2"), ("D5", "1"), ("Q4", "3")]
+NETS["Q4_G"] = [("Q4", "1"), ("R62", "1")]
+NETS["LED_PWR"] = [("R63", "2"), ("D6", "2")]
+NETS["+5V"] += [("Q4", "2"), ("C60", "1"), ("R63", "1")]
+NETS["GND"] += [("J7", "4"), ("R60", "2"), ("R61", "2"), ("D5", "2"), ("R62", "2"),
+                ("C60", "2"), ("D6", "1")]
+
 # ---- fori di fissaggio M3 (piazzola a massa)
 for k in range(1, 9):
     COMPONENTS[f"MH{k}"] = ("MH", "M3", "MH3", {"note": "foro di fissaggio M3, a massa"})
     NETS["GND"].append((f"MH{k}", "1"))
 
-PIN_COUNT = dict(PC1, LVC1G11=6, TP=1, MCP3424=14, CONN3=3, MH=1)
+PIN_COUNT = dict(PC1, LVC1G11=6, TP=1, MCP3424=14, CONN3=3, MH=1, USBC=4, FUSE=2, TVS=2, PMOS=3)
 NC_PINS = set()
 for r, p in NC1:
     if r in SHARED:

@@ -3,8 +3,9 @@
 per la scheda a 3 canali:  nero = circuito INFN originale,  ROSSO = parti aggiunte o modificate.
 
   pagina 1   schema a blocchi: i tre canali (ognuno col suo colore) e le parti comuni
-  pagina 2   parti comuni: 3,3 V, alta tensione, riferimenti 3,6 V, monitor, coincidenza
-  pagine 3-5 canale 1, 2, 3 (stesso circuito, riferimenti del canale, cornice del suo colore)
+  pagina 2   ingresso dell'alimentazione e protezione (aggiunta)
+  pagina 3   parti comuni: 3,3 V, alta tensione, riferimenti 3,6 V, monitor, coincidenza
+  pagine 4-6 canale 1, 2, 3 (stesso circuito, riferimenti del canale, cornice del suo colore)
 
 Valori e collegamenti sono quelli di netdata3.py (lo stesso modello di schema KiCad e PCB):
 lo script controlla i valori di ogni componente disegnato.
@@ -336,7 +337,7 @@ def page_channel(pdf, n, sheet_no, sheets):
     DRAWN[r("U8")] = "LT1636"
     s.text(op.in2.x + 1.55, (op.in1.y + op.in2.y) / 2, f"{r('U8')}\nLT1636", fs=FS - 0.6, ha="left",
            weight="bold")
-    s.text(op.in1.x - 0.9, op.in1.y + 4.6, f"{r('U8')}: V+ = VOUT40 (39,4 V, foglio 2), V− = massa",
+    s.text(op.in1.x - 0.9, op.in1.y + 4.6, f"{r('U8')}: V+ = VOUT40 (39,4 V, foglio 3), V− = massa",
            fs=FS - 1.3)
     xs = op.in2.x - 1.2                          # nodo VSET (+)
     s.wire(op.in2, (xs, op.in2.y))
@@ -433,14 +434,15 @@ def page_overview(pdf, sheet_no, sheets):
                                      shrinkA=0, shrinkB=0))
 
     # parti comuni (colonna sinistra)
-    s.text(1.8, 43.0, "PARTI COMUNI (foglio 2)", fs=7.2, weight="bold")
+    s.text(1.8, 43.0, "PARTI COMUNI (fogli 2-3)", fs=7.2, weight="bold")
     b5 = box(1.8, 38.2, 11.0, 3.6, "ingresso 5 V (J3)\n-> 3,3 V  MCP1825 (U6)")
+    box(1.8, 36.0, 11.0, 1.7, "USB-C + protezione (foglio 2)", c=RED, fs=5.6)
     bhv = box(1.8, 29.6, 11.0, 5.6, "alta tensione\nLT3461 (U1)\n39,4 V", bold=True)
     s.text(7.3, 29.0, "R3 = 255k (INFN 270k)", c=RED, fs=5.6, ha="center")
     bref = box(1.8, 21.0, 11.0, 5.6, "riferimenti 3,6 V\nLP2985 (U5, U7)")
     s.text(7.3, 20.4, "uscite 2,2 µF (INFN 100n)", c=RED, fs=5.6, ha="center")
     bmon = box(1.8, 11.4, 11.0, 6.6, "monitor\nADC MCP3424\nU11 (bias, 40 V)\nU12 (soglie, °C)", c=RED)
-    box(1.8, 9.6 - 0.0, 11.0, 1.4, "J6 I2C -> Raspberry Pi", c=RED, fs=5.6)
+    box(1.8, 9.6 - 0.0, 11.0, 1.4, "J6 I2C -> scatolina (hub I2C)", c=RED, fs=5.6)
 
     # canali
     x0, w = 15.5, 41.5
@@ -448,7 +450,7 @@ def page_overview(pdf, sheet_no, sheets):
         col, tint = CH_COL[n], CH_TINT[n]
         y0 = 33.6 - k * 10.6
         ax.add_patch(Rectangle((x0, y0), w, 9.6, facecolor=tint, edgecolor=col, lw=2.0, zorder=1))
-        ax.text(x0 + 0.5, y0 + 9.0, f"CANALE {n}  (foglio {n + 2})", color=col, fontsize=8, fontweight="bold",
+        ax.text(x0 + 0.5, y0 + 9.0, f"CANALE {n}  (foglio {n + 3})", color=col, fontsize=8, fontweight="bold",
                 va="center", zorder=4)
         yr = y0 + 4.9
         bb = box(x0 + 0.6, yr - 1.3, 4.6, 2.6, "barra\n+ SiPM", c=col, fill="white", dashed=True)
@@ -495,18 +497,19 @@ def page_overview(pdf, sheet_no, sheets):
             arrow((x0 + w + 0.6, yy), (xr, yy), c=RED, lw=0.8)
     bJ5 = box(xr + 1.5, 12.8, 7.0, 2.6, "LEMO J5\nuscita AND", c=RED)
     arrow((xr + 5.0, 18.0), (xr + 5.0, 15.4), c=RED)
-    s.text(xr, 11.2, "uscite J104/J204/J304\ne J5 -> GPIO del\nRaspberry Pi (0-3,3 V)", c=RED, fs=5.6, va="top")
+    s.text(xr, 11.2, "uscite J104/J204/J304\ne J5 (0-3,3 V) ->\nscatolina di acquisizione\n(Pico 2 + Zero 2 W)", c=RED, fs=5.6, va="top")
 
     # elenco modifiche
     lines = ["Cosa cambia rispetto al foglio INFN (S. Gallian, rev. A):",
              "- 3 canali sulla stessa scheda; alta tensione, 3,3 V e riferimenti in comune",
              "- R3 = 255k: alta tensione 39,4 V (INFN 270k = 41,7 V > 40 V max LT3461)",
              "- uscite dei regolatori da 2,2 µF, come da datasheet (INFN 100n)",
-             "- uscita 0-3,3 V su LEMO per il Raspberry (74LVC1G17 + 33 ohm)",
+             "- uscite 0-3,3 V su LEMO per l'acquisizione (74LVC1G17 + 33 ohm)",
              "- coincidenza AND a 3; monitor di bias, 40 V, soglie e temperatura",
-             "- connettori Molex KK per barre e I2C; test point su ogni nodo utile"]
+             "- connettori Molex KK per barre e I2C; test point su ogni nodo utile",
+             "- ingresso USB-C protetto: fusibile, TVS, MOSFET contro l'inversione, LED"]
     for i, t in enumerate(lines):
-        ax.text(15.5, 9.6 - i * 0.98, t, fontsize=6.6 if i else 7.0, color=BLACK if i == 0 else RED,
+        ax.text(15.5, 10.5 - i * 0.98, t, fontsize=6.6 if i else 7.0, color=BLACK if i == 0 else RED,
                 fontweight="bold" if i == 0 else "normal", va="center", zorder=4)
     s.save()
 
@@ -524,13 +527,8 @@ def page_common(pdf, sheet_no, sheets):
 
     # ---------------- ingresso 5 V e 3,3 V
     title(1.8, 43.2, "Ingresso 5 V e 3,3 V")
-    s.ax.add_patch(Rectangle((1.9, 37.4), 1.2, 2.6, fill=False, color=BLACK, lw=1.0))
-    s.text(1.6, 40.6, "J3 5 V", fs=FS - 0.5)
-    s.wire((3.1, 39.4), (4.2, 39.4))
-    s.wire((3.1, 38.0), (3.6, 38.0))
-    s.gnd((3.6, 38.0))
-    s.text(3.25, 39.65, "2", fs=FS - 2)
-    s.text(3.25, 38.25, "1", fs=FS - 2)
+    s.text(1.7, 39.4, "+5V protetto\n(foglio 2)", c=RED, fs=FS - 1.2, ha="left", va="center")
+    s.wire((3.6, 39.4), (4.2, 39.4), c=RED)
     s.dot((4.2, 39.4))
     s.vdd((4.2, 39.4), "+5V")
     s.comp("C", "CF8", (5.6, 39.4), "down", length=1.9, loc="bot")
@@ -584,7 +582,7 @@ def page_common(pdf, sheet_no, sheets):
     s.gnd((xv + 3.0, u1[5][1] - 2.3))
     s.tp((xv + 4.6, u1[5][1]), "40V", "up")
     s.dot((xv + 4.6, u1[5][1]), c=RED)
-    s.text(xv + 6.2, u1[5][1] + 0.1, "VOUT40 -> V+ di U108, U208, U308\n(regolatori del bias, fogli 3-5)",
+    s.text(xv + 6.2, u1[5][1] + 0.1, "VOUT40 -> V+ di U108, U208, U308\n(regolatori del bias, fogli 4-6)",
            fs=FS - 1.0)
     # retroazione: R3 (255k, ROSSO) || C1 da VOUT40 a FB; R1 || R2 || R22 da FB a massa
     xr3 = u1[5][0] + 0.6
@@ -640,7 +638,7 @@ def page_common(pdf, sheet_no, sheets):
 
     # ---------------- monitor (tutto ROSSO)
     mx = 37.0
-    title(mx, 44.3, "Monitor: bias, alta tensione, soglie, temperatura -> Raspberry Pi (I2C)", c=RED)
+    title(mx, 44.3, "Monitor: bias, alta tensione, soglie, temperatura -> I2C (J6)", c=RED)
     u11 = s.ic(mx + 9.0, 34.6, 4.6, 7.2,
                [(1, "CH1+", "left", 6.3), (2, "CH1−", "left", 5.4), (3, "CH2+", "left", 4.5), (4, "CH2−", "left", 3.6),
                 (11, "CH3+", "left", 2.7), (12, "CH3−", "left", 1.8), (13, "CH4+", "left", 0.9),
@@ -727,8 +725,8 @@ def page_common(pdf, sheet_no, sheets):
     s.gnd((xj + 0.6, u11[8][1] - 1.4), c=RED)
     for k, (yy, lab) in enumerate(((u11[8][1] - 1.4, "1 GND"), (u11[7][1], "2 SDA"), (u11[8][1], "3 SCL"))):
         s.text(xj + 2.45, yy, lab, c=RED, fs=FS - 1.3)
-    s.text(xj + 0.9, u11[7][1] + 1.3, "J6 Molex KK\n-> Raspberry Pi", c=RED, fs=FS - 1.0, va="bottom")
-    s.text(xj + 0.5, u11[8][1] - 3.0, "pull-up sul Raspberry", c=RED, fs=FS - 1.8, style="italic")
+    s.text(xj + 0.9, u11[7][1] + 1.3, "J6 Molex KK\n-> scatolina (hub I2C)", c=RED, fs=FS - 1.0, va="bottom")
+    s.text(xj + 0.5, u11[8][1] - 3.0, "pull-up nella scatolina", c=RED, fs=FS - 1.8, style="italic")
 
     # ---------------- coincidenza (ROSSO)
     cx0 = 37.0
@@ -765,6 +763,108 @@ def page_common(pdf, sheet_no, sheets):
     s.save()
 
 
+# ===================================================================== alimentazione
+def page_power(pdf, sheet_no, sheets):
+    s = Sheet(pdf)
+    s.frame("", "INGRESSO ALIMENTAZIONE", sheet_no, sheets)
+    s.text(1.8, 47.3, "INGRESSO ALIMENTAZIONE E PROTEZIONE", fs=17, weight="bold")
+    s.text(1.8, 45.6, "tutto aggiunto rispetto al foglio INFN (che ha solo J3 -> +5V): "
+                      "la scheda non si rompe con un cavo sbagliato, un corto o una scarica", fs=7, c=RED)
+    yv = 36.0                                          # linea di ingresso (VIN_RAW -> VIN_F -> +5V)
+
+    # USB-C J7 (solo alimentazione)
+    j7 = s.ic(3.0, 27.5, 3.4, 6.0, [("A9/B9", "VBUS", "right", 5.0), ("A5", "CC1", "right", 3.6),
+                                   ("B5", "CC2", "right", 2.4), ("A12/B12", "GND", "right", 1.0)],
+              "J7\nUSB-C", c=RED)
+    DRAWN["J7"] = val_of("J7")
+    s.text(3.0, 26.7, "GCT USB4125-GF-A\nsolo alimentazione", c=RED, fs=FS - 1.4, va="top")
+    s.gnd(j7["A12/B12"], c=RED)
+    for pin, ref, x in (("A5", "R60", 12.4), ("B5", "R61", 9.2)):   # CC1 passa sopra R61: niente incroci
+        p = j7[pin]
+        s.wire(p, (x, p[1]), c=RED)
+        s.comp("R", ref, (x, p[1]), "down", length=2.0, c=RED, loc="bot")
+        s.gnd((x, p[1] - 2.0), c=RED)
+    s.text(8.4, 26.3, "5,1k su CC1 e CC2: il caricatore\nvede un dispositivo e da' 5 V\n(nessuna negoziazione)",
+           c=RED, fs=FS - 1.6, style="italic", va="top")
+    pv = j7["A9/B9"]
+    s.wire(pv, (7.6, pv[1]), (7.6, yv), (13.6, yv), c=RED)
+    s.dot((13.6, yv), c=RED)
+    # J3 (banco, SOLO 5 V)
+    s.ax.add_patch(Rectangle((3.0, 38.6), 1.2, 2.6, fill=False, color=RED, lw=1.0))
+    s.text(2.7, 41.8, "J3  SOLO 5 V (banco)", c=RED, fs=FS - 0.5)
+    s.text(4.35, 40.85, "2", c=RED, fs=FS - 2)
+    s.text(4.35, 39.45, "1", c=RED, fs=FS - 2)
+    s.wire((4.2, 40.6), (13.6, 40.6), (13.6, yv), c=RED)
+    s.wire((4.2, 39.2), (5.2, 39.2), c=RED)
+    s.gnd((5.2, 39.2), c=RED)
+    DRAWN["J3"] = val_of("J3")
+    s.text(9.0, 41.0, "VIN_RAW", c=RED, fs=FS - 1.2)
+
+    # F1 fusibile ripristinabile
+    e = s.add(elm.Fuse().at((13.6, yv)).right(3.6).color(RED).label("F1\nMF-MSMF050-2", loc="top", fontsize=FS))
+    DRAWN["F1"] = val_of("F1")
+    s.text(15.4, yv - 1.0, "0,5 A (interviene a 1 A), 15 V", c=RED, fs=FS - 1.6, ha="center", style="italic")
+    xf = 19.2
+    s.wire((17.2, yv), (xf + 6.0, yv), c=RED)
+    s.dot((xf, yv), c=RED)
+    s.text(xf + 1.0, yv + 0.35, "VIN_F", c=RED, fs=FS - 1.2)
+    # D5 TVS verso massa (catodo su VIN_F)
+    s.add(elm.Zener().at((xf, yv - 3.0)).up(3.0).color(RED).label("D5\nSMAJ5.0A", loc="bot", fontsize=FS))
+    DRAWN["D5"] = val_of("D5")
+    s.gnd((xf, yv - 3.0), c=RED)
+    s.text(xf - 0.6, yv - 4.6, "TVS 5 V: assorbe picchi e scariche;\ncon J3 invertito conduce e fa\nintervenire F1",
+           c=RED, fs=FS - 1.6, style="italic", va="top", ha="center")
+
+    # Q4 MOSFET P: drain a sinistra (ingresso), source a destra (+5V), gate in basso
+    xq = xf + 6.0
+    q = s.add(elm.PFet().scale(1.8).theta(-90).anchor("drain").at((xq, yv)).color(RED))
+    DRAWN["Q4"] = val_of("Q4")
+    xs = q.source[0]
+    s.text((xq + xs) / 2, yv + 1.5, "Q4  AO3401A", c=RED, fs=FS, ha="center")
+    s.text(xq + 0.15, yv + 0.3, "D", c=RED, fs=FS - 1.6)
+    s.text(xs - 0.15, yv + 0.3, "S", c=RED, fs=FS - 1.6, ha="right")
+    g = q.gate
+    s.wire(g, (g[0], g[1] - 0.4), c=RED)
+    s.comp("R", "R62", (g[0], g[1] - 0.4), "down", length=2.0, c=RED, loc="bot")
+    s.gnd((g[0], g[1] - 2.4), c=RED)
+    s.text(g[0] + 0.25, g[1] - 0.25, "G", c=RED, fs=FS - 1.6)
+    s.text(xq + 0.9, yv - 5.4, "MOSFET P contro l'inversione:\ngate a massa -> Vgs = -5 V, conduce\n(~0,05 ohm); "
+           "ingresso invertito\n-> Vgs > 0, si apre",
+           c=RED, fs=FS - 1.6, style="italic", va="top", ha="center")
+
+    # +5V: C60, LED di accensione, test point, utenze
+    x5 = xs + 1.6
+    s.wire((xs, yv), (x5 + 9.0, yv), c=RED)
+    s.dot((x5, yv), c=RED)
+    s.vdd((x5, yv), "+5V", c=RED)
+    s.comp("C", "C60", (x5 + 1.6, yv), "down", length=2.4, c=RED, loc="bot")
+    s.dot((x5 + 1.6, yv), c=RED)
+    s.gnd((x5 + 1.6, yv - 2.4), c=RED)
+    s.dot((x5 + 4.4, yv), c=RED)
+    s.comp("R", "R63", (x5 + 4.4, yv), "down", length=2.0, c=RED, loc="bot")
+    s.add(elm.LED().at((x5 + 4.4, yv - 2.0)).down(2.0).color(RED).label("D6\nverde", loc="bot", fontsize=FS))
+    DRAWN["D6"] = val_of("D6")
+    s.gnd((x5 + 4.4, yv - 4.0), c=RED)
+    s.tp((x5 + 6.6, yv), "5V", "up")
+    s.dot((x5 + 6.6, yv), c=RED)
+    s.text(x5 + 9.3, yv + 0.1, "+5V -> U6 MCP1825 (3,3 V), U1 LT3461 + L1, C22\n"
+                               "(alta tensione), U5 e U7 LP2985 (3,6 V):  foglio 3", fs=FS - 1.0, va="center")
+    s.text(x5 + 9.3, yv - 1.6, "consumo della scheda ~0,1 A", fs=FS - 1.6, style="italic")
+
+    # riquadro: perche' e limiti
+    lines = ["Perche' e cosa protegge",
+             "- cavo invertito su J3: Q4 non conduce; D5 in conduzione diretta fa intervenire F1",
+             "- corto circuito o assorbimento > 1 A: F1 si scalda e si apre; si richiude da solo spegnendo",
+             "- scariche e picchi all'inserimento del cavo: D5 (TVS 400 W) li limita",
+             "- USB-C con 5,1k su CC1/CC2: un caricatore qualsiasi da' 5 V (mai di piu' senza negoziazione)",
+             "Limite: su J3 una tensione sbagliata (oltre ~6,4 V) viene scaricata da D5 finche' F1 non",
+             "interviene; U6 (MCP1825) funziona fino a 6 V: J3 e' marcato SOLO 5 V (alimentatore da banco)."]
+    for i, t in enumerate(lines):
+        s.text(1.8, 17.5 - i * 1.15, t, fs=FS + 0.2 if i == 0 else FS - 0.6,
+               weight="bold" if i == 0 else "normal", c=BLACK if i in (0, 5, 6) else RED)
+    s.save()
+
+
 def check():
     bad = [(r, v, N.COMPONENTS[r][1]) for r, v in DRAWN.items()
            if r in N.COMPONENTS and N.COMPONENTS[r][1] != v]
@@ -774,12 +874,13 @@ def check():
 
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    sheets = 5
+    sheets = 6
     with PdfPages(OUT) as pdf:
         page_overview(pdf, 1, sheets)
-        page_common(pdf, 2, sheets)
+        page_power(pdf, 2, sheets)
+        page_common(pdf, 3, sheets)
         for k, n in enumerate(N.CHANNELS):
-            page_channel(pdf, n, k + 3, sheets)
+            page_channel(pdf, n, k + 4, sheets)
     check()
     print("scritto", os.path.normpath(OUT), "-", len(DRAWN), "componenti disegnati, valori = netdata3")
 

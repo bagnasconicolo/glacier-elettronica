@@ -41,7 +41,8 @@ for p in G.pads:
     pts = " ".join(f"{x:.2f},{y:.2f}" for x, y in r.exterior.coords)
     svg.append(f'<polygon points="{pts}" fill="{col}" opacity="0.95"/>')
     if p["kind"] != "smd":
-        svg.append(f'<circle cx="{p["x"]}" cy="{p["y"]}" r="{p["drill"]/2}" fill="white"/>')
+        dr = min(p["drill"]) if isinstance(p["drill"], (tuple, list)) else p["drill"]
+        svg.append(f'<circle cx="{p["x"]}" cy="{p["y"]}" r="{dr/2}" fill="white"/>')
 # vias
 for v in G.vias:
     svg.append(f'<circle cx="{v["x"]}" cy="{v["y"]}" r="{G.VIA_D/2}" fill="#208020"/>')

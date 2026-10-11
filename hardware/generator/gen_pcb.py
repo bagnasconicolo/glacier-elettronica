@@ -10,7 +10,7 @@ from shapely.prepared import prep
 import shapely.affinity as aff
 
 from pcb_data import (BOARD, PLACEMENT, COMPONENTS, FP_OF, abs_pads, pad_rect, pad_shape,
-                      track_w, CLEARANCE, HV_NETS, HV_CLEAR)
+                      track_w, CLEARANCE, HV_NETS, HV_CLEAR, hole_d)
 from footprints import FPS
 from netdata import NETS
 
@@ -595,7 +595,7 @@ def drc(pour_parts):
                 p1, p2 = nearest_points(merged[keys[a]], merged[keys[b]])
                 err.append(f"clearance {La} {na}<->{nb}: {d:.3f} < {need} @ ({p1.x:.1f},{p1.y:.1f})")
     # fori
-    holes = [(p["x"], p["y"], p["drill"]) for p in pads if p["kind"] != "smd"]
+    holes = [(p["x"], p["y"], hole_d(p)) for p in pads if p["kind"] != "smd"]   # asole: lato lungo (prudente)
     holes += [(v["x"], v["y"], VIA_DRILL) for v in vias]
     for i in range(len(holes)):
         for j in range(i + 1, len(holes)):
@@ -788,6 +788,9 @@ def write_pcb(fn, pour_parts):
             if k == "smd":
                 o.append(f'    (pad "{num}" smd rect (at {px} {py} {rot}) (size {w} {h}) '
                          f'(layers "F.Cu" "F.Paste" "F.Mask"){nets} (tstamp {U()}))')
+            elif k == "tht_oval":
+                o.append(f'    (pad "{num}" thru_hole oval (at {px} {py} {rot}) (size {w} {h}) '
+                         f'(drill oval {drill[0]} {drill[1]}) (layers "*.Cu" "*.Mask"){nets} (tstamp {U()}))')
             else:
                 shape = "rect" if k == "tht_rect" else "circle"
                 o.append(f'    (pad "{num}" thru_hole {shape} (at {px} {py} {rot}) (size {w} {h}) '

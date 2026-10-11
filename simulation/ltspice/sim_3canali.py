@@ -75,8 +75,14 @@ def netlist():
                 L.append(f"R{ref}_IN{a} {n(ref, a)} {n(ref, b)} 2.25Meg")
             for p in (5, 6, 7, 8, 9, 10):
                 L.append(f"R{ref}_P{p} {n(ref, p)} 0 1G")
-        elif kind in ("TP", "MH", "CONN3"):
+        elif kind in ("TP", "MH", "CONN3", "USBC"):      # USB-C: l'ingresso simulato e' su J3
             continue
+        elif kind == "FUSE":                         # fusibile ripristinabile: ~0,15 ohm a freddo
+            L.append(f"R_{ref} {n(ref, 1)} {n(ref, 2)} 0.15")
+        elif kind == "TVS":                          # 1 = catodo, 2 = anodo
+            L.append(f"D{ref} {n(ref, 2)} {n(ref, 1)} DTVS")
+        elif kind == "PMOS":                         # 1 = G, 2 = S, 3 = D
+            L.append(f"M{ref} {n(ref, 3)} {n(ref, 1)} {n(ref, 2)} {n(ref, 2)} PMOS_AO3401")
         elif kind == "CONN2":
             a, b = n(ref, 1), n(ref, 2)
             if ref == "J3":           # 1 = GND, 2 = +5V
@@ -96,7 +102,8 @@ def netlist():
 
 
 def measures():
-    M = [".meas tran V_3V3 FIND V(V3V3) AT=9.9m", ".meas tran V_3V6 FIND V(V3V6) AT=9.9m",
+    M = [".meas tran V_5V FIND V(V5) AT=9.9m", ".meas tran V_VIN FIND V(VIN_RAW) AT=9.9m",
+         ".meas tran V_3V3 FIND V(V3V3) AT=9.9m", ".meas tran V_3V6 FIND V(V3V6) AT=9.9m",
          ".meas tran V_REFB FIND V(VREF_B) AT=9.9m", ".meas tran V_OUT40 FIND V(VOUT40) AT=9.9m",
          ".meas tran I_5V FIND I(VJ3) AT=9.9m"]
     for c in (1, 2, 3):
@@ -126,7 +133,10 @@ def write(fn):
            ".param VIN=5 V1_POS=0.76 V2_POS=0.92",
            ".param VBD=32.5 G12=7.3Meg VOV=5.94",
            ".param QPE={1.602e-19*G12*VOV/12}",
-           ".param CSIPM=160p TAUSIPM=55n"]
+           ".param CSIPM=160p TAUSIPM=55n",
+           "* protezione dell'alimentazione: TVS SMAJ5.0A (rottura 6,4-7,1 V) e MOSFET P AO3401A",
+           ".model DTVS D(BV=6.7 IBV=1m RS=0.05 CJO=1n)",
+           ".model PMOS_AO3401 PMOS(VTO=-0.9 KP=12 LAMBDA=0.01)"]
     txt += netlist() + measures()
     txt += [".tran 1u 10.07m 0 2u", ".end", ""]
     open(fn, "w").write("\n".join(txt))
@@ -141,6 +151,7 @@ def main():
     p = out.append
     p("SCHEDA A 3 CANALI - simulazione ngspice (sim_3canali.py)\n")
     p("1. Alimentazioni condivise a riposo (t = 9,9 ms)")
+    p(f"   +5V dopo la protezione {g('V_5V'):.3f} V (ingresso {g('V_VIN'):.3f} V)")
     p(f"   +3V3 {g('V_3V3'):.3f} V   +3V6 {g('V_3V6'):.3f} V   VREF_B {g('V_REFB'):.3f} V   "
       f"VOUT40 {g('V_OUT40'):.2f} V   corrente da 5 V {abs(g('I_5V')) * 1e3:.1f} mA")
     for c in (1, 2, 3):

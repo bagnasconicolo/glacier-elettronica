@@ -132,7 +132,7 @@ def righe_simulate(durata_s, seme=1):
         ev.append((tp + 300_000_000, "G %d %d A 9" % (tp, utc0 + s)))
     for s in range(0, int(durata_s), 5):                        # sensori
         ts = s * 10 ** 9 + 2 * 10 ** 8
-        v = [0.3171, 0.3170, 0.3172, 1.6245, 0.1035, 0.1031, 0.1040, 1.0711]
+        v = [1.5848, 1.5844, 1.5852, 1.6231, 0.1035, 0.1031, 0.1040, 1.0711]   # 38,44 V e 39,37 V con il partitore 1M/43k
         v = [x + r.gauss(0, 3e-5) for x in v]
         ev.append((ts, "M %d 0 " % ts + " ".join("%.6f" % x for x in v)))
         ev.append((ts + 10 ** 8, "W %d 3 %.3f %.2f %.3f %.2f" % (ts + 10 ** 8, 22.8 + r.gauss(0, .02),

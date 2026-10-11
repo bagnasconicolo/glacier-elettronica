@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """Footprint library 'rivlib' (formato KiCad 6 .kicad_mod).
-Ogni footprint espone pads: {num: (x, y, w, h, kind)} con kind in
-{'smd','tht','tht_rect'} per il generatore PCB e il DRC.
+Ogni footprint espone pads: {num: (x, y, w, h, kind, drill)} con kind in
+{'smd','tht','tht_rect','tht_oval'} per il generatore PCB e il DRC. Per 'tht_oval'
+(piazzola ovale con asola, es. i piedini del guscio dell'USB-C) drill = (largh., lungh.)
+dell'asola, con l'asse lungo come il lato lungo della piazzola.
 Convenzione: Y verso il basso (coordinate footprint KiCad).
 """
 
@@ -30,6 +32,9 @@ class FP:
             if kind == "smd":
                 o.append(f'  (pad "{num}" smd rect (at {x} {y}) (size {w} {h}) '
                          f'(layers "F.Cu" "F.Paste" "F.Mask"))')
+            elif kind == "tht_oval":
+                o.append(f'  (pad "{num}" thru_hole oval (at {x} {y}) (size {w} {h}) '
+                         f'(drill oval {drill[0]} {drill[1]}) (layers "*.Cu" "*.Mask"))')
             else:
                 shape = "rect" if kind == "tht_rect" else "circle"
                 o.append(f'  (pad "{num}" thru_hole {shape} (at {x} {y}) (size {w} {h}) '
@@ -209,6 +214,37 @@ add(FP("L_PWR_5050",
        (-3.6, -3.5, 3.6, 3.5),
        silk=[(-3.5, -3.4, 3.5, -3.4), (-3.5, 3.4, 3.5, 3.4)],
        desc="Power inductor SMD 5x5/6x6 (SRN5040/SRR6040) - verificare vs parte RS 6934344"))
+
+# USB-C solo alimentazione, GCT USB4125-GF-A (6 contatti), dalla libreria ufficiale KiCad
+# 7.0.11 (USB_C_Receptacle_GCT_USB4125-xx-x_6P_TopMnt_Horizontal). Pin del modello dati:
+# 1 = VBUS (A9, B9), 2 = CC1 (A5), 3 = CC2 (B5), 4 = GND (A12, B12 e i 4 piedini del guscio).
+# La bocca guarda verso +Y; il bordo della scheda passa a Y = +3,4 (il corpo sporge di
+# 0,5 mm): courtyard tagliato al bordo, come per il LEMO.
+add(FP("USBC_GCT_USB4125",
+       [("2", -0.5, -3.08, 0.7, 1.2, "smd", 0), ("3", 0.5, -3.08, 0.7, 1.2, "smd", 0),
+        ("1", 1.52, -3.08, 0.76, 1.2, "smd", 0), ("1#2", -1.52, -3.08, 0.76, 1.2, "smd", 0),
+        ("4", 2.75, -3.08, 0.8, 1.2, "smd", 0), ("4#2", -2.75, -3.08, 0.8, 1.2, "smd", 0),
+        ("4#3", -4.32, -3.0, 1.1, 1.7, "tht_oval", (0.6, 1.2)),
+        ("4#4", -4.32, 0.8, 1.1, 1.7, "tht_oval", (0.6, 1.2)),
+        ("4#5", 4.32, -3.0, 1.1, 1.7, "tht_oval", (0.6, 1.2)),
+        ("4#6", 4.32, 0.8, 1.1, 1.7, "tht_oval", (0.6, 1.2))],
+       (-5.37, -4.35, 5.37, 3.4),
+       silk=[(-4.67, -1.95, -4.67, -0.25), (4.67, -1.95, 4.67, -0.25)],
+       desc="USB-C GCT USB4125-GF-A, solo alimentazione, bocca verso +Y, bordo scheda a Y=+3,4"))
+
+# Diodo SMA (DO-214AC), dalla libreria KiCad D_SMA: pin 1 = catodo (barra a sinistra)
+add(FP("D_SMA",
+       [(1, -2.0, 0, 2.5, 1.8, "smd", 0), (2, 2.0, 0, 2.5, 1.8, "smd", 0)],
+       (-3.5, -1.75, 3.5, 1.75),
+       silk=[(-3.51, -1.65, 2.0, -1.65), (-3.51, 1.65, 2.0, 1.65), (-3.51, -1.65, -3.51, 1.65)],
+       desc="SMA / DO-214AC, pin1 = K"))
+
+# Fusibile ripristinabile 1812 (4532), dalla libreria KiCad Fuse_1812_4532Metric
+add(FP("F_1812",
+       [(1, -2.1375, 0, 1.125, 3.4, "smd", 0), (2, 2.1375, 0, 1.125, 3.4, "smd", 0)],
+       (-2.95, -1.95, 2.95, 1.95),
+       silk=[(-1.386, -1.71, 1.386, -1.71), (-1.386, 1.71, 1.386, 1.71)],
+       desc="Fusibile 1812 (4532), es. Bourns MF-MSMF050-2"))
 
 def write_lib(dirname):
     import os

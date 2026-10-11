@@ -277,6 +277,37 @@ add(Sym("LT1636",
         "U", hide_pin_names=True))
 
 # ---------------- power symbols -----------------
+# ---------------- protezione dell'alimentazione -----------------
+# USB-C solo alimentazione: 1 VBUS, 2 CC1, 3 CC2, 4 GND (pin a destra)
+add(icbox("USBC", 10.16, 10.16, [],
+          [("1", 3.81, "VBUS", "passive"), ("2", 1.27, "CC1", "passive"),
+           ("3", -1.27, "CC2", "passive"), ("4", -3.81, "GND", "passive")],
+          [], [], ref="J"))
+# fusibile ripristinabile (verticale come R): rettangolo attraversato da una linea
+add(Sym("FUSE", [P(1, 0, 3.81, 270), P(2, 0, -3.81, 90)],
+        [rect(-0.762, -2.54, 0.762, 2.54), poly([(0, 2.54), (0, -2.54)])],
+        "F", hide_pin_names=True))
+# TVS unidirezionale (1 = K sinistra, 2 = A destra): diodo con barra piegata
+add(Sym("TVS", [P(1, -3.81, 0, 0, "K", ln=3.175), P(2, 3.81, 0, 180, "A", ln=3.175)],
+        [poly([(-1.016, 1.27), (-0.635, 1.016), (-0.635, -1.016), (-0.254, -1.27)], width=0.3),
+         poly([(0.635, 1.016), (0.635, -1.016), (-0.635, 0), (0.635, 1.016)])],
+        "D", hide_pin_names=True))
+# MOSFET P (1 = G sinistra, 2 = S in alto, 3 = D in basso); freccia verso il gate esterna
+add(Sym("PMOS", [P(1, -5.08, 0, 0, "G", ln=2.54),
+                 P(2, 2.54, 5.08, 270, "S", ln=2.54),
+                 P(3, 2.54, -5.08, 90, "D", ln=2.54)],
+        [poly([(-2.54, 0), (-1.27, 0)]),
+         poly([(-1.27, 1.905), (-1.27, -1.905)], width=0.3),          # gate
+         poly([(-0.508, 2.286), (-0.508, 1.27)], width=0.4),          # canale (3 tratti)
+         poly([(-0.508, 0.508), (-0.508, -0.508)], width=0.4),
+         poly([(-0.508, -1.27), (-0.508, -2.286)], width=0.4),
+         poly([(-0.508, 1.778), (2.54, 1.778), (2.54, 2.54)]),         # source
+         poly([(-0.508, -1.778), (2.54, -1.778), (2.54, -2.54)]),      # drain
+         poly([(-0.508, 0), (2.54, 0), (2.54, 1.778)]),                # body al source
+         poly([(0.762, 0), (0.254, 0.381), (0.254, -0.381), (0.762, 0)], fill="outline")],   # freccia (P: verso l'esterno)
+        "Q", hide_pin_names=True))
+
+
 def power_sym(name, down=False):
     if name == "GND":
         body = [poly([(0, 0), (0, -1.27)]),
