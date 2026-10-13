@@ -16,7 +16,7 @@ JLCPCB: le tre schede in un solo ordine, una sola spedizione.
 | Modulo meteo: 5 PCB 36 × 22 mm, montaggio su 2 | JLCPCB | `moduli/meteo/jlcpcb/` | 35–45 € |
 | Pico 2, zoccoli, KK, strip GPS, cavetti | Mouser | `moduli/BOM_mouser_moduli_2sistemi.csv` | ~30 € |
 | GPS NEO-M9N SMA (2) + antenne attive 5 m (2) | Mouser (SparkFun, Adafruit) | stesso file | ~180 € (con Adafruit 746 al posto del NEO-M9N: ~100 €) |
-| SHT45 a parte, cavi Qwiic, scatole Hammond | Mouser | stesso file | ~40 € |
+| SHT45 a parte, cavi Qwiic | Mouser | stesso file | ~20 € (scatola della scatolina stampata in 3D in PETG) |
 | Raspberry Pi Zero 2 W + scheda SD | qualsiasi rivenditore | — | ~50 € |
 | Alimentatori USB 5 V e cavi | qualsiasi rivenditore | — | ~30 € |
 | Base in plexiglass, distanziali M3 | laboratorio | — | 20–40 € |
