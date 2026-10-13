@@ -20,7 +20,11 @@ JLCPCB: le tre schede in un solo ordine, una sola spedizione.
 | Raspberry Pi Zero 2 W + scheda SD | qualsiasi rivenditore | — | ~50 € |
 | Alimentatori USB 5 V e cavi | qualsiasi rivenditore | — | ~30 € |
 | Base in plexiglass, distanziali M3 | laboratorio | — | 20–40 € |
-| **Totale** | | | **~780–850 €** con i SiPM; **~650–720 €** senza; **~570–640 €** senza SiPM e col GPS economico |
+| **Totale (somma delle stime)** | | | ~780–850 € con i SiPM |
+| **Totale con IVA 22% su Mouser e JLCPCB, spedizioni** | | | **~900–1.000 €** con i SiPM e il GPS NEO-M9N; **~700–800 €** con il GPS economico (ATGM336H con PPS, ~15 € con antenna); togliere ~125 € se i SiPM ci sono già |
+
+Da mettere a budget per due sistemi: **1.000–1.100 €** (versione completa, con un 10% di margine)
+oppure **800–850 €** (GPS economico).
 
 **Non inclusi i cavi LEMO: ci sono già (confermato).** Le prese LEMO sulle schede, se mancano, si
 aggiungono queste voci:
