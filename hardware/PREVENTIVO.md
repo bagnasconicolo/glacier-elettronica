@@ -74,3 +74,17 @@ con forno o aria calda. È un DFN da 1,5 mm: non si salda col saldatore.
 I primi sei e il LED sono verificati sulle pagine LCSC indicizzate. Per i passivi
 "basic" i codici sono quelli standard UNI-ROYAL e Samsung: JLCPCB segnala comunque ogni
 codice che non trova al caricamento della BOM.
+
+## Configurazione base (senza GPS, senza meteo, senza LEMO) - 2 e 4 setup
+
+PDF: `docs/PREVENTIVO_MuLab.pdf` (generato da `preventivo_pdf.py`, che contiene le cifre voce per voce).
+
+| | 2 setup | 4 setup |
+|---|---|---|
+| Configurazione base (IVA inclusa) | 572–647 € | 975–1.090 € |
+| Budget consigliato (~10% di margine) | ~700 € | ~1.200 € |
+| Upgrade modulo meteo | 60–70 € | 85–100 € |
+| Upgrade GPS NEO-M9N + antenna | 220 € | 440 € |
+| Upgrade GPS economico ATGM336H | 30 € | 60 € |
+
+SiPM già disponibili: −125 € (2 setup), −250 € (4 setup).
