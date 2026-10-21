@@ -22,11 +22,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
-// ?v=1ch|3ch  &view=iso|top|front|detail|coinc|lemo|ch1|tp|tp2  &pcb=nero  &bg=rrggbb  &w=  &h=
+// ?v=1ch|3ch  &view=iso|top|front|detail|coinc|lemo|ch1|tp|tp2  &pcb=nero|rosso  &bg=rrggbb  &w=  &h=
 const q = new URLSearchParams(location.search);
 const VAR = q.get("v") || "1ch";
 const VIEW = q.get("view") || "iso";
-const NERO = q.get("pcb") === "nero";
+const PCB = q.get("pcb") || "";                       // "", "nero", "rosso"
+const NERO = PCB === "nero";
+const COL = {nero: [0x1a1a1a, 0x111111], rosso: [0x7a1215, 0x8c1418]}[PCB] || [0x2f5a39, 0x1e5a35];
 const W = +(q.get("w") || innerWidth), H = +(q.get("h") || innerHeight);
 
 const scene = new THREE.Scene();
@@ -202,12 +204,12 @@ function sot(L, Wd, H, pins, value) { const g = new THREE.Group();
 const data = await (await fetch(`out/${VAR}/scene.json`)).json();
 const [X1, Y1, X2, Y2] = data.board, BW = X2 - X1, BH = Y2 - Y1, T = data.thickness;
 const cx = (X1 + X2) / 2, cz = (Y1 + Y2) / 2;
-const tex = await new THREE.TextureLoader().loadAsync(`out/${VAR}/${NERO ? "top_nero" : "top"}.png`);
+const tex = await new THREE.TextureLoader().loadAsync(`out/${VAR}/${PCB ? "top_" + PCB : "top"}.png`);
 tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
-const side = M(NERO ? 0x1a1a1a : 0x2f5a39, 0.8);
+const side = M(COL[0], 0.8);
 const top = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.42, metalness: 0.05 });
 const board = new THREE.Mesh(new THREE.BoxGeometry(BW, T, BH),
-  [side, side, top, M(NERO ? 0x111111 : 0x1e5a35, 0.6), side, side]);
+  [side, side, top, M(COL[1], 0.6), side, side]);
 board.position.set(cx, -T / 2, cz); board.receiveShadow = true; scene.add(board);
 
 for (const c of data.comps) {
