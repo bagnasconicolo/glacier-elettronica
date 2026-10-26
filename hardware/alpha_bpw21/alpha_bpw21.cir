@@ -1,0 +1,69 @@
+* Rivelatore di particelle alpha minimo con fotodiodo BPW21 (finestra rimossa)
+* Alimentazione singola 5 V (anche quella dell'Arduino), un solo MCP6022:
+*   U1A = preamplificatore di carica (CSA), impulsi positivi di ~Q/Cf
+*   U1B = comparatore con isteresi -> impulso 0/5 V per il pin D2 dell'Arduino
+* Simulazione: ngspice -b alpha_bpw21.cir
+
+.param Qalpha=178f   ; ~4 MeV depositati (Am-241 dopo ~1 cm d'aria): 4e6/3.6 * 1.6e-19 C
+.param Qgamma=2.7f   ; ~60 keV (gamma da 59,5 keV dell'Am-241, assorbimento totale)
+.param Idark=2n      ; corrente di buio BPW21 (tip. 2 nA, max 30 nA): provare anche 30n
+
+* --- op-amp tipo MCP6022: GBW 10 MHz, A0 ~110 dB, uscita rail-to-rail (comportamentale)
+.subckt OPA inp inn out vcc
+Gin 0 n1 inp inn 1m
+R1 n1 0 300meg
+C1 n1 0 15.9p           ; polo dominante: GBW = gm/(2*pi*C1) = 10 MHz
+Dhi n1 vcc DCL          ; morsetti sul nodo interno: niente "windup" in saturazione
+Dlo 0 n1 DCL
+.model DCL D(Is=1e-14 N=0.05)
+Bo o2 0 V = max(0.02, min(V(vcc)-0.02, V(n1)))
+Ro o2 out 50
+.ends
+
+VCC vcc 0 5
+
+* --- riferimenti: partitore R1 100k / R2 2,2k / R3 100k -> VREF 2,47 V, VTH = VREF + 54 mV
+R1 vcc vth 100k
+R2 vth vref 2.2k
+R3 vref 0 100k
+C1 vth 0 1u
+C2 vref 0 1u
+
+* --- D1 BPW21: catodo sull'ingresso del CSA (a VREF), anodo a massa -> 2,5 V inversi
+*     capacita' ~270 pF a 2,5 V; la carica dell'alpha esce dal catodo
+CD inn 0 270p
+IDK inn 0 {Idark}
+IALPHA  inn 0 PULSE(0 {Qalpha/10n} 100u 1n 1n 10n 10)
+IALPHA2 inn 0 PULSE(0 {0.5*Qalpha/10n} 250u 1n 1n 10n 10)  ; alpha degradato (2 MeV)
+IGAMMA  inn 0 PULSE(0 {Qgamma/10n} 400u 1n 1n 10n 10)
+
+* --- U1A: CSA, Cf = 1 pF, Rf = 22 Mohm (tau = 22 us)
+XU1A vref inn csa vcc OPA
+CF inn csa 1p
+RF inn csa 22meg
+
+* --- accoppiamento AC + isteresi: C3 1 uF, R4 10k verso VREF, R5 10M dall'uscita
+C3 csa inp2 1u
+R4 inp2 vref 10k
+R5 out inp2 10meg
+
+* --- U1B: comparatore, soglia VTH (~1,5 MeV)
+XU1B inp2 vth out vcc OPA
+
+.tran 0.1u 600u 0 0.1u
+
+.control
+run
+meas tran csa_base AVG v(csa) from=60u to=95u
+meas tran csa_alpha MAX v(csa) from=100u to=150u
+meas tran vth AVG v(vth) from=60u to=95u
+meas tran inp2_base AVG v(inp2) from=60u to=95u
+meas tran out_base AVG v(out) from=60u to=95u
+meas tran t_on  WHEN v(out)=2.5 RISE=1 FROM=100u
+meas tran t_off WHEN v(out)=2.5 FALL=1 FROM=100u
+meas tran t_on2 WHEN v(out)=2.5 RISE=2 FROM=100u
+meas tran t_off2 WHEN v(out)=2.5 FALL=2 FROM=100u
+meas tran csa_gamma MAX v(csa) from=400u to=450u
+meas tran out_gamma MAX v(out) from=400u to=600u
+.endc
+.end

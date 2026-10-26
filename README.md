@@ -42,6 +42,7 @@ hardware/          progetto KiCad (schema, PCB, librerie, Gerber, BOM)
   PRIMA_DI_ORDINARE.md                 cosa e' verificato e cosa decidere prima dell'ordine
   jlcpcb/                              Gerber, BOM e CPL per PCB + montaggio su JLCPCB
   variante_3ch/                        VARIANTE A 3 CANALI + coincidenza AND, uscite LEMO
+  alpha_bpw21/                         mini-rivelatore di ALPHA con fotodiodo BPW21 (1 op-amp + Arduino)
   render3d/                            render 3D delle schede montate (three.js)
   previews/                            anteprime PNG
   generator/                           script Python che GENERANO lo hardware (sorgente)
