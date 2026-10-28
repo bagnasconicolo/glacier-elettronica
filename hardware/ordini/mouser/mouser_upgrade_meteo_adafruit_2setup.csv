@@ -1,0 +1,5 @@
+Manufacturer Part Number,Manufacturer,Quantity,Customer Part Number
+5665,Adafruit,2,Sensore SHT45 temperatura/umidita' STEMMA QT/Qwiic (0x44); versione con PTFE: 6174
+4633,Adafruit,2,Sensore pressione LPS22 STEMMA QT/Qwiic (0x5D)
+PRT-14429,SparkFun,2,Cavo Qwiic 500 mm: scatolina -> SHT45
+4210,Adafruit,2,Cavo STEMMA QT/Qwiic 100 mm: SHT45 -> LPS22

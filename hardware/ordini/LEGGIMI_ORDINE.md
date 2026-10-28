@@ -13,9 +13,11 @@ Gli ordini sono due:
 jlcpcb/1_rivelatore/              Gerber zip, BOM, CPL (+ MPN_riferimento.csv, solo consultazione)
 jlcpcb/2_scatolina_acquisizione/  Gerber zip, BOM, CPL
 jlcpcb/3_modulo_meteo_UPGRADE/    Gerber zip, BOM, CPL  (solo se si ordina anche il meteo)
-mouser/mouser_base_2setup.csv     lista Mouser per 2 setup (con scorte)
-mouser/mouser_base_4setup.csv     lista Mouser per 4 setup
-mouser/mouser_upgrade_meteo_*.csv / mouser_upgrade_gps_*.csv
+mouser/mouser_base_Nsetup.csv                 lista Mouser per N = 2, 3, 4, 5, 6 setup (con scorte)
+mouser/mouser_upgrade_meteo_adafruit_Nsetup.csv  meteo con schedine pronte Adafruit SHT45 + LPS22 (consigliato)
+mouser/mouser_upgrade_meteo_modulo_Nsetup.csv    meteo col nostro modulo (serve anche il PCB JLCPCB)
+mouser/mouser_upgrade_gps_Nsetup.csv             GPS NEO-M9N + antenna
+mouser/RIEPILOGO_quantita.csv                    tutte le quantita' affiancate, da 2 a 6 setup
 ```
 
 ---
@@ -88,7 +90,7 @@ Mouser o sono già disponibili.
 ## 2. Mouser (mouser.it)
 
 1. Accedere a mouser.it → menu **BOM** (strumento "BOM Tool" o "Carica BOM").
-2. **Upload**: `mouser/mouser_base_2setup.csv` (o `_4setup`). Abbinare le colonne:
+2. **Upload**: `mouser/mouser_base_Nsetup.csv` con N = numero di setup (2–6). Abbinare le colonne:
    Manufacturer Part Number → *Mfr. Part #*, Manufacturer → *Manufacturer*,
    Quantity → *Quantity*, Customer Part Number → *Customer #*. La descrizione finisce
    sull'etichetta di ogni bustina.
@@ -97,13 +99,13 @@ Mouser o sono già disponibili.
    versione contano (LT1636 in SO-8, **non** MSOP).
 4. Togliere la riga dei **SiPM** se sono già disponibili.
 5. **Add to cart**. Sopra 50 € la spedizione è gratuita, dazi inclusi.
-6. Upgrade, quando servono: aggiungere `mouser_upgrade_meteo_*.csv` e/o
-   `mouser_upgrade_gps_*.csv` (stessa procedura).
+6. Upgrade, quando servono: aggiungere `mouser_upgrade_meteo_adafruit_Nsetup.csv` (oppure
+   `_modulo_`, se si ordina il nostro PCB meteo) e/o `mouser_upgrade_gps_Nsetup.csv`.
+   Le schedine Adafruit si collegano direttamente alle porte Qwiic della scatolina, in catena.
 
-Quantità (scorte comprese):
+Quantità (scorte comprese) per 2–6 setup: `mouser/RIEPILOGO_quantita.csv`.
 
-| Parte | 2 setup | 4 setup |
-|---|---|---|
+---|---|---|
 | LT3461 / MAX961 / LT1636 | 3 / 7 / 7 | 5 / 13 / 13 |
 | LP2985-3.6 | 5 | 9 |
 | SiPM AFBR-S4N22P014M | 6 | 12 |

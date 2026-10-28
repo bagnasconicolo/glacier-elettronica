@@ -1,0 +1,26 @@
+Gruppo,Manufacturer Part Number,Manufacturer,Descrizione,2 setup,3 setup,4 setup,5 setup,6 setup
+BASE,LT3461AES6#TRMPBF,Analog Devices,Rivelatore U1: boost alta tensione SiPM (SOT-23-6). Fine vita: scorta,3,4,5,6,7
+BASE,MAX961ESA+,Analog Devices,Rivelatore U103 U203 U303: comparatori (SO-8). Fine vita: scorta,7,10,13,16,19
+BASE,LT1636CS8#PBF,Analog Devices,Rivelatore U108 U208 U308: op-amp bias (SO-8; NON la versione MSOP). Fine vita: scorta,7,10,13,16,19
+BASE,LP2985AIM5-3.6/NOPB,Texas Instruments,"Rivelatore U5 U7: LDO 3,6 V (SOT-23-5)",5,7,9,11,13
+BASE,1N4148-TAP,Vishay,Rivelatore D101 D201 D301 (DO-35),10,13,16,19,22
+BASE,61304011121,Wurth Elektronik,"Rivelatore: strip maschio 1x40 per test point, JP1-JP3, J3",3,4,5,6,7
+BASE,M7566-05,Harwin,Rivelatore: ponticelli JP1-JP3,10,13,16,19,22
+BASE,AFBR-S4N22P014M,Broadcom,"SiPM, 3 per rivelatore (togliere se gia' disponibili)",6,9,12,15,18
+BASE,22-27-2021,Molex,Rivelatore J101 J201 J301: header KK 254 2 poli (cavi delle barre),7,10,13,16,19
+BASE,22-01-3027,Molex,Connettore KK 254 2 poli lato cavo (barre),8,11,14,17,20
+BASE,22-27-2031,Molex,Header KK 254 3 poli: J6 rivelatore + J7 J8 scatolina (I2C),7,10,13,16,19
+BASE,22-01-3037,Molex,Connettore KK 254 3 poli lato cavo: cavo I2C rivelatore-scatolina (2 estremi),5,7,9,11,13
+BASE,08-50-0114,Molex,"Contatti a crimpare KK 254, 22-30 AWG (barre + cavo I2C)",30,42,54,66,78
+BASE,SC1631,Raspberry Pi,Raspberry Pi Pico 2 (scatolina A1),3,4,5,6,7
+BASE,PPTC201LFBN-RC,Sullins,Strip femmina 1x20: zoccolo del Pico,5,7,9,11,13
+BASE,PREC006SAAN-RC,Sullins,Strip maschio 1x6 J6 scatolina (predisposizione GPS),2,3,4,5,6
+UPGRADE meteo Adafruit,5665,Adafruit,Sensore SHT45 temperatura/umidita' STEMMA QT/Qwiic (0x44); versione con PTFE: 6174,2,3,4,5,6
+UPGRADE meteo Adafruit,4633,Adafruit,Sensore pressione LPS22 STEMMA QT/Qwiic (0x5D),2,3,4,5,6
+UPGRADE meteo Adafruit,PRT-14429,SparkFun,Cavo Qwiic 500 mm: scatolina -> SHT45,2,3,4,5,6
+UPGRADE meteo Adafruit,4210,Adafruit,Cavo STEMMA QT/Qwiic 100 mm: SHT45 -> LPS22,2,3,4,5,6
+UPGRADE meteo nostro modulo,SHT45-AD1B-R2,Sensirion,Modulo meteo U1: solo se JLCPCB non lo monta (global sourcing),3,4,5,6,7
+UPGRADE meteo nostro modulo,PRT-14429,SparkFun,Cavo Qwiic 500 mm: modulo meteo - scatolina,2,3,4,5,6
+UPGRADE GPS,GPS-17285,SparkFun,GPS u-blox NEO-M9N con SMA (PPS sul connettore),2,3,4,5,6
+UPGRADE GPS,960,Adafruit,"Antenna GPS attiva 28 dB, cavo 5 m, SMA",2,3,4,5,6
+UPGRADE GPS,266,Adafruit,Cavetti femmina-femmina 20 x 75 mm: GPS -> J6,1,1,1,1,1
