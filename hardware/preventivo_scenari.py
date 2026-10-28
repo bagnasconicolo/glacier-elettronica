@@ -61,9 +61,12 @@ def jlc_riv(n):
 
 
 def jlc_box(n):
-    """JLCPCB, scatolina (Economic, 5 PCB; 10 oltre i 5 setup), stesso ordine: stima"""
-    v = (43 + 6 * n + (12 if n > 5 else 0)) * 1.22
-    return (v, v * 1.3)
+    """JLCPCB, scatolina (Economic). Carrelli reali a se' stanti del 28/10/2026: 5 PCB + 5 montati
+    = merce 56,61 (totale DDP 110,62); 10 + 10 = merce 75,17 (totale 133,46) -> 38,2 fissi +
+    3,7 a scheda. Nello stesso ordine del rivelatore spedizione e diritti si pagano una volta:
+    si aggiunge la merce con IVA, piu' 0-8 EUR di spedizione per il peso in piu'."""
+    m = 38.2 + 3.7 * n
+    return (m * 1.22, (m + 8) * 1.22)
 
 
 def righe(n):
@@ -74,7 +77,7 @@ def righe(n):
     return [
         ("PCB rivelatore + montaggio, DHL DDP", "JLCPCB", j[0], j[1],
          "carrello" if n == 5 else "dai carrelli 5 e 10 pz"),
-        ("PCB scatolina + montaggio", "JLCPCB", b[0], b[1], "stima"),
+        ("PCB scatolina + montaggio (stesso ordine)", "JLCPCB", b[0], b[1], "dai carrelli 5 e 10 pz"),
         ("Chip, connettori, Pico 2", "Mouser", m - s, m - s,
          "carrello" if n in CARRELLI else "prezzi del carrello"),
         ("SiPM (3 per rivelatore)", "Mouser", s, s, "carrello" if n in CARRELLI else "prezzi del carrello"),
@@ -147,7 +150,8 @@ def pag_scenari(pdf):
     note = ["Mouser: carrelli reali del 28/10/2026 per 2, 4 e 6 rivelatori (in appendice); 3 e 5 calcolati con gli stessi",
             "prezzi unitari. Le scorte dei chip fuori produzione (LT3461, MAX961, LT1636) sono comprese.",
             "JLCPCB rivelatore: carrelli reali (5 e 10 schede montate, DHL DDP con dazi e IVA); altri numeri interpolati.",
-            "JLCPCB scatolina e le altre voci sono stime, da confermare con il carrello.",
+            "JLCPCB scatolina: carrelli reali (5 e 10, totale a se' stante 110,62 e 133,46 EUR), qui sommata allo stesso ordine.",
+            "Raspberry, alimentatori e minuteria: stime.",
             "IVA calcolata al 22%: i carrelli Mouser riportano il 20%, verificare i dati di fatturazione.",
             "Da 4 rivelatori in su i SiPM superano i 10 pezzi e scendono da 21,41 a 17,05 € (IVA esclusa) l'uno.",
             "Oltre 5 rivelatori servono 10 PCB per tipo (lotto minimo JLCPCB = 5)."]
