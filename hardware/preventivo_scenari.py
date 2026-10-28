@@ -47,22 +47,34 @@ for n in (3, 5):
     MOUSER[n] = tot
 
 
-def jlc(n):
-    """JLCPCB rivelatore + scatolina (5 PCB per tipo, 10 oltre i 5 setup), spedizione e IVA"""
-    big = n > 5
-    det = (75 + 17.5 * n + (15 if big else 0), 95 + 22.5 * n + (25 if big else 0))
-    box = (35 + 5 * n + (5 if big else 0), 45 + 7.5 * n + (8 if big else 0))
-    ship = (30 + 2.5 * n, 35 + 5 * n)
-    return tuple(det[i] + box[i] + ship[i] for i in (0, 1))
+def jlc_riv(n):
+    """JLCPCB, solo rivelatore, DHL DDP (dazi e IVA compresi). Carrelli reali del 28/10/2026:
+    5 PCB + 5 montati = 335,37 EUR; 10 PCB + 10 montati = 507,91 EUR. Dai due carrelli:
+    PCB 5 pz 16,07; montaggio = 121 fissi (avvio, stencil, parti Extended) + 19,6 a scheda;
+    spedizione 33,4 (5 pz) / 65,6 (10 pz); IVA 22% su merce + spedizione; 7,42 di diritti."""
+    if n <= 5:
+        v = (16.07 + 121 + 19.6 * n + 33.4) * 1.22 + 7.42
+    else:
+        v = (27.47 + 121 + 19.6 * n + 50) * 1.22 + 7.42
+    esatto = n == 5
+    return (v, v) if esatto else (v * 0.97, v * 1.05)
+
+
+def jlc_box(n):
+    """JLCPCB, scatolina (Economic, 5 PCB; 10 oltre i 5 setup), stesso ordine: stima"""
+    v = (43 + 6 * n + (12 if n > 5 else 0)) * 1.22
+    return (v, v * 1.3)
 
 
 def righe(n):
     """(voce, dove, min, max, fonte) IVA inclusa"""
     m = MOUSER[n] * IVA
     s = SIPM[n] * IVA
-    j = jlc(n)
+    j, b = jlc_riv(n), jlc_box(n)
     return [
-        ("PCB + montaggio SMD, spedizione", "JLCPCB", j[0], j[1], "stima"),
+        ("PCB rivelatore + montaggio, DHL DDP", "JLCPCB", j[0], j[1],
+         "carrello" if n == 5 else "dai carrelli 5 e 10 pz"),
+        ("PCB scatolina + montaggio", "JLCPCB", b[0], b[1], "stima"),
         ("Chip, connettori, Pico 2", "Mouser", m - s, m - s,
          "carrello" if n in CARRELLI else "prezzi del carrello"),
         ("SiPM (3 per rivelatore)", "Mouser", s, s, "carrello" if n in CARRELLI else "prezzi del carrello"),
@@ -134,7 +146,8 @@ def pag_scenari(pdf):
     y = y0 - 13 - len(NS) * 11 - 4
     note = ["Mouser: carrelli reali del 28/10/2026 per 2, 4 e 6 rivelatori (in appendice); 3 e 5 calcolati con gli stessi",
             "prezzi unitari. Le scorte dei chip fuori produzione (LT3461, MAX961, LT1636) sono comprese.",
-            "JLCPCB e le altre voci sono stime (listino prototipi JLCPCB, preventivi precedenti): da confermare con il carrello.",
+            "JLCPCB rivelatore: carrelli reali (5 e 10 schede montate, DHL DDP con dazi e IVA); altri numeri interpolati.",
+            "JLCPCB scatolina e le altre voci sono stime, da confermare con il carrello.",
             "IVA calcolata al 22%: i carrelli Mouser riportano il 20%, verificare i dati di fatturazione.",
             "Da 4 rivelatori in su i SiPM superano i 10 pezzi e scendono da 21,41 a 17,05 € (IVA esclusa) l'uno.",
             "Oltre 5 rivelatori servono 10 PCB per tipo (lotto minimo JLCPCB = 5)."]
@@ -211,6 +224,22 @@ def main():
         r = PdfReader(os.path.join(DOCS, "preventivi", f))
         for p in r.pages:
             w.add_page(p)
+    # carrelli JLCPCB (screenshot)
+    tmp2 = os.path.join(os.path.dirname(tmp), "j.pdf")
+    with PdfPages(tmp2) as pdf:
+        for f, t in (("JLCPCB_carrello_rivelatore_5pz.png", "JLCPCB - rivelatore, 5 PCB + 5 montati (carrello)"),
+                     ("JLCPCB_checkout_rivelatore_5pz.png", "JLCPCB - rivelatore, 5 + 5: totale con DHL DDP"),
+                     ("JLCPCB_carrello_rivelatore_10pz.png", "JLCPCB - rivelatore, 10 PCB + 10 montati (carrello)"),
+                     ("JLCPCB_checkout_rivelatore_10pz.png", "JLCPCB - rivelatore, 10 + 10: totale con DHL DDP")):
+            fig = plt.figure(figsize=(11.69, 8.27))
+            fig.text(0.04, 0.95, t, fontsize=14, fontweight="bold", color=INK, family="DejaVu Sans")
+            a = fig.add_axes([0.04, 0.04, 0.92, 0.86])
+            a.imshow(plt.imread(os.path.join(DOCS, "preventivi", f)))
+            a.set_axis_off()
+            pdf.savefig(fig)
+            plt.close(fig)
+    for p in PdfReader(tmp2).pages:
+        w.add_page(p)
     w.write(OUT)
     for n in NS:
         lo, hi, lo2, hi2 = totali(n)
