@@ -14,6 +14,7 @@ BASE,22-01-3037,Molex,Connettore KK 254 3 poli lato cavo: cavo I2C rivelatore-sc
 BASE,08-50-0114,Molex,"Contatti a crimpare KK 254, 22-30 AWG (barre + cavo I2C)",30,42,54,66,78
 BASE,SC1631,Raspberry Pi,Raspberry Pi Pico 2 (scatolina A1),3,4,5,6,7
 BASE,PPTC201LFBN-RC,Sullins,Strip femmina 1x20: zoccolo del Pico,5,7,9,11,13
+BASE,PREC020SAAN-RC,Sullins,Strip maschio 1x20 da saldare sotto il Pico 2 (il Pico arriva senza pin),5,7,9,11,13
 BASE,PREC006SAAN-RC,Sullins,Strip maschio 1x6 J6 scatolina (predisposizione GPS),2,3,4,5,6
 UPGRADE meteo Adafruit,5665,Adafruit,Sensore SHT45 temperatura/umidita' STEMMA QT/Qwiic (0x44); versione con PTFE: 6174,2,3,4,5,6
 UPGRADE meteo Adafruit,4633,Adafruit,Sensore pressione LPS22 STEMMA QT/Qwiic (0x5D),2,3,4,5,6

@@ -14,4 +14,5 @@ AFBR-S4N22P014M,Broadcom,18,"SiPM, 3 per rivelatore (togliere se gia' disponibil
 08-50-0114,Molex,78,"Contatti a crimpare KK 254, 22-30 AWG (barre + cavo I2C)"
 SC1631,Raspberry Pi,7,Raspberry Pi Pico 2 (scatolina A1)
 PPTC201LFBN-RC,Sullins,13,Strip femmina 1x20: zoccolo del Pico
+PREC020SAAN-RC,Sullins,13,Strip maschio 1x20 da saldare sotto il Pico 2 (il Pico arriva senza pin)
 PREC006SAAN-RC,Sullins,6,Strip maschio 1x6 J6 scatolina (predisposizione GPS)

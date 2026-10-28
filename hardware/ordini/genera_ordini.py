@@ -27,6 +27,7 @@ BASE = [
     ("08-50-0114", "Molex", 12, 6, "Contatti a crimpare KK 254, 22-30 AWG (barre + cavo I2C)"),
     ("SC1631", "Raspberry Pi", 1, 1, "Raspberry Pi Pico 2 (scatolina A1)"),
     ("PPTC201LFBN-RC", "Sullins", 2, 1, "Strip femmina 1x20: zoccolo del Pico"),
+    ("PREC020SAAN-RC", "Sullins", 2, 1, "Strip maschio 1x20 da saldare sotto il Pico 2 (il Pico arriva senza pin)"),
     ("PREC006SAAN-RC", "Sullins", 1, 0, "Strip maschio 1x6 J6 scatolina (predisposizione GPS)"),
 ]
 # meteo, opzione A (consigliata per la fase pilota): schedine pronte Adafruit, in catena
